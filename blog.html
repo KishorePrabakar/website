@@ -6,19 +6,37 @@
     <title>KPr Blogs</title>
 </head>
 <style>
-     body{
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 20px;
-            background-color: #000000;
+    body{
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 20px;
+        background-color: #000000;
+        color: aqua;
+    }
+    h1{
+        text-align: center;
+        margin: 50px;
+    }
+   
+    #list{
+        margin-left: 75px;
+        a{
+            text-decoration: none;
             color: aqua;
         }
+        a:hover{
+            color: yellow;
+        }
+        font-size: 28px;
+    }
 </style>
 <body>
     <center>
         <h1>My Blogs</h1>
     </center>
-    <ul>
-        <li><a href="/blogs/first.html">First Blog</a></li>
-    </ul>
+    <div id="list">
+        <ul>
+            <li><a href="/blogs/first.html">First Blog</a></li>
+        </ul>
+    </div>
 </body>
 </html>
