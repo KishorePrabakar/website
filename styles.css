@@ -20,6 +20,7 @@ body{
 }
 
 p{
+    font-family: 'Times New Roman', Times, serif;
     color: white;
     line-height: 1.6;
     margin-bottom: 1.5rem;
