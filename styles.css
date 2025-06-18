@@ -7,7 +7,7 @@ body{
 }
 
 #head{
-    font-size: 44px;
+    font-size: 48px;
     font-weight: bold;
     text-align: center;
     margin-top: 45px;
@@ -20,7 +20,7 @@ body{
 }
 
 p{
-    color: #00cccc;
+    color: white;
     line-height: 1.6;
     margin-bottom: 1.5rem;
     margin-top: 0;
