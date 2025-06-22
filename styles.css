@@ -4,6 +4,8 @@ body{
     background-color: #000000;
     color: aqua;
     padding: 20px;
+    padding-left: 40px;
+    padding-right: 40px;
 }
 
 #head{
@@ -25,9 +27,6 @@ p{
     line-height: 1.6;
     margin-bottom: 1.5rem;
     margin-top: 0;
-    padding-left: 40px;
-    padding-right: 40px;
     text-align: justify;
     /* max-width: 65ch; */
-    
 }
