@@ -10,10 +10,38 @@
     <title>Kishore Prabakar</title>
     <style>
         body{
-            font-family: font-family: ui-monospace, Menlo, Consolas, monospace;
+            font-family: ui-monospace, Menlo, Consolas, monospace;
             font-size: 20px;
-            background-color: #000000;
+            background-color: #000;
             color: aqua;
+        }
+        /* Light mode toggle: white bg, green text */
+        body.light-mode {
+            background-color: #fff !important;
+            color: #008000 !important;
+        }
+        body.light-mode a, body.light-mode h1, body.light-mode h2, body.light-mode .popup-content, body.light-mode .clickable-random {
+            color: #008000 !important;
+        }
+        body.light-mode .clock,
+        body.light-mode .popup,
+        body.light-mode .popup-btn {
+            background-color: #f4f4f4 !important;
+            color: #008000 !important;
+            border-color: #008000 !important;
+        }
+        body.light-mode #main a,
+        body.light-mode h2 a {
+            color: #008000 !important;
+        }
+        body.light-mode h2 a:hover,
+        body.light-mode #main a:hover,
+        body.light-mode .clickable-random:hover {
+            color: #00b400 !important;
+        }
+        body.light-mode .popup-btn:hover {
+            background-color: #008000 !important;
+            color: #fff !important;
         }
         h1{
             text-align: center;
@@ -27,7 +55,6 @@
             color: aqua;
             text-decoration: none;
         }
-
         h2 a:hover{
             transition: color 0.3s ease;
             color: #fff;
@@ -46,8 +73,6 @@
             color: yellow;
             transition: color 0.3s ease;
         }
-
-       
         .clock {
             position: fixed;
             bottom: 20px;
@@ -60,17 +85,14 @@
             padding: 10px;
             border-radius: 4px;
         }
-       
         .time {
             font-weight: bold;
             font-size: 16px;
         }
-       
         .date {
             font-size: 12px;
             margin-top: 2px;
         }
-
         /* Popup Styles */
         .popup-overlay {
             display: none;
@@ -82,7 +104,6 @@
             background-color: rgba(0, 0, 0, 0.8);
             z-index: 1000;
         }
-
         .popup {
             position: absolute;
             top: 50%;
@@ -97,7 +118,6 @@
             text-align: center;
             box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
         }
-
         .popup h3 {
             color: #00ffff;
             margin-top: 0;
@@ -105,7 +125,6 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-
         .popup-content {
             color: #00ffff;
             font-size: 1.1em;
@@ -113,11 +132,9 @@
             margin: 20px 0;
             font-style: italic;
         }
-
         .popup-buttons {
             margin-top: 25px;
         }
-
         .popup-btn {
             background-color: transparent;
             color: #00ffff;
@@ -129,33 +146,59 @@
             border-radius: 4px;
             transition: all 0.3s ease;
         }
-
         .popup-btn:hover {
             background-color: #00ffff;
             color: #000;
         }
-
         .clickable-random {
             cursor: pointer;
             transition: color 0.3s ease;
             color: aqua;
         }
-
         .clickable-random:hover {
             color: #fff;
         }
-       
+        /* Dark mode toggle button */
+        .toggle-mode-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            color: aqua;
+            border: 2px solid aqua;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            z-index: 2000;
+            transition: background 0.3s, color 0.3s, border 0.3s;
+        }
+        .toggle-mode-btn:hover {
+            background: aqua;
+            color: #000;
+        }
+        body.light-mode .toggle-mode-btn {
+            background: #fff;
+            color: #008000;
+            border-color: #008000;
+        }
+        body.light-mode .toggle-mode-btn:hover {
+            background: #008000;
+            color: #fff;
+        }
     </style>
-   
 </head>
 <body>
+    <!-- Dark mode toggle button -->
+    <button class="toggle-mode-btn" id="toggleModeBtn" aria-label="Toggle dark/light mode">☀️ Light Mode</button>
+
     <h1>Hello, I'm <u>Kishore Prabakar</u>.</h1>
-    <h2><a href="blog.html">Blog</a> - <a href="https://docs.google.com/document/d/1Z56xSPpsaPppm9MDoEm4mhC_MPlwv4viq1DTq-0xfZA/edit?usp=sharing">Resume</a> - <span class="clickable-random" onclick="openPopup()">Random</span></h2>
+    <h2><a href="blog.html">Blog</a> - <a href="https://docs.google.com/document/d/1Z56xSPpsaPppm9MDoEm4mhC_MPlwv4viq1DTq-0xfZA/edit?usp=sharing">Resume</a> - <span class="clickable-random" onclick="openPopup()">Random Quote/Fact</span></h2>
     
     <div id="main">
         Note: This Website is still under progress, filler content only.
         <p>I am a sophomore in Computer Science Engineering. <br>I'm a tech optimist, with a genuine interest to build and ship some cool stuff.</p>
-        <p>Link to my socials: <a href="https://linkedin.com/in/kishoreprabakar24">Linkedin </a> <a href="https://leetcode.com/u/KishorePrabakar/">Leetcode </a> <a href="https://x.com/kishore_pr24">Twitter(X) </a> <a href="https://github.com/kishoreprabakar">Github </a></p>
+        <p>Link to my socials: <a href="https://linkedin.com/in/kishoreprabakar24">Linkedin </a> <a href="https://leetcode.com/u/KishorePrabakar/">Leetcode </a> <a href="https://x.com/kishore_pr24">Twitter (X)</a>
         <a href="./progress.html"> Progress Tracker </a>
     </div>
 
@@ -271,14 +314,30 @@
                 closePopup();
             }
         });
+
+        // Dark mode toggle functionality
+        const toggleModeBtn = document.getElementById('toggleModeBtn');
+        function setMode(isLight) {
+            if (isLight) {
+                document.body.classList.add('light-mode');
+                toggleModeBtn.textContent = "🌙 Dark Mode";
+            } else {
+                document.body.classList.remove('light-mode');
+                toggleModeBtn.textContent = "☀️ Light Mode";
+            }
+        }
+        toggleModeBtn.addEventListener('click', function() {
+            const isCurrentlyLight = document.body.classList.contains('light-mode');
+            setMode(!isCurrentlyLight);
+            // Optionally persist mode
+            localStorage.setItem('site-mode', !isCurrentlyLight ? 'light' : 'dark');
+        });
+        // Initialize on page load
+        (function() {
+            const savedMode = localStorage.getItem('site-mode');
+            if (savedMode === 'light') setMode(true);
+            else setMode(false);
+        })();
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
