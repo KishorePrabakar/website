@@ -1,4 +1,4 @@
-﻿// Smooth scroll
+﻿// Smooth scroll for anchor links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener('click', function(e) {
     e.preventDefault();
@@ -28,4 +28,4 @@ toggle.addEventListener('click', () => {
 });
 
 // Console vibe
-console.log('%c portfolio vibe loaded 🚀', 'color:#14b8a6; font-size:14px; font-weight:bold;');
+console.log('%c portfolio vibe loading... 🚀', 'color:#14b8a6; font-size:16px; font-weight:bold;');

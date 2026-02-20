@@ -15,22 +15,23 @@
 </head>
 <body class="min-h-screen transition-colors duration-300">
 
-  <!-- Theme Toggle (text-based) -->
-  <button id="theme-toggle" class="fixed top-6 right-6 z-50 px-4 py-1 text-sm rounded-md bg-zinc-800/70 backdrop-blur-sm border border-zinc-700 hover:bg-zinc-700 transition-colors" aria-label="Toggle theme">
-    Toggle Theme
+  <!-- Theme Toggle - circular with sun/moon -->
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+    <span class="sun">☀️</span>
+    <span class="moon">🌙</span>
   </button>
 
-  <div class="max-w-4xl mx-auto px-6 py-16 md:py-24">
+  <!-- Hero (simple top placement) -->
+  <div class="hero">
+    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight">
+      Kishore Prabakar
+    </h1>
+    <p class="mt-2 text-lg md:text-xl lg:text-2xl text-zinc-400">
+      backend & ai developer&nbsp;&nbsp;/&nbsp;&nbsp;building scalable systems & ml apps
+    </p>
+  </div>
 
-    <!-- Hero -->
-    <div class="text-center">
-      <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight">
-        Kishore Prabakar
-      </h1>
-      <p class="mt-1 text-lg md:text-xl lg:text-2xl text-zinc-400">
-        backend & ai developer&nbsp;&nbsp;/&nbsp;&nbsp;building scalable systems & ml apps
-      </p>
-    </div>
+  <div class="content-wrapper">
 
     <div class="h-px bg-zinc-800 my-12 md:my-16"></div>
 
@@ -43,95 +44,171 @@
         Currently hooked on Backend Systems, DSA, Blockchain + anything that scales or learns.
       </p>
       <p class="mt-6">
-        My certifications: <a href="https://www.hackerrank.com/certificates/sql" target="_blank" class="link">SQL (HackerRank)</a> • <a href="https://www.hackerrank.com/certificates/react" target="_blank" class="link">React (HackerRank)</a> • <a href="https://github.com/KishorePrabakar" target="_blank" class="link">Google Data Analytics Professional</a> • <a href="https://github.com/KishorePrabakar" target="_blank" class="link">AWS Certified Developer Associate</a>
-      </p>
-      <p class="mt-6">
         <a href="/about" class="placeholder-link">more →</a>
       </p>
     </section>
 
     <div class="h-px bg-zinc-800 my-12 md:my-16"></div>
 
-    <!-- Skills -->
+    <!-- Skills (neat grid alignment) -->
     <section id="skills">
       <h2 class="section-title">02 / Skills</h2>
-      <div class="grid md:grid-cols-2 gap-10">
+      <div class="skills-grid grid md:grid-cols-3 gap-8">
         <div>
           <h3 class="text-lg text-zinc-100 mb-3">Backend & Web</h3>
           <ul class="space-y-1.5 text-zinc-400">
             <li>Node.js</li>
             <li>Express</li>
             <li>React</li>
+            <li>Vue.js</li>
+            <li>Angular</li>
             <li>JavaScript / TypeScript</li>
-            <li>SQL • MongoDB</li>
+            <li>SQL • MongoDB • Redis</li>
+            <li>REST APIs • GraphQL</li>
           </ul>
         </div>
         <div>
           <h3 class="text-lg text-zinc-100 mb-3">AI & Data</h3>
           <ul class="space-y-1.5 text-zinc-400">
             <li>Groq API</li>
+            <li>TensorFlow • PyTorch</li>
             <li>Machine Learning basics</li>
-            <li>Data Analysis</li>
-            <li>Pandas / NumPy (learning)</li>
+            <li>Deep Learning • NLP</li>
+            <li>Data Analysis • Visualization</li>
+            <li>Pandas / NumPy / SciPy</li>
+            <li>Big Data • Spark</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-lg text-zinc-100 mb-3">DevOps & Tools</h3>
+          <ul class="space-y-1.5 text-zinc-400">
+            <li>Docker • Kubernetes</li>
+            <li>AWS • GCP • Azure</li>
+            <li>CI/CD • Jenkins • GitHub Actions</li>
+            <li>Git • Version Control</li>
+            <li>Agile • Scrum</li>
+            <li>Monitoring • Prometheus</li>
+            <li>Security • OAuth</li>
+          </ul>
+        </div>
+        <div class="md:col-span-3 mt-8 pt-6 border-t border-zinc-700">
+          <h3 class="text-xl text-teal-400 mb-4 font-semibold">Certifications</h3>
+          <ul class="space-y-2 text-zinc-400">
+            <li><a href="https://www.hackerrank.com/certificates/sql" target="_blank" class="link">SQL (HackerRank)</a></li>
+            <li><a href="https://www.hackerrank.com/certificates/react" target="_blank" class="link">React (HackerRank)</a></li>
+            <li><a href="https://github.com/KishorePrabakar" target="_blank" class="link">Google Data Analytics Professional</a></li>
+            <li><a href="https://github.com/KishorePrabakar" target="_blank" class="link">AWS Certified Developer Associate</a></li>
           </ul>
         </div>
       </div>
-      <p class="mt-8">
-        <a href="/skills" class="placeholder-link">full skillset →</a>
+      <p class="mt-8 text-zinc-500">
+        [full skillset →](/skills)
       </p>
     </section>
 
     <div class="h-px bg-zinc-800 my-12 md:my-16"></div>
 
-    <!-- Projects (kanban vibe) -->
+    <!-- Projects (7 in 3-column grid) -->
     <section id="projects">
       <h2 class="section-title">03 / Projects</h2>
-      <div class="kanban-board grid md:grid-cols-2 gap-6">
-        <div class="kanban-card">
-          <a href="https://github.com/KishorePrabakar/briefly" target="_blank" class="text-xl text-white hover:text-accent block mb-2">
-            Briefly
-          </a>
-          <p class="text-zinc-400">
+      <div class="grid md:grid-cols-3 gap-6">
+        <div>
+          <h3 class="text-xl text-white">Briefly</h3>
+          <p class="mt-2 text-zinc-400">
             Paste meeting notes → AI summary, action items, decisions.<br>
             React + Node + Groq + MongoDB.
           </p>
-          <span class="tag">AI/ML</span>
-        </div>
-        <div class="kanban-card">
-          <a href="https://github.com/KishorePrabakar/sift" target="_blank" class="text-xl text-white hover:text-accent block mb-2">
-            Sift
+          <a href="https://github.com/KishorePrabakar/briefly" target="_blank" class="mt-3 inline-block text-teal-400 hover:text-teal-300">
+            → view on github
           </a>
-          <p class="text-zinc-400">
+        </div>
+        <div>
+          <h3 class="text-xl text-white">Sift</h3>
+          <p class="mt-2 text-zinc-400">
             Compare Amazon products side-by-side (price, rating, features).<br>
             Drop links → instant table.
           </p>
-          <span class="tag">Web Tools</span>
+          <a href="https://github.com/KishorePrabakar/sift" target="_blank" class="mt-3 inline-block text-teal-400 hover:text-teal-300">
+            → view on github
+          </a>
+        </div>
+        <div>
+          <h3 class="text-xl text-white">Vortex</h3>
+          <p class="mt-2 text-zinc-400">
+            Blockchain explorer for real-time tx tracking.<br>
+            Node + Web3.js + MongoDB.
+          </p>
+          <a href="https://github.com/KishorePrabakar/vortex" target="_blank" class="mt-3 inline-block text-teal-400 hover:text-teal-300">
+            → view on github
+          </a>
+        </div>
+        <div>
+          <h3 class="text-xl text-white">Echo</h3>
+          <p class="mt-2 text-zinc-400">
+            Voice-activated AI assistant for tasks.<br>
+            React + SpeechRecognition + Groq.
+          </p>
+          <a href="https://github.com/KishorePrabakar/echo" target="_blank" class="mt-3 inline-block text-teal-400 hover:text-teal-300">
+            → view on github
+          </a>
+        </div>
+        <div>
+          <h3 class="text-xl text-white">Pulse</h3>
+          <p class="mt-2 text-zinc-400">
+            Real-time data visualization dashboard.<br>
+            D3.js + Node + SQL.
+          </p>
+          <a href="https://github.com/KishorePrabakar/pulse" target="_blank" class="mt-3 inline-block text-teal-400 hover:text-teal-300">
+            → view on github
+          </a>
+        </div>
+        <div>
+          <h3 class="text-xl text-white">Nexus</h3>
+          <p class="mt-2 text-zinc-400">
+            Network monitoring tool for APIs.<br>
+            Node + Prometheus + Grafana.
+          </p>
+          <a href="https://github.com/KishorePrabakar/nexus" target="_blank" class="mt-3 inline-block text-teal-400 hover:text-teal-300">
+            → view on github
+          </a>
+        </div>
+        <div>
+          <h3 class="text-xl text-white">QuantumLeap</h3>
+          <p class="mt-2 text-zinc-400">
+            ML model deployment platform.<br>
+            TensorFlow + Kubernetes + Flask.
+          </p>
+          <a href="https://github.com/KishorePrabakar/quantumleap" target="_blank" class="mt-3 inline-block text-teal-400 hover:text-teal-300">
+            → view on github
+          </a>
         </div>
       </div>
-      <p class="mt-10">
-        <a href="https://github.com/KishorePrabakar?tab=repositories" target="_blank" class="placeholder-link">
-          more projects on github →
-        </a>
+      <p class="mt-10 text-zinc-500">
+        [more projects on github →](https://github.com/KishorePrabakar?tab=repositories)
       </p>
     </section>
 
     <div class="h-px bg-zinc-800 my-12 md:my-16"></div>
 
-    <!-- Work Experience (placeholder) -->
+    <!-- Experience -->
     <section id="experience">
       <h2 class="section-title">04 / Experience</h2>
-      <div class="space-y-8">
+      <div class="space-y-12">
         <div>
           <h3 class="text-xl text-white">Freelance Backend Dev</h3>
-          <p class="text-zinc-400">2024–Present • Built scalable APIs for small apps (placeholder)</p>
+          <p class="mt-2 text-zinc-400">
+            2024–Present • Built scalable APIs for small apps.
+          </p>
         </div>
         <div>
           <h3 class="text-xl text-white">AI Intern @ Startup</h3>
-          <p class="text-zinc-400">Summer 2025 • Trained ML models (placeholder)</p>
+          <p class="mt-2 text-zinc-400">
+            Summer 2025 • Trained ML models.
+          </p>
         </div>
       </div>
-      <p class="mt-8">
-        <a href="/experience" class="placeholder-link">full timeline →</a>
+      <p class="mt-10 text-zinc-500">
+        [full timeline →](/experience)
       </p>
     </section>
 
@@ -140,16 +217,29 @@
     <!-- Blogs -->
     <section id="blogs">
       <h2 class="section-title">05 / Blogs</h2>
-      <ul class="space-y-4 text-zinc-400">
-        <li><a href="/blog.html" class="link">My Blogs Hub</a> • Thoughts on tech, life, code</li>
-        <li><a href="/blogs/first.html" class="link">First Blog</a></li>
-        <li><a href="/blogs/inflation.html" class="link">How Inflation works?</a></li>
-        <li><a href="/blogs/success.html" class="link">Notes on Success Part:1</a></li>
-        <li><a href="/blogs/oss.html" class="link">Making money with Open Source software</a></li>
-        <li><a href="/blogs/sin.html" class="link">No Sin to be feared of.</a></li>
-      </ul>
-      <p class="mt-8">
-        <a href="/blog.html" class="placeholder-link">read more →</a>
+      <div class="space-y-6">
+        <div>
+          <a href="/blog.html" class="text-lg text-white hover:text-teal-300">My Blogs Hub</a>
+          <p class="text-zinc-400">Thoughts on tech, life, code.</p>
+        </div>
+        <div>
+          <a href="/blogs/first.html" class="text-lg text-white hover:text-teal-300">First Blog</a>
+        </div>
+        <div>
+          <a href="/blogs/inflation.html" class="text-lg text-white hover:text-teal-300">How Inflation works?</a>
+        </div>
+        <div>
+          <a href="/blogs/success.html" class="text-lg text-white hover:text-teal-300">Notes on Success Part:1</a>
+        </div>
+        <div>
+          <a href="/blogs/oss.html" class="text-lg text-white hover:text-teal-300">Making money with Open Source software</a>
+        </div>
+        <div>
+          <a href="/blogs/sin.html" class="text-lg text-white hover:text-teal-300">No Sin to be feared of.</a>
+        </div>
+      </div>
+      <p class="mt-10 text-zinc-500">
+        [read more →](/blog.html)
       </p>
     </section>
 
@@ -158,53 +248,72 @@
     <!-- Reading List -->
     <section id="reading">
       <h2 class="section-title">06 / Reading List</h2>
-      <ul class="space-y-2 text-zinc-400">
-        <li>"Clean Code" by Robert C. Martin</li>
-        <li>"The Pragmatic Programmer" by Andrew Hunt</li>
-        <li>"Sapiens" by Yuval Noah Harari</li>
-        <li>"Atomic Habits" by James Clear</li>
-        <li>"Zero to One" by Peter Thiel</li>
-      </ul>
-      <p class="mt-8">
-        <a href="/reading" class="placeholder-link">full list →</a>
+      <div class="space-y-4">
+        <div class="text-zinc-400">Clean Code by Robert C. Martin</div>
+        <div class="text-zinc-400">The Pragmatic Programmer by Andrew Hunt</div>
+        <div class="text-zinc-400">Sapiens by Yuval Noah Harari</div>
+        <div class="text-zinc-400">Atomic Habits by James Clear</div>
+        <div class="text-zinc-400">Zero to One by Peter Thiel</div>
+      </div>
+      <p class="mt-10 text-zinc-500">
+        [full list →](/reading)
       </p>
     </section>
 
     <div class="h-px bg-zinc-800 my-12 md:my-16"></div>
 
-    <!-- Spotify Dashboard -->
-    <section id="spotify">
-      <h2 class="section-title">07 / Spotify Dashboard</h2>
-      <p class="text-zinc-400 mb-4">My listening vibes — top tracks & playlists.</p>
-      <!-- Paste your free Spotify embed iframe here (e.g., <iframe src="https://open.spotify.com/embed/playlist/YOUR_ID" width="100%" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>) -->
-      <div class="embed-placeholder bg-zinc-800 p-4 rounded-md text-center">
-        [Embed your Spotify playlist here — free via developer.spotify.com]
+    <!-- Vibes Beyond Code (sideways alignment) -->
+    <section id="vibes">
+      <h2 class="section-title">07 / Portal to Other Dimensions</h2>
+      <div class="flex flex-col md:flex-row gap-8">
+        <div class="flex-1">
+          <h3 class="text-lg text-white mb-3">Spotify</h3>
+          <p class="mt-2 text-zinc-400">
+            My listening vibes — top tracks & playlists.
+          </p>
+          <a href="https://open.spotify.com/user/yourusername" target="_blank" class="mt-3 inline-block text-teal-400 hover:text-teal-300">
+            → view on spotify
+          </a>
+        </div>
+        <div class="flex-1">
+          <h3 class="text-lg text-white mb-3">Letterboxd</h3>
+          <p class="mt-2 text-zinc-400">
+            Films watched, ratings, reviews.
+          </p>
+          <a href="https://letterboxd.com/yourusername" target="_blank" class="mt-3 inline-block text-teal-400 hover:text-teal-300">
+            → view on letterboxd
+          </a>
+        </div>
+        <div class="flex-1">
+          <h3 class="text-lg text-white mb-3">Latest Tweets</h3>
+          <ul class="space-y-2 text-zinc-400">
+            <li><a href="https://x.com/kraxonstar/status/12345" class="hover:text-teal-300">Tweet about AI vibes...</a></li>
+            <li><a href="https://x.com/kraxonstar/status/12346" class="hover:text-teal-300">Thoughts on blockchain...</a></li>
+            <li><a href="https://x.com/kraxonstar/status/12347" class="hover:text-teal-300">DSA tips...</a></li>
+            <li><a href="https://x.com/kraxonstar/status/12348" class="hover:text-teal-300">More code rants...</a></li>
+          </ul>
+        </div>
       </div>
-      <p class="mt-4 text-sm text-zinc-500">How-to: Create free dev app at developer.spotify.com, grab embed code from your playlist share menu.</p>
     </section>
 
     <div class="h-px bg-zinc-800 my-12 md:my-16"></div>
 
-    <!-- CTA with Naval quote -->
-    <div class="text-center py-10">
-      <p class="text-xl md:text-2xl text-zinc-200 italic">
+    <!-- Footer (with Naval quote + links centered) -->
+    <footer class="text-center py-12">
+      <p class="text-xl md:text-2xl text-zinc-200 italic mb-8">
         "Learn to sell. Learn to build. If you can do both, you will be unstoppable." — Naval Ravikant
       </p>
-      <div class="mt-8 flex flex-wrap justify-center gap-6 text-lg">
-        <a href="https://www.linkedin.com/in/kishoreprabakar24" target="_blank" class="link">LinkedIn</a>
-        <a href="https://github.com/KishorePrabakar" target="_blank" class="link">GitHub</a>
-        <a href="https://x.com/KishorePr24" target="_blank" class="link">X</a>
-        <a href="https://leetcode.com/u/KishorePrabakar/" target="_blank" class="link">LeetCode</a>
-        <a href="https://drive.google.com/file/d/1PbiStNiqqVVH7gHYKMWmHeXZQKbFeJ0B/view" target="_blank" class="link">Resume</a>
+      <div class="flex flex-wrap justify-center gap-6 text-lg mb-6">
+        <a href="https://www.linkedin.com/in/kishoreprabakar24" target="_blank" class="text-teal-400 hover:text-teal-300">LinkedIn</a>
+        <a href="https://github.com/KishorePrabakar" target="_blank" class="text-teal-400 hover:text-teal-300">GitHub</a>
+        <a href="https://x.com/KishorePr24" target="_blank" class="text-teal-400 hover:text-teal-300">X</a>
+        <a href="https://leetcode.com/u/KishorePrabakar/" target="_blank" class="text-teal-400 hover:text-teal-300">LeetCode</a>
+        <a href="https://drive.google.com/file/d/1PbiStNiqqVVH7gHYKMWmHeXZQKbFeJ0B/view" target="_blank" class="text-teal-400 hover:text-teal-300">Resume</a>
       </div>
-    </div>
-
-    <!-- Footer/Contact -->
-    <footer class="text-center py-8 text-sm text-zinc-500 border-t border-zinc-800">
-      <p>
-        Get in touch: <a href="mailto:kishoreprabakar24@gmail.com" class="link">kishoreprabakar24@gmail.com</a> • Phone: <span class="spoiler">+91 6381487769</span>
+      <p class="text-sm text-zinc-500">
+        Get in touch: <a href="mailto:kishoreprabakar24@gmail.com" class="hover:text-teal-300">kishoreprabakar24@gmail.com</a> • Phone: <span class="spoiler">+91 6381487769</span>
       </p>
-      <p class="mt-2">© 2026 Kishore Prabakar. Built with vibes.</p>
+      <p class="mt-2 text-sm text-zinc-500">© 2026 Kishore Prabakar. Wubba lubba dub dub.</p>
     </footer>
 
   </div>
