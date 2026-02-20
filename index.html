@@ -1,345 +1,129 @@
-<!DOCTYPE html>
-<html lang="en">
+﻿<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    <title>Kishore Prabakar</title>
-    <style>
-        body{
-            font-family: ui-monospace, Menlo, Consolas, monospace;
-            font-size: 20px;
-            background-color: #000;
-            color: aqua;
-        }
-        /* Light mode toggle: white bg, green text */
-        body.light-mode {
-            background-color: #fff !important;
-            color: #008000 !important;
-        }
-        body.light-mode a, body.light-mode h1, body.light-mode h2, body.light-mode .popup-content, body.light-mode .clickable-random {
-            color: #008000 !important;
-        }
-        body.light-mode .clock,
-        body.light-mode .popup,
-        body.light-mode .popup-btn {
-            background-color: #f4f4f4 !important;
-            color: #008000 !important;
-            border-color: #008000 !important;
-        }
-        body.light-mode #main a,
-        body.light-mode h2 a {
-            color: #008000 !important;
-        }
-        body.light-mode h2 a:hover,
-        body.light-mode #main a:hover,
-        body.light-mode .clickable-random:hover {
-            color: #00b400 !important;
-        }
-        body.light-mode .popup-btn:hover {
-            background-color: #008000 !important;
-            color: #fff !important;
-        }
-        h1{
-            text-align: center;
-            margin: 50px;
-        }
-        h2{
-            text-align: center;
-            margin: 50px;
-        }
-        h2 a{
-            color: aqua;
-            text-decoration: none;
-        }
-        h2 a:hover{
-            transition: color 0.3s ease;
-            color: #fff;
-        }
-        #main{
-            font-size: 18px;
-            margin-top: 50px;
-            margin-left: 75px;
-            padding: 5px;
-        }
-        #main a{
-            color: #fff;
-            text-decoration: none;
-        }
-        #main a:hover{
-            color: yellow;
-            transition: color 0.3s ease;
-        }
-        .clock {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            font-family: 'Courier New', monospace;
-            color: #00ffff;
-            font-size: 14px;
-            text-align: right;
-            background-color: rgba(0, 0, 0, 0.8);
-            padding: 10px;
-            border-radius: 4px;
-        }
-        .time {
-            font-weight: bold;
-            font-size: 16px;
-        }
-        .date {
-            font-size: 12px;
-            margin-top: 2px;
-        }
-        /* Popup Styles */
-        .popup-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-        }
-        .popup {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #111;
-            border: 2px solid #00ffff;
-            padding: 30px;
-            border-radius: 8px;
-            max-width: 500px;
-            width: 80%;
-            text-align: center;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
-        }
-        .popup h3 {
-            color: #00ffff;
-            margin-top: 0;
-            font-size: 1.2em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .popup-content {
-            color: #00ffff;
-            font-size: 1.1em;
-            line-height: 1.6;
-            margin: 20px 0;
-            font-style: italic;
-        }
-        .popup-buttons {
-            margin-top: 25px;
-        }
-        .popup-btn {
-            background-color: transparent;
-            color: #00ffff;
-            border: 1px solid #00ffff;
-            padding: 8px 16px;
-            margin: 0 10px;
-            cursor: pointer;
-            font-family: 'Courier New', monospace;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
-        .popup-btn:hover {
-            background-color: #00ffff;
-            color: #000;
-        }
-        .clickable-random {
-            cursor: pointer;
-            transition: color 0.3s ease;
-            color: aqua;
-        }
-        .clickable-random:hover {
-            color: #fff;
-        }
-        /* Dark mode toggle button */
-        .toggle-mode-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: transparent;
-            color: aqua;
-            border: 2px solid aqua;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            z-index: 2000;
-            transition: background 0.3s, color 0.3s, border 0.3s;
-        }
-        .toggle-mode-btn:hover {
-            background: aqua;
-            color: #000;
-        }
-        body.light-mode .toggle-mode-btn {
-            background: #fff;
-            color: #008000;
-            border-color: #008000;
-        }
-        body.light-mode .toggle-mode-btn:hover {
-            background: #008000;
-            color: #fff;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kishore Prabakar — Backend & AI</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- Keep your existing favicons / manifest if you want PWA -->
+  <link rel="icon" href="favicon.ico" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="manifest" href="site.webmanifest" />
 </head>
-<body>
-    <!-- Dark mode toggle button -->
-    <button class="toggle-mode-btn" id="toggleModeBtn" aria-label="Toggle dark/light mode">☀️ Light Mode</button>
+<body class="bg-zinc-950 text-zinc-300 font-mono min-h-screen">
 
-    <h1>Hello, I'm <u>Kishore Prabakar</u>.</h1>
-    <h2><a href="blog.html">Blog</a> - <a href="https://drive.google.com/file/d/1PbiStNiqqVVH7gHYKMWmHeXZQKbFeJ0B/view?usp=sharing">Resume</a> - <span class="clickable-random" onclick="openPopup()">Random Quote/Fact</span></h2>
-    
-    <div id="main">
-        Note: This Website is still under progress, filler content only.
-        <p>I am a sophomore in Computer Science Engineering. <br>I'm a tech optimist, with a genuine interest to build and ship some cool stuff.</p>
-        <p>Link to my socials: <a href="https://linkedin.com/in/kishoreprabakar24">Linkedin </a> <a href="https://leetcode.com/u/KishorePrabakar/">Leetcode </a> <a href="https://x.com/kishore_pr24">Twitter (X)</a>
-        <a href="./progress.html"> Progress Tracker </a>
-    </div>
+  <div class="max-w-4xl mx-auto px-6 py-20 md:py-32">
 
-    <!-- Popup HTML -->
-    <div class="popup-overlay" id="popupOverlay">
-        <div class="popup">
-            <h3 id="popupTitle">Random Quote</h3>
-            <div class="popup-content" id="popupContent">
-                Loading...
-            </div>
-            <div class="popup-buttons">
-                <button class="popup-btn" onclick="generateNewContent()">New Quote</button>
-                <button class="popup-btn" onclick="toggleContentType()">Switch to Facts</button>
-                <button class="popup-btn" onclick="closePopup()">Close</button>
-            </div>
+    <!-- Hero -->
+    <h1 class="text-4xl md:text-6xl font-bold text-white tracking-tight">
+      Kishore Prabakar
+    </h1>
+    <p class="mt-3 text-xl md:text-2xl text-zinc-400">
+      backend & ai developer&nbsp;&nbsp;/&nbsp;&nbsp;building scalable systems & ml apps
+    </p>
+
+    <div class="h-px bg-zinc-800 my-16"></div>
+
+    <!-- About -->
+    <section id="about">
+      <h2 class="text-2xl text-white mb-6">01 / About</h2>
+      <p class="text-lg leading-relaxed">
+        Hey, I'm Kishore — sophomore @ V.S.B. Engineering College (CSE '27).  
+        Tech optimist. I build backend systems, play with AI/ML, and ship stuff that actually works.  
+        Currently hooked on Groq, Node.js, React + anything that scales or learns.
+      </p>
+      <p class="mt-6">
+        IBM Data Analyst cert • SQL & React (HackerRank) • solving problems on LeetCode
+      </p>
+      <p class="mt-6 text-zinc-500">
+        [more →](/about) <!-- placeholder – later make real page if wanted -->
+      </p>
+    </section>
+
+    <div class="h-px bg-zinc-800 my-16"></div>
+
+    <!-- Skills -->
+    <section id="skills">
+      <h2 class="text-2xl text-white mb-6">02 / Skills</h2>
+      <div class="grid md:grid-cols-2 gap-10">
+        <div>
+          <h3 class="text-lg text-zinc-100 mb-3">Backend & Web</h3>
+          <ul class="space-y-1.5 text-zinc-400">
+            <li>Node.js</li>
+            <li>Express</li>
+            <li>React</li>
+            <li>JavaScript / TypeScript</li>
+            <li>SQL • MongoDB</li>
+          </ul>
         </div>
+        <div>
+          <h3 class="text-lg text-zinc-100 mb-3">AI & Data</h3>
+          <ul class="space-y-1.5 text-zinc-400">
+            <li>Groq API</li>
+            <li>Machine Learning basics</li>
+            <li>Data Analysis</li>
+            <li>Pandas / NumPy (learning)</li>
+          </ul>
+        </div>
+      </div>
+      <p class="mt-8 text-zinc-500">
+        [full skillset →](/skills)
+      </p>
+    </section>
+
+    <div class="h-px bg-zinc-800 my-16"></div>
+
+    <!-- Projects -->
+    <section id="projects">
+      <h2 class="text-2xl text-white mb-6">03 / Projects</h2>
+      <div class="space-y-12">
+        <div>
+          <h3 class="text-xl text-white">Briefly</h3>
+          <p class="mt-2 text-zinc-400">
+            Paste meeting notes → AI summary, action items, decisions.  
+            React + Node + Groq + MongoDB.
+          </p>
+          <a href="https://github.com/KishorePrabakar/briefly" target="_blank" class="mt-3 inline-block text-teal-400 hover:text-teal-300">
+            → view on github
+          </a>
+        </div>
+        <div>
+          <h3 class="text-xl text-white">Sift</h3>
+          <p class="mt-2 text-zinc-400">
+            Compare Amazon products side-by-side (price, rating, features).  
+            Drop links → instant table.
+          </p>
+          <a href="https://github.com/KishorePrabakar/sift" target="_blank" class="mt-3 inline-block text-teal-400 hover:text-teal-300">
+            → view on github
+          </a>
+        </div>
+      </div>
+      <p class="mt-10 text-zinc-500">
+        [more projects on github →](https://github.com/KishorePrabakar?tab=repositories)
+      </p>
+    </section>
+
+    <div class="h-px bg-zinc-800 my-16"></div>
+
+    <!-- CTA -->
+    <div class="text-center py-10">
+      <p class="text-xl md:text-2xl text-zinc-200">
+        Ready to build something cool?
+      </p>
+      <div class="mt-8 flex flex-wrap justify-center gap-6 text-lg">
+        <a href="https://www.linkedin.com/in/kishoreprabakar24" target="_blank" class="text-teal-400 hover:text-teal-300">LinkedIn</a>
+        <a href="https://github.com/KishorePrabakar" target="_blank" class="text-teal-400 hover:text-teal-300">GitHub</a>
+        <a href="https://x.com/KishorePr24" target="_blank" class="text-teal-400 hover:text-teal-300">X</a>
+        <a href="https://leetcode.com/u/KishorePrabakar/" target="_blank" class="text-teal-400 hover:text-teal-300">LeetCode</a>
+        <a href="https://drive.google.com/file/d/1PbiStNiqqVVH7gHYKMWmHeXZQKbFeJ0B/view" target="_blank" class="text-teal-400 hover:text-teal-300">Resume</a>
+      </div>
     </div>
-    
-    <div class="clock">
-        <div class="time" id="time"></div>
-        <div class="date" id="date"></div>
-    </div>
 
-    <script>
-        // Clock functionality
-        function updateClock() {
-            const now = new Date();
-           
-            const timeString = now.toLocaleTimeString('en-US', {
-                hour12: true,
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
-           
-            const dateString = now.toLocaleDateString('en-US', {
-                weekday: 'short',
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-            });
-           
-            document.getElementById('time').textContent = timeString;
-            document.getElementById('date').textContent = dateString;
-        }
-       
-        updateClock();
-        setInterval(updateClock, 1000);
+  </div>
 
-        // Popup functionality
-        const quotes = [
-            "The best time to plant a tree was 20 years ago. The second best time is now. - Chinese Proverb",
-            "Code is like humor. When you have to explain it, it's bad. - Cory House",
-            "First, solve the problem. Then, write the code. - John Johnson",
-            "Experience is the name everyone gives to their mistakes. - Oscar Wilde",
-            "In order to be irreplaceable, one must always be different. - Coco Chanel",
-            "The only way to do great work is to love what you do. - Steve Jobs",
-            "Innovation distinguishes between a leader and a follower. - Steve Jobs",
-            "The future belongs to those who believe in the beauty of their dreams. - Eleanor Roosevelt",
-            "It is during our darkest moments that we must focus to see the light. - Aristotle",
-            "Success is not final, failure is not fatal: it is the courage to continue that counts. - Winston Churchill"
-        ];
-
-        const facts = [
-            "The first computer bug was an actual bug - a moth trapped in a relay of Harvard's Mark II computer in 1947.",
-            "The term 'algorithm' comes from the name of Persian mathematician Al-Khwarizmi from the 9th century.",
-            "The first computer programmer was Ada Lovelace, who wrote the first algorithm in 1843.",
-            "Python was named after the British comedy group Monty Python, not the snake.",
-            "The '@' symbol was used in email addresses for the first time in 1971 by Ray Tomlinson.",
-            "The first domain name ever registered was symbolics.com on March 15, 1985.",
-            "JavaScript was created in just 10 days by Brendan Eich in 1995.",
-            "The term 'debugging' was coined by Grace Hopper when she literally removed a bug from a computer.",
-            "The first webcam was created to monitor a coffee pot at Cambridge University in 1991.",
-            "Google's original name was 'BackRub' before it was changed to Google in 1997."
-        ];
-
-        let currentMode = 'quotes';
-
-        function openPopup() {
-            document.getElementById('popupOverlay').style.display = 'block';
-            generateNewContent();
-        }
-
-        function closePopup() {
-            document.getElementById('popupOverlay').style.display = 'none';
-        }
-
-        function generateNewContent() {
-            const titleEl = document.getElementById('popupTitle');
-            const contentEl = document.getElementById('popupContent');
-            
-            if (currentMode === 'quotes') {
-                titleEl.textContent = 'Random Quote';
-                const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-                contentEl.textContent = `"${randomQuote}"`;
-            } else {
-                titleEl.textContent = 'Random Tech Fact';
-                const randomFact = facts[Math.floor(Math.random() * facts.length)];
-                contentEl.textContent = randomFact;
-            }
-        }
-
-        function toggleContentType() {
-            currentMode = currentMode === 'quotes' ? 'facts' : 'quotes';
-            const switchBtn = document.querySelector('.popup-btn:nth-child(2)');
-            switchBtn.textContent = currentMode === 'quotes' ? 'Switch to Facts' : 'Switch to Quotes';
-            generateNewContent();
-        }
-
-        // Close popup when clicking outside
-        document.getElementById('popupOverlay').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closePopup();
-            }
-        });
-
-        // Dark mode toggle functionality
-        const toggleModeBtn = document.getElementById('toggleModeBtn');
-        function setMode(isLight) {
-            if (isLight) {
-                document.body.classList.add('light-mode');
-                toggleModeBtn.textContent = "🌙 Dark Mode";
-            } else {
-                document.body.classList.remove('light-mode');
-                toggleModeBtn.textContent = "☀️ Light Mode";
-            }
-        }
-        toggleModeBtn.addEventListener('click', function() {
-            const isCurrentlyLight = document.body.classList.contains('light-mode');
-            setMode(!isCurrentlyLight);
-            // Optionally persist mode
-            localStorage.setItem('site-mode', !isCurrentlyLight ? 'light' : 'dark');
-        });
-        // Initialize on page load
-        (function() {
-            const savedMode = localStorage.getItem('site-mode');
-            if (savedMode === 'light') setMode(true);
-            else setMode(false);
-        })();
-    </script>
+  <script src="script.js"></script>
 </body>
 </html>
-
-
