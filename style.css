@@ -1,32 +1,167 @@
-﻿/* Dark minimalist vibe – inspired by clean portfolios */
-
-body {
-  background: #0a0a0a;
-  color: #d4d4d4;
-  font-family: 'JetBrains Mono', monospace;
-  line-height: 1.6;
-  margin: 0;
+﻿:root {
+  --bg: #0a0a0a;
+  --text: #d4d4d4;
+  --text-dim: #a1a1aa;
+  --text-light: #71717a;
+  --accent: #14b8a6;
+  --accent-hover: #5eead4;
+  --border: #27272a;
+  --white: #ffffff;
 }
 
-a {
-  color: #14b8a6;
-  text-decoration: none;
+[data-theme="light"] {
+  --bg: #ffffff;
+  --text: #1f2937;
+  --text-dim: #4b5563;
+  --text-light: #6b7280;
+  --accent: #22c55e;
+  --accent-hover: #86efac;
+  --border: #e5e7eb;
+  --white: #1f2937; /* Flip for light mode text */
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.7;
+  margin: 100px;
+  transition: background-color 0.4s, color 0.4s;
+  cursor: default;
+}
+
+a, button {
+  cursor: pointer;
+}
+
+/* Hero */
+h1 {
+  margin-bottom: 0.25rem;
+  color: var(--white);
+}
+
+/* Section title underline */
+.section-title {
+  position: relative;
+  display: inline-block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 1.25rem;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -0.35rem;
+  left: 0;
+  width: 120%;
+  height: 2px;
+  background: linear-gradient(to right, var(--accent), transparent);
+  opacity: 0.4;
+}
+
+/* Placeholder links */
+.placeholder-link {
+  color: var(--text-light);
+  font-weight: 500;
+  position: relative;
   transition: color 0.2s;
 }
 
-a:hover {
-  color: #5eead4;
+.placeholder-link:hover {
+  color: var(--accent);
 }
 
-h1, h2, h3 {
-  color: white;
+.placeholder-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1.5px;
+  background: var(--accent);
+  transition: width 0.3s ease;
 }
 
-ul {
-  list-style: none;
-  padding: 0;
+.placeholder-link:hover::after {
+  width: 100%;
 }
 
+/* General links */
+.link {
+  color: var(--accent);
+  transition: color 0.2s;
+}
+
+.link:hover {
+  color: var(--accent-hover);
+}
+
+/* Easter egg link */
+.easter-egg {
+  color: inherit;
+  text-decoration: none;
+  cursor: default;
+}
+
+.easter-egg:hover {
+  color: inherit;
+  text-decoration: none;
+  cursor: default;
+}
+
+/* Kanban projects */
+.kanban-board {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.kanban-card {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--bg);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: box-shadow 0.2s;
+}
+
+.kanban-card:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.tag {
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--border);
+  color: var(--text-light);
+  font-size: 0.75rem;
+  border-radius: 9999px;
+  opacity: 0.8;
+}
+
+/* Spoiler for phone */
+.spoiler {
+  background: var(--bg);
+  color: var(--bg);
+  transition: color 0.2s;
+}
+
+.spoiler:hover {
+  color: var(--text);
+}
+
+/* Dividers */
+.h-px {
+  height: 1px;
+}
+
+.bg-zinc-800 {
+  background-color: var(--border);
+}
+
+/* Grid */
 .grid {
   display: grid;
 }
@@ -37,13 +172,7 @@ ul {
   }
 }
 
-/* Add more custom styles if needed – kept minimal */
-h-px {
-  height: 1px;
-}
-.bg-zinc-800 {
-  background-color: #27272a;
-}
-.text-teal-400 {
-  color: #14b8a6;
+/* Theme toggle */
+#theme-toggle {
+  color: var(--text-dim);
 }

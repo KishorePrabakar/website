@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="scroll-smooth" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -8,46 +8,53 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-  <!-- Keep your existing favicons / manifest if you want PWA -->
+  <!-- Favicons -->
   <link rel="icon" href="favicon.ico" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="manifest" href="site.webmanifest" />
 </head>
-<body class="bg-zinc-950 text-zinc-300 font-mono min-h-screen">
+<body class="min-h-screen transition-colors duration-300">
 
-  <div class="max-w-4xl mx-auto px-6 py-20 md:py-32">
+  <!-- Theme Toggle (text-based) -->
+  <button id="theme-toggle" class="fixed top-6 right-6 z-50 px-4 py-1 text-sm rounded-md bg-zinc-800/70 backdrop-blur-sm border border-zinc-700 hover:bg-zinc-700 transition-colors" aria-label="Toggle theme">
+    Toggle Theme
+  </button>
+
+  <div class="max-w-4xl mx-auto px-6 py-16 md:py-24">
 
     <!-- Hero -->
-    <h1 class="text-4xl md:text-6xl font-bold text-white tracking-tight">
-      Kishore Prabakar
-    </h1>
-    <p class="mt-3 text-xl md:text-2xl text-zinc-400">
-      backend & ai developer&nbsp;&nbsp;/&nbsp;&nbsp;building scalable systems & ml apps
-    </p>
+    <div class="text-center">
+      <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight">
+        Kishore Prabakar
+      </h1>
+      <p class="mt-1 text-lg md:text-xl lg:text-2xl text-zinc-400">
+        backend & ai developer&nbsp;&nbsp;/&nbsp;&nbsp;building scalable systems & ml apps
+      </p>
+    </div>
 
-    <div class="h-px bg-zinc-800 my-16"></div>
+    <div class="h-px bg-zinc-800 my-12 md:my-16"></div>
 
     <!-- About -->
     <section id="about">
-      <h2 class="text-2xl text-white mb-6">01 / About</h2>
+      <h2 class="section-title">01 / About</h2>
       <p class="text-lg leading-relaxed">
-        Hey, I'm Kishore — sophomore @ V.S.B. Engineering College (CSE '27).  
-        Tech optimist. I build backend systems, play with AI/ML, and ship stuff that actually works.  
-        Currently hooked on Groq, Node.js, React + anything that scales or learns.
+        Hey, I'm Kishore — sophomore @ <a class="easter-egg" href="https://vsbec.edu.in/">V.S.B. Engineering College</a> (CSE '27).<br>
+        Tech optimist. I build backend systems, play with AI/ML, and ship stuff that actually works.<br>
+        Currently hooked on Backend Systems, DSA, Blockchain + anything that scales or learns.
       </p>
       <p class="mt-6">
-        IBM Data Analyst cert • SQL & React (HackerRank) • solving problems on LeetCode
+        My certifications: <a href="https://www.hackerrank.com/certificates/sql" target="_blank" class="link">SQL (HackerRank)</a> • <a href="https://www.hackerrank.com/certificates/react" target="_blank" class="link">React (HackerRank)</a> • <a href="https://github.com/KishorePrabakar" target="_blank" class="link">Google Data Analytics Professional</a> • <a href="https://github.com/KishorePrabakar" target="_blank" class="link">AWS Certified Developer Associate</a>
       </p>
-      <p class="mt-6 text-zinc-500">
-        [more →](/about) <!-- placeholder – later make real page if wanted -->
+      <p class="mt-6">
+        <a href="/about" class="placeholder-link">more →</a>
       </p>
     </section>
 
-    <div class="h-px bg-zinc-800 my-16"></div>
+    <div class="h-px bg-zinc-800 my-12 md:my-16"></div>
 
     <!-- Skills -->
     <section id="skills">
-      <h2 class="text-2xl text-white mb-6">02 / Skills</h2>
+      <h2 class="section-title">02 / Skills</h2>
       <div class="grid md:grid-cols-2 gap-10">
         <div>
           <h3 class="text-lg text-zinc-100 mb-3">Backend & Web</h3>
@@ -69,58 +76,136 @@
           </ul>
         </div>
       </div>
-      <p class="mt-8 text-zinc-500">
-        [full skillset →](/skills)
+      <p class="mt-8">
+        <a href="/skills" class="placeholder-link">full skillset →</a>
       </p>
     </section>
 
-    <div class="h-px bg-zinc-800 my-16"></div>
+    <div class="h-px bg-zinc-800 my-12 md:my-16"></div>
 
-    <!-- Projects -->
+    <!-- Projects (kanban vibe) -->
     <section id="projects">
-      <h2 class="text-2xl text-white mb-6">03 / Projects</h2>
-      <div class="space-y-12">
-        <div>
-          <h3 class="text-xl text-white">Briefly</h3>
-          <p class="mt-2 text-zinc-400">
-            Paste meeting notes → AI summary, action items, decisions.  
+      <h2 class="section-title">03 / Projects</h2>
+      <div class="kanban-board grid md:grid-cols-2 gap-6">
+        <div class="kanban-card">
+          <a href="https://github.com/KishorePrabakar/briefly" target="_blank" class="text-xl text-white hover:text-accent block mb-2">
+            Briefly
+          </a>
+          <p class="text-zinc-400">
+            Paste meeting notes → AI summary, action items, decisions.<br>
             React + Node + Groq + MongoDB.
           </p>
-          <a href="https://github.com/KishorePrabakar/briefly" target="_blank" class="mt-3 inline-block text-teal-400 hover:text-teal-300">
-            → view on github
-          </a>
+          <span class="tag">AI/ML</span>
         </div>
-        <div>
-          <h3 class="text-xl text-white">Sift</h3>
-          <p class="mt-2 text-zinc-400">
-            Compare Amazon products side-by-side (price, rating, features).  
+        <div class="kanban-card">
+          <a href="https://github.com/KishorePrabakar/sift" target="_blank" class="text-xl text-white hover:text-accent block mb-2">
+            Sift
+          </a>
+          <p class="text-zinc-400">
+            Compare Amazon products side-by-side (price, rating, features).<br>
             Drop links → instant table.
           </p>
-          <a href="https://github.com/KishorePrabakar/sift" target="_blank" class="mt-3 inline-block text-teal-400 hover:text-teal-300">
-            → view on github
-          </a>
+          <span class="tag">Web Tools</span>
         </div>
       </div>
-      <p class="mt-10 text-zinc-500">
-        [more projects on github →](https://github.com/KishorePrabakar?tab=repositories)
+      <p class="mt-10">
+        <a href="https://github.com/KishorePrabakar?tab=repositories" target="_blank" class="placeholder-link">
+          more projects on github →
+        </a>
       </p>
     </section>
 
-    <div class="h-px bg-zinc-800 my-16"></div>
+    <div class="h-px bg-zinc-800 my-12 md:my-16"></div>
 
-    <!-- CTA -->
+    <!-- Work Experience (placeholder) -->
+    <section id="experience">
+      <h2 class="section-title">04 / Experience</h2>
+      <div class="space-y-8">
+        <div>
+          <h3 class="text-xl text-white">Freelance Backend Dev</h3>
+          <p class="text-zinc-400">2024–Present • Built scalable APIs for small apps (placeholder)</p>
+        </div>
+        <div>
+          <h3 class="text-xl text-white">AI Intern @ Startup</h3>
+          <p class="text-zinc-400">Summer 2025 • Trained ML models (placeholder)</p>
+        </div>
+      </div>
+      <p class="mt-8">
+        <a href="/experience" class="placeholder-link">full timeline →</a>
+      </p>
+    </section>
+
+    <div class="h-px bg-zinc-800 my-12 md:my-16"></div>
+
+    <!-- Blogs -->
+    <section id="blogs">
+      <h2 class="section-title">05 / Blogs</h2>
+      <ul class="space-y-4 text-zinc-400">
+        <li><a href="/blog.html" class="link">My Blogs Hub</a> • Thoughts on tech, life, code</li>
+        <li><a href="/blogs/first.html" class="link">First Blog</a></li>
+        <li><a href="/blogs/inflation.html" class="link">How Inflation works?</a></li>
+        <li><a href="/blogs/success.html" class="link">Notes on Success Part:1</a></li>
+        <li><a href="/blogs/oss.html" class="link">Making money with Open Source software</a></li>
+        <li><a href="/blogs/sin.html" class="link">No Sin to be feared of.</a></li>
+      </ul>
+      <p class="mt-8">
+        <a href="/blog.html" class="placeholder-link">read more →</a>
+      </p>
+    </section>
+
+    <div class="h-px bg-zinc-800 my-12 md:my-16"></div>
+
+    <!-- Reading List -->
+    <section id="reading">
+      <h2 class="section-title">06 / Reading List</h2>
+      <ul class="space-y-2 text-zinc-400">
+        <li>"Clean Code" by Robert C. Martin</li>
+        <li>"The Pragmatic Programmer" by Andrew Hunt</li>
+        <li>"Sapiens" by Yuval Noah Harari</li>
+        <li>"Atomic Habits" by James Clear</li>
+        <li>"Zero to One" by Peter Thiel</li>
+      </ul>
+      <p class="mt-8">
+        <a href="/reading" class="placeholder-link">full list →</a>
+      </p>
+    </section>
+
+    <div class="h-px bg-zinc-800 my-12 md:my-16"></div>
+
+    <!-- Spotify Dashboard -->
+    <section id="spotify">
+      <h2 class="section-title">07 / Spotify Dashboard</h2>
+      <p class="text-zinc-400 mb-4">My listening vibes — top tracks & playlists.</p>
+      <!-- Paste your free Spotify embed iframe here (e.g., <iframe src="https://open.spotify.com/embed/playlist/YOUR_ID" width="100%" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>) -->
+      <div class="embed-placeholder bg-zinc-800 p-4 rounded-md text-center">
+        [Embed your Spotify playlist here — free via developer.spotify.com]
+      </div>
+      <p class="mt-4 text-sm text-zinc-500">How-to: Create free dev app at developer.spotify.com, grab embed code from your playlist share menu.</p>
+    </section>
+
+    <div class="h-px bg-zinc-800 my-12 md:my-16"></div>
+
+    <!-- CTA with Naval quote -->
     <div class="text-center py-10">
-      <p class="text-xl md:text-2xl text-zinc-200">
-        Ready to build something cool?
+      <p class="text-xl md:text-2xl text-zinc-200 italic">
+        "Learn to sell. Learn to build. If you can do both, you will be unstoppable." — Naval Ravikant
       </p>
       <div class="mt-8 flex flex-wrap justify-center gap-6 text-lg">
-        <a href="https://www.linkedin.com/in/kishoreprabakar24" target="_blank" class="text-teal-400 hover:text-teal-300">LinkedIn</a>
-        <a href="https://github.com/KishorePrabakar" target="_blank" class="text-teal-400 hover:text-teal-300">GitHub</a>
-        <a href="https://x.com/KishorePr24" target="_blank" class="text-teal-400 hover:text-teal-300">X</a>
-        <a href="https://leetcode.com/u/KishorePrabakar/" target="_blank" class="text-teal-400 hover:text-teal-300">LeetCode</a>
-        <a href="https://drive.google.com/file/d/1PbiStNiqqVVH7gHYKMWmHeXZQKbFeJ0B/view" target="_blank" class="text-teal-400 hover:text-teal-300">Resume</a>
+        <a href="https://www.linkedin.com/in/kishoreprabakar24" target="_blank" class="link">LinkedIn</a>
+        <a href="https://github.com/KishorePrabakar" target="_blank" class="link">GitHub</a>
+        <a href="https://x.com/KishorePr24" target="_blank" class="link">X</a>
+        <a href="https://leetcode.com/u/KishorePrabakar/" target="_blank" class="link">LeetCode</a>
+        <a href="https://drive.google.com/file/d/1PbiStNiqqVVH7gHYKMWmHeXZQKbFeJ0B/view" target="_blank" class="link">Resume</a>
       </div>
     </div>
+
+    <!-- Footer/Contact -->
+    <footer class="text-center py-8 text-sm text-zinc-500 border-t border-zinc-800">
+      <p>
+        Get in touch: <a href="mailto:kishoreprabakar24@gmail.com" class="link">kishoreprabakar24@gmail.com</a> • Phone: <span class="spoiler">+91 6381487769</span>
+      </p>
+      <p class="mt-2">© 2026 Kishore Prabakar. Built with vibes.</p>
+    </footer>
 
   </div>
 
