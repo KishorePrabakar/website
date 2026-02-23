@@ -1,46 +1,421 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inflation</title>
-    <link rel="stylesheet" href="/styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kishore Prabakar — Backend & AI</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="favicon.ico" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="manifest" href="site.webmanifest" />
 </head>
-<body>
-    <div id="head">How does Inflation work?</div>
-    <div id="sub">18 June 2025</div>
-    <p>
-        <u>Standard definition:</u> Inflation is a sustained increase in the general price level of goods and services in an economy over a 
-        period of time. It is measured as an annual percentage increase in a basket of goods and services.
-        <br><br>
-        So what does that mean? Say you and I have <i>$100</i> each. Also, let us assume that we are stranded in an empty island.
-        This situation makes us the only citizens to make any financial transactions.
-        <br><br>
-        Now, we have <i>$100</i> each and that sums up to a total of <i>$200</i> of money available in the island. Adding to the delusion, assume that there are two PS5 consoles in the island. Given that both the consoles are 
-        of same value, we can set a price tag of them to be $100 each. </p>
-        <br><br>
-        <center>
-            <img src="inflation/1.png" alt="island" height="350px">
-        </center>
-        <br><br>
-        <p>
-        Then comes the fun part. Say multiple PS5s are spawning across the island. What will happen to the price of each PS5 every time a new one appears? Well, if you did the math right, the price of PS5 would go down.
-        Meaning, <i><u>the surplus the stock, the lesser the unit value.</u></i> We can see this trend in various places like groceries, consumer goods or even manual services.
-        <center>
-            <img src="inflation/2.png" alt="morePS5s" height="350px">
-        </center></p>
-        <p>Well, now we understand how the value of products go down, but how do they go up? There can only be 2 ways
-            <br><br>
-        1. Lack of supply - if one of the two consoles get damaged or lost forever, then the value of the other one becomes $200.
-        <br>
-        2. Yes, you guessed it right - Inflation.
+<body class="min-h-screen">
 
-        <br><br>
-        If money spawns out of nowhere (<i>erhmm *the government"</i>) instead of PS5 consoles, then the Money to Stock ratio would change. As there is more money than before, and no big changes to the products, we see the increase in price of the product.
-        <center>
-            <img src="inflation/3.png" alt="island" height="350px">
-        </center>
-        </p>
-    
+  <!-- Floating theme toggle -->
+  <button id="theme-toggle" class="button-30 theme-toggle" aria-label="Toggle theme">
+    <span class="toggle-icon-wrap">
+      <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+      <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+        <circle cx="12" cy="12" r="5"/>
+        <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+    </span>
+  </button>
+
+  <div class="max-w-4xl mx-auto px-6 py-16 md:py-24">
+
+    <!-- Hero -->
+    <div class="hero-center">
+      <h1>Kishore Prabakar</h1>
+      <p class="hero-sub">backend &amp; ai developer</p>
+      <p class="hero-tag">building scalable systems &amp; ml apps</p>
+      <div class="hero-links">
+        <a href="https://www.linkedin.com/in/kishoreprabakar24" target="_blank" class="link">LinkedIn</a>
+        <span class="hero-dot">·</span>
+        <a href="https://github.com/KishorePrabakar" target="_blank" class="link">GitHub</a>
+        <span class="hero-dot">·</span>
+        <a href="https://x.com/KishorePr24" target="_blank" class="link">X</a>
+        <span class="hero-dot">·</span>
+        <a href="https://leetcode.com/u/KishorePrabakar/" target="_blank" class="link">LeetCode</a>
+        <span class="hero-dot">·</span>
+        <a href="https://drive.google.com/file/d/1PbiStNiqqVVH7gHYKMWmHeXZQKbFeJ0B/view" target="_blank" class="link">Resume</a>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- About -->
+    <section id="about">
+      <h2 class="section-title">01 / About</h2>
+      <p class="text-lg leading-relaxed">
+        Hey, I'm Kishore — third year @ <a class="easter-egg" href="https://vsbec.edu.in/">V.S.B. Engineering College</a> (IT '27).<br>
+        Tech optimist. I build backend systems, play with AI/ML, and ship stuff that actually works.<br>
+        Currently hooked on Backend Systems, DSA, Blockchain + anything that scales or learns.
+      </p>
+      <p class="mt-6">
+        <a href="/about" class="placeholder-link">more →</a>
+      </p>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- Skills -->
+    <section id="skills">
+      <h2 class="section-title">02 / Skills</h2>
+      <div class="skill-grid">
+        <div class="skill-category">
+          <h3 class="skill-cat-title">Backend</h3>
+          <div class="skill-tags">
+            <span class="skill-tag">Node.js</span>
+            <span class="skill-tag">Express</span>
+            <span class="skill-tag">REST APIs</span>
+            <span class="skill-tag">GraphQL</span>
+            <span class="skill-tag">WebSockets</span>
+            <span class="skill-tag">JWT Auth</span>
+            <span class="skill-tag">Rate Limiting</span>
+            <span class="skill-tag">Job Queues</span>
+          </div>
+        </div>
+        <div class="skill-category">
+          <h3 class="skill-cat-title">Frontend</h3>
+          <div class="skill-tags">
+            <span class="skill-tag">React</span>
+            <span class="skill-tag">JavaScript</span>
+            <span class="skill-tag">TypeScript</span>
+            <span class="skill-tag">HTML / CSS</span>
+          </div>
+        </div>
+        <div class="skill-category">
+          <h3 class="skill-cat-title">Databases</h3>
+          <div class="skill-tags">
+            <span class="skill-tag">PostgreSQL</span>
+            <span class="skill-tag">MongoDB</span>
+            <span class="skill-tag">SQLite</span>
+            <span class="skill-tag">Redis</span>
+            <span class="skill-tag">Raw SQL</span>
+          </div>
+        </div>
+        <div class="skill-category">
+          <h3 class="skill-cat-title">AI &amp; Data</h3>
+          <div class="skill-tags">
+            <span class="skill-tag">Groq API</span>
+            <span class="skill-tag">LLM Integration</span>
+            <span class="skill-tag">Embeddings</span>
+            <span class="skill-tag">RAG</span>
+            <span class="skill-tag">Pandas</span>
+            <span class="skill-tag">NumPy</span>
+            <span class="skill-tag">ML Basics</span>
+          </div>
+        </div>
+        <div class="skill-category">
+          <h3 class="skill-cat-title">Systems &amp; Tools</h3>
+          <div class="skill-tags">
+            <span class="skill-tag">Git</span>
+            <span class="skill-tag">Linux</span>
+            <span class="skill-tag">Docker</span>
+            <span class="skill-tag">CLI Design</span>
+            <span class="skill-tag">TCP / HTTP</span>
+            <span class="skill-tag">Cron Jobs</span>
+          </div>
+        </div>
+        <div class="skill-category">
+          <h3 class="skill-cat-title">Blockchain</h3>
+          <div class="skill-tags">
+            <span class="skill-tag">SHA-256</span>
+            <span class="skill-tag">Merkle Trees</span>
+            <span class="skill-tag">Blockchain basics</span>
+            <span class="skill-tag">ethers.js</span>
+            <span class="skill-tag">Solidity</span>
+          </div>
+        </div>
+      </div>
+      <div class="certs-block">
+        <h3 class="skill-cat-title">Certifications</h3>
+        <div class="certs-list">
+          <a href="https://www.hackerrank.com/certificates/sql" target="_blank" class="cert-badge">SQL — HackerRank</a>
+          <a href="https://www.hackerrank.com/certificates/react" target="_blank" class="cert-badge">React — HackerRank</a>
+          <a href="https://github.com/KishorePrabakar" target="_blank" class="cert-badge">Google Data Analytics</a>
+          <a href="https://github.com/KishorePrabakar" target="_blank" class="cert-badge">AWS Developer Associate</a>
+        </div>
+      </div>
+      <p class="mt-8">
+        <a href="/skills" class="placeholder-link">full skillset →</a>
+      </p>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- Projects -->
+    <section id="projects">
+      <h2 class="section-title">03 / Projects</h2>
+      <div class="kanban-board" id="projects-grid">
+
+        <a href="https://github.com/KishorePrabakar/briefly" target="_blank" class="kanban-card">
+          <div class="card-inner">
+            <div class="card-header">
+              <span class="project-title">Briefly</span>
+              <span class="pin-badge">pinned</span>
+            </div>
+            <p class="card-desc">Paste meeting notes → AI extracts summary, action items, and key decisions. Full auth, session history, and templated prompts.</p>
+            <div class="card-tags">
+              <span class="tag">AI/ML</span><span class="tag">React</span><span class="tag">Node.js</span><span class="tag">Groq API</span><span class="tag">MongoDB</span>
+            </div>
+          </div>
+        </a>
+
+        <a href="https://github.com/KishorePrabakar/sift" target="_blank" class="kanban-card">
+          <div class="card-inner">
+            <div class="card-header">
+              <span class="project-title">Sift</span>
+              <span class="pin-badge">pinned</span>
+            </div>
+            <p class="card-desc">Drop Amazon product links → instant side-by-side comparison table. Price, rating, and features extracted automatically.</p>
+            <div class="card-tags">
+              <span class="tag">Web Tools</span><span class="tag">Scraping</span><span class="tag">React</span><span class="tag">Express</span>
+            </div>
+          </div>
+        </a>
+
+        <a href="https://github.com/KishorePrabakar/linkvault" target="_blank" class="kanban-card">
+          <div class="card-inner">
+            <div class="card-header">
+              <span class="project-title">Link Vault</span>
+              <span class="pin-badge">pinned</span>
+            </div>
+            <p class="card-desc">Bookmarking API with auto-scraping, tag system, and full-text search. Organised link management built for developers.</p>
+            <div class="card-tags">
+              <span class="tag">Backend</span><span class="tag">Express</span><span class="tag">SQLite</span><span class="tag">Cheerio</span><span class="tag">REST</span>
+            </div>
+          </div>
+        </a>
+
+        <a href="https://github.com/KishorePrabakar/authservice" target="_blank" class="kanban-card hidden-card">
+          <div class="card-inner">
+            <div class="card-header"><span class="project-title">Auth Service</span></div>
+            <p class="card-desc">Standalone JWT microservice — register, login, refresh, revoke. Stateless auth with bcrypt and production-ready security patterns.</p>
+            <div class="card-tags">
+              <span class="tag">Backend</span><span class="tag">JWT</span><span class="tag">bcrypt</span><span class="tag">Security</span>
+            </div>
+          </div>
+        </a>
+
+        <a href="https://github.com/KishorePrabakar/ratelimiter" target="_blank" class="kanban-card hidden-card">
+          <div class="card-inner">
+            <div class="card-header"><span class="project-title">Rate Limiter</span></div>
+            <p class="card-desc">Token bucket algorithm from scratch — no libraries. Configurable Express middleware with per-route window and limit settings.</p>
+            <div class="card-tags">
+              <span class="tag">Systems</span><span class="tag">Algorithms</span><span class="tag">Middleware</span><span class="tag">Node.js</span>
+            </div>
+          </div>
+        </a>
+
+        <a href="https://github.com/KishorePrabakar/sha256" target="_blank" class="kanban-card hidden-card">
+          <div class="card-inner">
+            <div class="card-header"><span class="project-title">SHA-256 from Scratch</span></div>
+            <p class="card-desc">Pure implementation of SHA-256 using only bitwise operations. No crypto libraries. Foundational for understanding blockchain hashing.</p>
+            <div class="card-tags">
+              <span class="tag">Crypto</span><span class="tag">Bitwise Ops</span><span class="tag">Algorithms</span><span class="tag">BYO</span>
+            </div>
+          </div>
+        </a>
+
+        <a href="https://github.com/KishorePrabakar/semantic-search" target="_blank" class="kanban-card hidden-card">
+          <div class="card-inner">
+            <div class="card-header"><span class="project-title">Semantic Search</span></div>
+            <p class="card-desc">Search documents by meaning using vector embeddings. pgvector backend handles chunking and nearest-neighbour retrieval.</p>
+            <div class="card-tags">
+              <span class="tag">AI/ML</span><span class="tag">Embeddings</span><span class="tag">pgvector</span><span class="tag">RAG</span>
+            </div>
+          </div>
+        </a>
+
+        <a href="https://github.com/KishorePrabakar/blockchain" target="_blank" class="kanban-card hidden-card">
+          <div class="card-inner">
+            <div class="card-header"><span class="project-title">Blockchain from Scratch</span></div>
+            <p class="card-desc">Block creation, chain validation, proof-of-work consensus — no libraries. Pure JS to understand internals without abstraction.</p>
+            <div class="card-tags">
+              <span class="tag">Blockchain</span><span class="tag">Crypto</span><span class="tag">Algorithms</span><span class="tag">BYO</span>
+            </div>
+          </div>
+        </a>
+
+        <a href="https://github.com/KishorePrabakar/commitgen" target="_blank" class="kanban-card hidden-card">
+          <div class="card-inner">
+            <div class="card-header"><span class="project-title">Commit Message Gen</span></div>
+            <p class="card-desc">CLI tool — pipe <code>git diff</code> to an LLM, get a meaningful, structured commit message in seconds. DevTool that earns its keep.</p>
+            <div class="card-tags">
+              <span class="tag">CLI</span><span class="tag">AI/ML</span><span class="tag">LLM</span><span class="tag">DevTools</span>
+            </div>
+          </div>
+        </a>
+
+      </div>
+      <div class="projects-footer">
+        <button id="toggle-projects" class="toggle-btn">show 6 more ↓</button>
+        <a href="/projects.html" class="placeholder-link">all projects →</a>
+        <a href="https://github.com/KishorePrabakar?tab=repositories" target="_blank" class="placeholder-link">github →</a>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- Blogs -->
+    <section id="blogs">
+      <h2 class="section-title">04 / Blogs</h2>
+      <ul class="space-y-4 text-zinc-400">
+        <li><a href="/blog.html" class="link">My Blogs Hub</a> • Thoughts on tech, life, code</li>
+        <li><a href="/blogs/first.html" class="link">First Blog</a></li>
+        <li><a href="/blogs/inflation.html" class="link">How Inflation works?</a></li>
+        <li><a href="/blogs/success.html" class="link">Notes on Success Part:1</a></li>
+        <li><a href="/blogs/oss.html" class="link">Making money with Open Source software</a></li>
+        <li><a href="/blogs/sin.html" class="link">No Sin to be feared of.</a></li>
+      </ul>
+      <p class="mt-8">
+        <a href="/blog.html" class="placeholder-link">read more →</a>
+      </p>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- Reading List -->
+    <section id="reading">
+      <h2 class="section-title">05 / Reading List</h2>
+      <ul class="space-y-2 text-zinc-400">
+        <li>"Clean Code" — Robert C. Martin</li>
+        <li>"The Pragmatic Programmer" — Andrew Hunt</li>
+        <li>"Sapiens" — Yuval Noah Harari</li>
+        <li>"Atomic Habits" — James Clear</li>
+        <li>"Zero to One" — Peter Thiel</li>
+      </ul>
+      <p class="mt-8">
+        <a href="/reading" class="placeholder-link">full list →</a>
+      </p>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- Stats / Collage -->
+    <section id="stats">
+      <h2 class="section-title">06 / On the Internet</h2>
+      <p class="stats-intro">live data, pulled fresh on every visit.</p>
+
+      <div class="bento-grid">
+
+        <!-- GitHub stats card — full width top -->
+        <div class="bento-card bento-github-stats">
+          <div class="bento-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.1.82-.26.82-.58v-2.03c-3.34.72-4.04-1.6-4.04-1.6-.55-1.38-1.33-1.75-1.33-1.75-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+            GitHub
+          </div>
+          <div class="gh-stats-wrap">
+            <img
+              id="gh-stats-img"
+              src="https://github-readme-stats.vercel.app/api?username=KishorePrabakar&show_icons=true&count_private=true&hide_border=true&bg_color=00000000&title_color=e8c547&text_color=c9cdd4&icon_color=e8c547&ring_color=e8c547"
+              alt="GitHub Stats"
+              class="gh-img gh-img-stats"
+            />
+            <img
+              id="gh-streak-img"
+              src="https://github-readme-streak-stats.herokuapp.com/?user=KishorePrabakar&hide_border=true&background=00000000&ring=e8c547&fire=e8c547&currStreakLabel=e8c547&sideLabels=c9cdd4&dates=7a8290&currStreakNum=f0f2f5&sideNums=c9cdd4"
+              alt="GitHub Streak"
+              class="gh-img gh-img-streak"
+            />
+          </div>
+          <img
+            id="gh-langs-img"
+            src="https://github-readme-stats.vercel.app/api/top-langs/?username=KishorePrabakar&layout=compact&hide_border=true&bg_color=00000000&title_color=e8c547&text_color=c9cdd4&langs_count=6"
+            alt="Top Languages"
+            class="gh-img gh-img-langs"
+          />
+        </div>
+
+        <!-- LeetCode card -->
+        <div class="bento-card bento-leetcode">
+          <div class="bento-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z"/></svg>
+            LeetCode
+          </div>
+          <img
+            src="https://leetcard.jacoblin.com/KishorePrabakar?theme=dark&font=JetBrains+Mono&ext=heatmap&border=0&radius=0&bg=transparent"
+            alt="LeetCode Stats"
+            class="lc-img"
+          />
+        </div>
+
+        <!-- Chess.com card — live fetched -->
+        <a href="https://www.chess.com/member/kraxonknight" target="_blank" class="bento-card bento-chess" id="chess-card">
+          <div class="bento-label">
+            ♟ Chess.com
+            <span class="bento-live-dot" title="live data"></span>
+          </div>
+          <div id="chess-loading" class="bento-loading">fetching ratings…</div>
+          <div id="chess-content" class="chess-content" style="display:none;">
+            <div class="chess-ratings" id="chess-ratings"></div>
+            <div class="chess-record" id="chess-record"></div>
+          </div>
+          <div id="chess-error" class="bento-error" style="display:none;">couldn't load — visit profile</div>
+        </a>
+
+        <!-- Spotify placeholder -->
+        <div class="bento-card bento-spotify bento-placeholder">
+          <div class="bento-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+            Spotify
+          </div>
+          <div class="placeholder-inner">
+            <span class="placeholder-icon">🎵</span>
+            <p class="placeholder-text">now playing · top tracks</p>
+            <span class="placeholder-badge">coming soon</span>
+          </div>
+        </div>
+
+        <!-- Letterboxd placeholder -->
+        <div class="bento-card bento-letterboxd bento-placeholder">
+          <div class="bento-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M11.988 0C5.366 0 0 5.366 0 11.988 0 18.61 5.366 24 11.988 24 18.61 24 24 18.61 24 11.988 24 5.366 18.61 0 11.988 0zM7.67 15.953L5.56 12l2.11-3.953h2.346L7.906 12l2.11 3.953zm4.318 0L9.878 12l2.11-3.953h2.346L12.224 12l2.11 3.953zm4.318 0L14.196 12l2.11-3.953h2.346L16.541 12l2.11 3.953z"/></svg>
+            Letterboxd
+          </div>
+          <div class="placeholder-inner">
+            <span class="placeholder-icon">🎬</span>
+            <p class="placeholder-text">recent films · ratings</p>
+            <span class="placeholder-badge">coming soon</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- Naval quote -->
+    <div class="quote-block">
+      <a href="https://twitter.com/naval/status/1002103670400417792" target="_blank" class="quote-link" title="View original tweet">
+        <span class="quote-mark">"</span>
+        <span class="quote-text">Code and media are permissionless leverage. Build or die.</span>
+        <span class="quote-attr">— Naval Ravikant</span>
+      </a>
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <p>
+        <a href="mailto:kishoreprabakar24@gmail.com" class="link">kishoreprabakar24@gmail.com</a>
+        &nbsp;·&nbsp;
+        <span class="spoiler">+91 6381487769</span>
+      </p>
+      <p class="mt-2">© 2026 Kishore Prabakar</p>
+    </footer>
+
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>

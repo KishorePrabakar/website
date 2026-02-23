@@ -1,29 +1,91 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sin</title>
-    <link rel="stylesheet" href="/styles.css">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>don't fear becoming a sinner — Kishore Prabakar</title>
+  <link rel="stylesheet" href="/style.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body { padding-top: 0; }
+    .blog-wrap { max-width: 42rem; margin: 0 auto; padding: 5rem 1.5rem 4rem; }
+    .blog-back {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-size: 0.8rem; color: var(--text-dim); text-decoration: none;
+      margin-bottom: 2.5rem; transition: color 0.2s;
+    }
+    .blog-back:hover { color: var(--accent); }
+    .blog-title {
+      font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 700;
+      color: var(--white); line-height: 1.2; margin: 0 0 0.5rem;
+      text-transform: lowercase;
+    }
+    .blog-date {
+      font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text-light); margin-bottom: 2.5rem;
+      padding-bottom: 1.25rem; border-bottom: 1px solid var(--border);
+    }
+    .blog-body { font-size: 1rem; line-height: 1.9; color: var(--text); }
+    .blog-body p { margin: 0 0 1.5rem; }
+    .blog-body a { color: var(--accent); transition: color 0.2s; }
+    .blog-body a:hover { color: var(--accent-hover); }
+    .blog-body strong { color: var(--white); }
+    .blog-footer {
+      margin-top: 3.5rem; padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.78rem; color: var(--text-light);
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;
+    }
+  </style>
 </head>
-<body>
-    <div id="head">don't fear becoming a sinner</div>
-    <div id="sub">18 july 2025</div>
-    <p>the idea of “sin” probably started as a way to stop people from hurting each other. and that’s fine. it helped teach people to live with good values. but later, some people—like fake godmen—started using it for their own benefit. they made rules to control others and gain power.</p>
+<body class="min-h-screen">
 
-    <p>with time, the real purpose (if there was one) got lost. now, it’s just a bunch of blind rules and rituals. if you question anything or live differently, people call you a sinner. but is that fair?</p>
+  <button id="theme-toggle" class="button-30 theme-toggle" aria-label="Toggle theme">
+    <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+    <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+      <circle cx="12" cy="12" r="5"/>
+      <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+  </button>
 
-    <p>humans were wild in the beginning. they needed religion, god, heaven and hell to act better. and slowly, science and reason came in too. people changed. we became kinder. we understood what’s right and wrong without needing old stories.  
-    hurting others is wrong.  
-    hurting yourself is wrong.  
-    you don’t need a holy book to know that.</p>
+  <div class="blog-wrap">
+    <a href="/blog.html" class="blog-back">← all blogs</a>
 
-    <p>we don’t need fear of sin to be good people anymore. also, no one really knows if heaven or hell exists. but that doesn’t mean you can just do anything. real life has real consequences.  
-    you do bad things — you go to jail.  
-    you act badly in jail — things get worse.</p>
+    <h1 class="blog-title">don't fear becoming a sinner</h1>
+    <p class="blog-date">18 July 2025</p>
 
-    <p>if you give in to things like lust, greed, anger, laziness, ego, jealousy — you’ll face real problems. your health will suffer. your money will go. people will stop respecting you. even you will feel ashamed of yourself. you don’t need to wait for the afterlife to feel punishment. it’s already here.</p>
+    <div class="blog-body">
+      <p>the idea of "sin" probably started as a way to stop people from hurting each other. and that's fine. it helped teach people to live with good values. but later, some people — like fake godmen — started using it for their own benefit. they made rules to control others and gain power.</p>
 
-    <p>so build good habits. not to impress a god, but to live a better life. maybe you won’t always feel super happy — but at least you won’t hate yourself. yes, some evil people escape without punishment. they die rich and free. they’re the rare cases. even god didn’t stop them. so stop waiting for justice from above. live with your eyes open, in the real world.</p>
+      <p>with time, the real purpose (if there was one) got lost. now, it's just a bunch of blind rules and rituals. if you question anything or live differently, people call you a sinner. but is that fair?</p>
+
+      <p>humans were wild in the beginning. they needed religion, god, heaven and hell to act better. and slowly, science and reason came in too. people changed. we became kinder. we understood what's right and wrong without needing old stories.<br><br>
+      hurting others is wrong.<br>
+      hurting yourself is wrong.<br>
+      you don't need a holy book to know that.</p>
+
+      <p>we don't need fear of sin to be good people anymore. also, no one really knows if heaven or hell exists. but that doesn't mean you can just do anything. real life has real consequences.<br><br>
+      you do bad things — you go to jail.<br>
+      you act badly in jail — things get worse.</p>
+
+      <p>if you give in to things like lust, greed, anger, laziness, ego, jealousy — you'll face real problems. your health will suffer. your money will go. people will stop respecting you. even you will feel ashamed of yourself. you don't need to wait for the afterlife to feel punishment. it's already here.</p>
+
+      <p>so build good habits. not to impress a god, but to live a better life. maybe you won't always feel super happy — but at least you won't hate yourself. yes, some evil people escape without punishment. they die rich and free. they're the rare cases. even god didn't stop them. so stop waiting for justice from above. live with your eyes open, in the real world.</p>
+    </div>
+
+    <div class="blog-footer">
+      <a href="/blog.html" class="blog-back" style="margin:0;">← all blogs</a>
+      <span>© 2026 Kishore Prabakar</span>
+    </div>
+  </div>
+
+  <script src="/script.js"></script>
 </body>
 </html>

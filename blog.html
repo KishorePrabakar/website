@@ -1,49 +1,178 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KPr Blogs</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Blogs — Kishore Prabakar</title>
+  <link rel="stylesheet" href="/style.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body { padding-top: 0; }
+
+    .blog-hub-wrap {
+      max-width: 42rem;
+      margin: 0 auto;
+      padding: 5rem 1.5rem 4rem;
+    }
+
+    .hub-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      text-decoration: none;
+      margin-bottom: 2.5rem;
+      transition: color 0.2s;
+    }
+    .hub-back:hover { color: var(--accent); }
+
+    .hub-title {
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: 700;
+      color: var(--white);
+      margin: 0 0 0.35rem;
+      letter-spacing: -0.02em;
+    }
+
+    .hub-sub {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      margin: 0 0 2.5rem;
+    }
+
+    .divider { height: 1px; background: var(--border); margin: 0 0 2.5rem; }
+
+    /* Blog list */
+    .blog-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .blog-entry {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.9rem 1rem;
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.2s, transform 0.18s, box-shadow 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .blog-entry::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 2px;
+      background: var(--accent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .blog-entry:hover {
+      border-color: var(--accent);
+      transform: translateX(4px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+
+    [data-theme="light"] .blog-entry:hover {
+      box-shadow: 0 4px 16px rgba(26, 127, 75, 0.1);
+    }
+
+    .blog-entry:hover::before { opacity: 1; }
+
+    .entry-title {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: color 0.2s;
+    }
+    .blog-entry:hover .entry-title { color: var(--white); }
+
+    .entry-date {
+      font-size: 0.72rem;
+      color: var(--text-light);
+      white-space: nowrap;
+      flex-shrink: 0;
+      letter-spacing: 0.04em;
+    }
+
+    /* Footer */
+    .hub-footer {
+      margin-top: 3.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.78rem;
+      color: var(--text-light);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+  </style>
 </head>
-<style>
-    body{
-        font-family: 'Courier New', Courier, monospace;
-        font-size: 20px;
-        background-color: #000000;
-        color: aqua;
-    }
-    h1{
-        text-align: center;
-        margin: 50px;
-    }
-   
-    #list{
-        margin-left: 75px;
-        a{
-            text-decoration: none;
-            color: aqua;
-        }
-        a:hover{
-            color: yellow;
-        }
-        font-size: 28px;
-    }
-</style>
-<body>
-    <div>
-        <a href="index.html">← home</a>
-    <center>
-        <h1>My Blogs</h1>
-    </center>
-    <div id="list">
-        <ul>
-            <li><a href="/blogs/first.html">First Blog</a></li>
-            <li><a href="/blogs/inflation.html">How Inflation works?</a></li>
-            <li><a href="/blogs/success.html">Notes on Success Part:1</a></li>
-            <li><a href="/blogs/oss.html">Making money with Open Source software</a></li>
-            <li><a href="/blogs/sin.html">No Sin to be feared of.</a></li>
-        </ul>
+<body class="min-h-screen">
+
+  <button id="theme-toggle" class="button-30 theme-toggle" aria-label="Toggle theme">
+    <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+    <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+      <circle cx="12" cy="12" r="5"/>
+      <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+  </button>
+
+  <div class="blog-hub-wrap">
+    <a href="/" class="hub-back">← home</a>
+
+    <h1 class="hub-title">Blogs</h1>
+    <p class="hub-sub">thoughts on tech, money, life, and everything in between.</p>
+
+    <div class="divider"></div>
+
+    <div class="blog-list">
+      <a href="/blogs/first.html" class="blog-entry">
+        <span class="entry-title">First Blog</span>
+        <span class="entry-date">19 Jun 2025</span>
+      </a>
+      <a href="/blogs/inflation.html" class="blog-entry">
+        <span class="entry-title">How does Inflation work?</span>
+        <span class="entry-date">18 Jun 2025</span>
+      </a>
+      <a href="/blogs/success.html" class="blog-entry">
+        <span class="entry-title">Success isn't just about hard work.</span>
+        <span class="entry-date">22 Jun 2025</span>
+      </a>
+      <a href="/blogs/oss.html" class="blog-entry">
+        <span class="entry-title">How Open Source companies make money?</span>
+        <span class="entry-date">11 Jul 2025</span>
+      </a>
+      <a href="/blogs/sin.html" class="blog-entry">
+        <span class="entry-title">don't fear becoming a sinner</span>
+        <span class="entry-date">18 Jul 2025</span>
+      </a>
     </div>
-    
+
+    <div class="hub-footer">
+      <a href="/" class="hub-back" style="margin:0;">← home</a>
+      <span>© 2026 Kishore Prabakar</span>
+    </div>
+  </div>
+
+  <script src="/script.js"></script>
 </body>
 </html>
