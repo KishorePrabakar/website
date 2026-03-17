@@ -4,93 +4,24 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Kishore Prabakar — Backend & AI</title>
+  <meta name="description" content="Kishore Prabakar — backend & AI developer. Building scalable systems, ML apps, and things that work." />
+  <meta name="author" content="Kishore Prabakar" />
+  <meta property="og:title" content="Kishore Prabakar — Backend & AI" />
+  <meta property="og:description" content="Backend & AI developer. Scalable systems, ML apps, and things that work." />
+  <meta property="og:url" content="https://kishorepr.vercel.app" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Kishore Prabakar — Backend & AI" />
+  <meta name="twitter:description" content="Backend & AI developer. Scalable systems, ML apps, and things that work." />
+  <meta name="twitter:site" content="@KishorePr24" />
   <link rel="stylesheet" href="style.css"/>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="icon" href="favicon.ico" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="manifest" href="site.webmanifest" />
-
-  <style>
-    /* ── Spotify ─────────────────────────────────────── */
-    .spotify-embed-wrap img {
-      width: 100%; max-width: 100%; height: auto;
-      border-radius: 6px; display: block;
-    }
-
-    /* ── Letterboxd ──────────────────────────────────── */
-    a.bento-letterboxd:hover { border-color: var(--accent); }
-    .lb-films { display: flex; gap: 0.5rem; margin-bottom: 0.8rem; flex-wrap: wrap; }
-    .lb-film {
-      flex: 1; min-width: 60px;
-      background: var(--tag-bg); border: 1px solid var(--border);
-      border-radius: 4px; padding: 0.55rem 0.4rem 0.5rem;
-      text-align: center; transition: border-color 0.2s;
-    }
-    a.bento-letterboxd:hover .lb-film { border-color: var(--border-hover); }
-    .lb-film-title {
-      font-size: 0.62rem; font-weight: 600; color: var(--text);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 0.2rem;
-    }
-    .lb-film-year  { font-size: 0.58rem; color: var(--text-light); margin-bottom: 0.25rem; }
-    .lb-stars      { color: #e8c547; font-size: 0.6rem; }
-    .lb-footer {
-      display: flex; align-items: center; gap: 0.5rem;
-      font-size: 0.7rem; color: var(--text-dim);
-      border-top: 1px solid var(--border); padding-top: 0.6rem;
-    }
-    .lb-count { margin-left: auto; font-size: 0.64rem; color: var(--text-light); }
-
-    /* ── Wakatime ────────────────────────────────────── */
-    .waka-total { font-size: 1.55rem; font-weight: 700; color: var(--accent); line-height: 1; margin-bottom: 0.15rem; }
-    .waka-sub   { font-size: 0.68rem; color: var(--text-light); margin-bottom: 0.85rem; }
-    .waka-langs { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 0.75rem; }
-    .waka-lang-row  { display: flex; align-items: center; gap: 0.55rem; }
-    .waka-lang-name { font-size: 0.7rem; color: var(--text-dim); width: 68px; flex-shrink: 0; }
-    .waka-bar-wrap  { flex: 1; height: 4px; background: var(--tag-bg); border-radius: 2px; overflow: hidden; }
-    .waka-bar-fill  { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; transition: width 0.7s ease; }
-    .waka-pct       { font-size: 0.64rem; color: var(--text-light); width: 34px; text-align: right; flex-shrink: 0; }
-    .waka-divider   { height: 1px; background: var(--border); margin: 0.65rem 0; }
-    .waka-daily-label { font-size: 0.62rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--text-light); margin-bottom: 0.5rem; }
-    .waka-days    { display: flex; align-items: flex-end; gap: 4px; height: 44px; }
-    .waka-day-col { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1; }
-    .waka-day-bar { width: 100%; background: var(--accent); border-radius: 2px 2px 0 0; opacity: 0.7; min-height: 2px; transition: height 0.6s ease; }
-    .waka-day-lbl { font-size: 0.54rem; color: var(--text-light); }
-    .waka-powered { font-size: 0.6rem; color: var(--text-light); margin-top: 0.5rem; }
-
-    /* ── Duolingo ────────────────────────────────────── */
-    .duo-embed-wrap img {
-      width: 100%; max-width: 100%; height: auto;
-      border-radius: 6px; display: block;
-    }
-
-    /* ── LeetCode live bars ──────────────────────────── */
-    .lc-stats { display: flex; flex-direction: column; gap: 0.65rem; }
-    .lc-row   { display: flex; align-items: center; gap: 0.7rem; }
-    .lc-difficulty {
-      font-size: 0.63rem; font-weight: 700;
-      letter-spacing: 0.07em; text-transform: uppercase;
-      width: 50px; flex-shrink: 0;
-    }
-    .lc-easy   { color: #00b8a3; }
-    .lc-medium { color: #ffc01e; }
-    .lc-hard   { color: #ef4743; }
-    .lc-bar-wrap { flex: 1; height: 5px; background: var(--tag-bg); border-radius: 3px; overflow: hidden; }
-    .lc-bar-fill { height: 100%; border-radius: 3px; width: 0%; transition: width 0.7s ease; }
-    .lc-bar-fill.easy   { background: #00b8a3; }
-    .lc-bar-fill.medium { background: #ffc01e; }
-    .lc-bar-fill.hard   { background: #ef4743; }
-    .lc-count { font-size: 0.7rem; color: var(--text-dim); width: 38px; text-align: right; flex-shrink: 0; }
-    .lc-totals {
-      display: flex; gap: 1rem;
-      border-top: 1px solid var(--border);
-      padding-top: 0.65rem; margin-top: 0.75rem; flex-wrap: wrap;
-    }
-    .lc-total-stat { display: flex; flex-direction: column; gap: 0.06rem; }
-    .lc-total-val  { font-size: 0.95rem; font-weight: 700; color: var(--accent); }
-    .lc-total-lbl  { font-size: 0.59rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.06em; }
-  </style>
 </head>
 <body class="min-h-screen">
 
@@ -109,30 +40,43 @@
     </span>
   </button>
 
+  <!-- Floating nav pill -->
+  <nav class="float-nav" id="float-nav" aria-label="Section navigation">
+    <a href="#about"    class="float-nav-item" data-section="about"    title="About">01</a>
+    <a href="#skills"   class="float-nav-item" data-section="skills"   title="Skills">02</a>
+    <a href="#projects" class="float-nav-item" data-section="projects" title="Projects">03</a>
+    <a href="#blogs"    class="float-nav-item" data-section="blogs"    title="Blogs">04</a>
+    <a href="#reading"  class="float-nav-item" data-section="reading"  title="Reading">05</a>
+    <a href="#stats"    class="float-nav-item" data-section="stats"    title="Stats">06</a>
+  </nav>
+
   <div class="max-w-4xl mx-auto px-6 py-16 md:py-24">
 
     <!-- Hero -->
-    <div class="hero-center">
-      <h1>Kishore Prabakar</h1>
-      <p class="hero-sub">backend &amp; ai developer</p>
+    <div class="hero-center reveal-hero">
+      <div class="hero-greeting">hey, i'm</div>
+      <h1 class="hero-name">Kishore Prabakar</h1>
+      <p class="hero-sub">
+        <span class="typewriter-prefix">$ </span><span id="typewriter-text"></span><span class="typewriter-cursor">▋</span>
+      </p>
       <p class="hero-tag">building scalable systems &amp; ml apps</p>
       <div class="hero-links">
-        <a href="https://www.linkedin.com/in/kishoreprabakar24" target="_blank" class="link">LinkedIn</a>
+        <a href="https://www.linkedin.com/in/kishoreprabakar24" target="_blank" rel="noopener noreferrer" class="link">LinkedIn</a>
         <span class="hero-dot">·</span>
-        <a href="https://github.com/KishorePrabakar" target="_blank" class="link">GitHub</a>
+        <a href="https://github.com/KishorePrabakar" target="_blank" rel="noopener noreferrer" class="link">GitHub</a>
         <span class="hero-dot">·</span>
-        <a href="https://x.com/KishorePr24" target="_blank" class="link">X</a>
+        <a href="https://x.com/KishorePr24" target="_blank" rel="noopener noreferrer" class="link">X</a>
         <span class="hero-dot">·</span>
-        <a href="https://leetcode.com/u/KishorePrabakar/" target="_blank" class="link">LeetCode</a>
+        <a href="https://leetcode.com/u/KishorePrabakar/" target="_blank" rel="noopener noreferrer" class="link">LeetCode</a>
         <span class="hero-dot">·</span>
-        <a href="https://drive.google.com/file/d/1PbiStNiqqVVH7gHYKMWmHeXZQKbFeJ0B/view" target="_blank" class="link">Resume</a>
+        <a href="https://drive.google.com/file/d/1PbiStNiqqVVH7gHYKMWmHeXZQKbFeJ0B/view" target="_blank" rel="noopener noreferrer" class="link">Resume</a>
       </div>
     </div>
 
     <div class="divider"></div>
 
     <!-- About -->
-    <section id="about">
+    <section id="about" class="reveal">
       <h2 class="section-title">01 / About</h2>
       <p class="text-lg leading-relaxed">
                 Hey, I'm Kishore — backend & AI developer from <a class="easter-egg" href="https://vsbec.edu.in/">VSBEC-IT</a>.
@@ -145,7 +89,7 @@
     <div class="divider"></div>
 
     <!-- Skills -->
-    <section id="skills">
+    <section id="skills" class="reveal">
       <h2 class="section-title">02 / Skills</h2>
       <div class="skill-grid">
         <div class="skill-category">
@@ -201,10 +145,10 @@
       <div class="certs-block">
         <h3 class="skill-cat-title">Certifications</h3>
         <div class="certs-list">
-          <a href="https://www.hackerrank.com/certificates/sql" target="_blank" class="cert-badge">SQL — HackerRank</a>
-          <a href="https://www.hackerrank.com/certificates/react" target="_blank" class="cert-badge">React — HackerRank</a>
-          <a href="https://github.com/KishorePrabakar" target="_blank" class="cert-badge">Google Data Analytics</a>
-          <a href="https://github.com/KishorePrabakar" target="_blank" class="cert-badge">AWS Developer Associate</a>
+          <a href="https://www.hackerrank.com/certificates/sql" target="_blank" rel="noopener noreferrer" class="cert-badge">SQL — HackerRank</a>
+          <a href="https://www.hackerrank.com/certificates/react" target="_blank" rel="noopener noreferrer" class="cert-badge">React — HackerRank</a>
+          <a href="https://github.com/KishorePrabakar" target="_blank" rel="noopener noreferrer" class="cert-badge">Google Data Analytics</a>
+          <a href="https://github.com/KishorePrabakar" target="_blank" rel="noopener noreferrer" class="cert-badge">AWS Developer Associate</a>
         </div>
       </div>
       <p class="mt-8"><a href="/skills" class="placeholder-link">full skillset →</a></p>
@@ -213,11 +157,11 @@
     <div class="divider"></div>
 
     <!-- Projects -->
-    <section id="projects">
+    <section id="projects" class="reveal">
       <h2 class="section-title">03 / Projects</h2>
       <div class="kanban-board" id="projects-grid">
 
-        <a href="https://github.com/KishorePrabakar/briefly" target="_blank" class="kanban-card">
+        <a href="https://github.com/KishorePrabakar/briefly" target="_blank" rel="noopener noreferrer" class="kanban-card">
           <div class="card-inner">
             <div class="card-header"><span class="project-title">Briefly</span><span class="pin-badge">pinned</span></div>
             <p class="card-desc">Paste meeting notes → AI extracts summary, action items, and key decisions. Full auth, session history, and templated prompts.</p>
@@ -225,7 +169,7 @@
           </div>
         </a>
 
-        <a href="https://github.com/KishorePrabakar/sift" target="_blank" class="kanban-card">
+        <a href="https://github.com/KishorePrabakar/sift" target="_blank" rel="noopener noreferrer" class="kanban-card">
           <div class="card-inner">
             <div class="card-header"><span class="project-title">Sift</span><span class="pin-badge">pinned</span></div>
             <p class="card-desc">Drop Amazon product links → instant side-by-side comparison table. Price, rating, and features extracted automatically.</p>
@@ -233,7 +177,7 @@
           </div>
         </a>
 
-        <a href="https://github.com/KishorePrabakar/linkvault" target="_blank" class="kanban-card">
+        <a href="https://github.com/KishorePrabakar/linkvault" target="_blank" rel="noopener noreferrer" class="kanban-card">
           <div class="card-inner">
             <div class="card-header"><span class="project-title">Link Vault</span><span class="pin-badge">pinned</span></div>
             <p class="card-desc">Bookmarking API with auto-scraping, tag system, and full-text search. Organised link management built for developers.</p>
@@ -300,157 +244,233 @@
     <div class="divider"></div>
 
     <!-- Blogs -->
-    <section id="blogs">
+    <section id="blogs" class="reveal">
       <h2 class="section-title">04 / Blogs</h2>
-      <ul class="space-y-4 text-zinc-400">
-        <li><a href="/blog.html" class="link">My Blogs Hub</a> • Thoughts on tech, life, code</li>
-        <li><a href="/blogs/first.html" class="link">First Blog</a></li>
-        <li><a href="/blogs/inflation.html" class="link">How Inflation works?</a></li>
-        <li><a href="/blogs/success.html" class="link">Notes on Success Part:1</a></li>
-        <li><a href="/blogs/oss.html" class="link">Making money with Open Source software</a></li>
-        <li><a href="/blogs/sin.html" class="link">No Sin to be feared of.</a></li>
-      </ul>
-      <p class="mt-8"><a href="/blog.html" class="placeholder-link">read more →</a></p>
+      <div class="blog-list">
+
+        <a href="/blogs/sin.html" class="blog-card">
+          <div class="blog-card-meta">
+            <span class="blog-tag">philosophy</span>
+            <span class="blog-date-label">18 Jul 2025</span>
+          </div>
+          <h3 class="blog-card-title">No Sin to be feared of.</h3>
+          <p class="blog-card-teaser">the idea of "sin" probably started as a way to stop people from hurting each other. but later, some people started using it for control and power.</p>
+        </a>
+
+        <a href="/blogs/oss.html" class="blog-card">
+          <div class="blog-card-meta">
+            <span class="blog-tag">business</span>
+            <span class="blog-date-label">11 Jul 2025</span>
+          </div>
+          <h3 class="blog-card-title">Making money with Open Source software</h3>
+          <p class="blog-card-teaser">At first I thought open source is all charity. Maybe it came up with the "Free and Open Source" titles. Turns out it's a lot more interesting.</p>
+        </a>
+
+        <a href="/blogs/success.html" class="blog-card">
+          <div class="blog-card-meta">
+            <span class="blog-tag">self</span>
+            <span class="blog-date-label">22 Jun 2025</span>
+          </div>
+          <h3 class="blog-card-title">Notes on Success — Part 1</h3>
+          <p class="blog-card-teaser">Not luck, not "set clear goals". Self-interpreting what actually moves the needle over a long period of grit and drive.</p>
+        </a>
+
+        <a href="/blogs/first.html" class="blog-card">
+          <div class="blog-card-meta">
+            <span class="blog-tag">misc</span>
+            <span class="blog-date-label">19 Jun 2025</span>
+          </div>
+          <h3 class="blog-card-title">First Blog</h3>
+          <p class="blog-card-teaser">Just a vibe.</p>
+        </a>
+
+      </div>
+      <p class="mt-8"><a href="/blog.html" class="placeholder-link">all posts →</a></p>
     </section>
 
     <div class="divider"></div>
 
     <!-- Reading List -->
-    <section id="reading">
+    <section id="reading" class="reveal">
       <h2 class="section-title">05 / Reading List</h2>
-      <ul class="space-y-2 text-zinc-400">
-        <li>"Clean Code" — Robert C. Martin</li>
-        <li>"The Pragmatic Programmer" — Andrew Hunt</li>
-        <li>"Sapiens" — Yuval Noah Harari</li>
-        <li>"Atomic Habits" — James Clear</li>
-        <li>"Zero to One" — Peter Thiel</li>
-      </ul>
+      <div class="books-grid">
+
+        <div class="book-card book-read">
+          <div class="book-status">read</div>
+          <div class="book-info">
+            <span class="book-title">Clean Code</span>
+            <span class="book-author">Robert C. Martin</span>
+          </div>
+          <p class="book-take">Changed how I name variables. Genuinely.</p>
+        </div>
+
+        <div class="book-card book-read">
+          <div class="book-status">read</div>
+          <div class="book-info">
+            <span class="book-title">The Pragmatic Programmer</span>
+            <span class="book-author">Andrew Hunt</span>
+          </div>
+          <p class="book-take">DRY, broken windows, tracer bullets — concepts that stuck.</p>
+        </div>
+
+        <div class="book-card book-read">
+          <div class="book-status">read</div>
+          <div class="book-info">
+            <span class="book-title">Sapiens</span>
+            <span class="book-author">Yuval Noah Harari</span>
+          </div>
+          <p class="book-take">Made me question everything I assumed was "natural" about society.</p>
+        </div>
+
+        <div class="book-card book-read">
+          <div class="book-status">read</div>
+          <div class="book-info">
+            <span class="book-title">Atomic Habits</span>
+            <span class="book-author">James Clear</span>
+          </div>
+          <p class="book-take">Systems > goals. The 1% compounding idea is annoyingly true.</p>
+        </div>
+
+        <div class="book-card book-reading">
+          <div class="book-status reading-status">reading</div>
+          <div class="book-info">
+            <span class="book-title">Zero to One</span>
+            <span class="book-author">Peter Thiel</span>
+          </div>
+          <p class="book-take">Competition is for losers. Still processing what that means.</p>
+        </div>
+
+      </div>
       <p class="mt-8"><a href="/reading" class="placeholder-link">full list →</a></p>
     </section>
 
     <div class="divider"></div>
 
     <!-- Stats -->
-    <section id="stats">
+    <section id="stats" class="reveal">
       <h2 class="section-title">06 / On the Internet</h2>
-      <p class="stats-intro">live data, pulled fresh on every visit.</p>
+      <p class="stats-intro">a slice of my digital life · live on every load</p>
 
-      <div class="bento-grid">
+      <div class="bento">
 
-        <!-- GitHub — full width -->
-        <div class="bento-card bento-github-stats">
-          <div class="bento-label">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.1.82-.26.82-.58v-2.03c-3.34.72-4.04-1.6-4.04-1.6-.55-1.38-1.33-1.75-1.33-1.75-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        <!-- A: GitHub — heatmap, spans 2 cols -->
+        <a href="https://github.com/KishorePrabakar" target="_blank" rel="noopener noreferrer" class="tile tile-github">
+          <div class="tile-chip">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.1.82-.26.82-.58v-2.03c-3.34.72-4.04-1.6-4.04-1.6-.55-1.38-1.33-1.75-1.33-1.75-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
             GitHub
           </div>
-          <div class="gh-stats-wrap">
-            <img id="gh-stats-img"
-              src="https://github-readme-stats.vercel.app/api?username=KishorePrabakar&show_icons=true&count_private=true&hide_border=true&bg_color=00000000&title_color=e8c547&text_color=c9cdd4&icon_color=e8c547&ring_color=e8c547"
-              alt="GitHub Stats" class="gh-img gh-img-stats"/>
-            <img id="gh-streak-img"
-              src="https://github-readme-streak-stats.herokuapp.com/?user=KishorePrabakar&hide_border=true&background=00000000&ring=e8c547&fire=e8c547&currStreakLabel=e8c547&sideLabels=c9cdd4&dates=7a8290&currStreakNum=f0f2f5&sideNums=c9cdd4"
-              alt="GitHub Streak" class="gh-img gh-img-streak"/>
+          <div class="gh-top">
+            <img id="gh-streak-img" loading="lazy"
+              src="https://github-readme-streak-stats.herokuapp.com/?user=KishorePrabakar&hide_border=true&background=00000000&ring=e8c547&fire=e8c547&currStreakLabel=e8c547&sideLabels=4e5560&dates=4e5560&currStreakNum=f0f2f5&sideNums=c9cdd4&stroke=1e2126"
+              alt="GitHub Streak" class="gh-streak"/>
           </div>
-          <img id="gh-langs-img"
-            src="https://github-readme-stats.vercel.app/api/top-langs/?username=KishorePrabakar&layout=compact&hide_border=true&bg_color=00000000&title_color=e8c547&text_color=c9cdd4&langs_count=6"
-            alt="Top Languages" class="gh-img gh-img-langs"/>
+          <img loading="lazy"
+            src="https://ghchart.rshah.org/e8c547/KishorePrabakar"
+            alt="Contribution chart" class="gh-heatmap"/>
+          <div class="gh-footer">contribution activity · github.com/KishorePrabakar</div>
+        </a>
+
+        <!-- B: WakaTime -->
+        <a href="https://wakatime.com/@kraxonyanks" target="_blank" rel="noopener noreferrer" class="tile tile-waka" id="waka-card">
+          <div class="tile-chip">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28a.485.485 0 0 1-.894.08l-2.35-4.07-1.94 2.08a.488.488 0 0 1-.88-.28V11.5l-3.93-2.1a.487.487 0 0 1 .09-.9l10.45-4.02a.487.487 0 0 1 .425.741z"/></svg>
+            WakaTime <span class="live-pip"></span>
+          </div>
+          <div id="waka-loading" class="tile-loading">—</div>
+          <div id="waka-body" style="display:none">
+            <div class="waka-hero-num" id="waka-total">—</div>
+            <div class="waka-hero-sub" id="waka-sub">this week</div>
+            <div class="waka-bars" id="waka-langs"></div>
+            <div class="waka-chart" id="waka-days"></div>
+          </div>
+          <div id="waka-error" style="display:none" class="tile-err">offline</div>
+        </a>
+
+        <!-- C: LeetCode donut -->
+        <a href="https://leetcode.com/u/KishorePrabakar/" target="_blank" rel="noopener noreferrer" class="tile tile-lc" id="lc-card">
+          <div class="tile-chip">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z"/></svg>
+            LeetCode <span class="live-pip"></span>
+          </div>
+          <div id="lc-loading" class="tile-loading">—</div>
+          <div id="lc-body" style="display:none">
+            <div class="lc-donut-wrap">
+              <svg class="lc-donut" viewBox="0 0 100 100">
+                <circle class="lc-track"      cx="50" cy="50" r="38"/>
+                <circle class="lc-arc lc-easy"   cx="50" cy="50" r="38" id="arc-easy"   stroke-dasharray="0 239" stroke-dashoffset="0"/>
+                <circle class="lc-arc lc-medium" cx="50" cy="50" r="38" id="arc-medium" stroke-dasharray="0 239" stroke-dashoffset="0"/>
+                <circle class="lc-arc lc-hard"   cx="50" cy="50" r="38" id="arc-hard"   stroke-dasharray="0 239" stroke-dashoffset="0"/>
+              </svg>
+              <div class="lc-center">
+                <span class="lc-big-num" id="lc-solved-num">—</span>
+                <span class="lc-big-lbl">solved</span>
+              </div>
+            </div>
+            <div class="lc-legend" id="lc-legend"></div>
+            <div class="lc-rank"   id="lc-rank"></div>
+          </div>
+          <div id="lc-error" style="display:none" class="tile-err">offline</div>
+        </a>
+
+        <!-- D: Spotify -->
+        <a href="https://open.spotify.com/user/xdfp9g0u7hzf8aw47583ehxhl" target="_blank" rel="noopener noreferrer" class="tile tile-spotify">
+          <div class="tile-chip">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+            Spotify
+            <span class="live-pip" style="background:#1DB954;box-shadow:0 0 5px #1DB954;animation:none;"></span>
+          </div>
+          <div class="spotify-inner">
+            <div class="spotify-label">now playing</div>
+            <img loading="lazy"
+              src="https://spotify-github-profile.kittinanx.com/api/view?uid=xdfp9g0u7hzf8aw47583ehxhl&cover_image=true&theme=default&show_offline=false&background_color=121212&interchange=false&profanity=false"
+              alt="Now playing" class="spotify-card-img"/>
+            <div class="spotify-eq">
+              <span class="spotify-bar"></span>
+              <span class="spotify-bar"></span>
+              <span class="spotify-bar"></span>
+              <span class="spotify-bar"></span>
+              <span class="spotify-bar"></span>
+            </div>
+          </div>
+        </a>
+
+        <!-- E: Location -->
+        <div class="tile tile-location">
+          <div class="tile-chip">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Location
+          </div>
+          <div class="loc-place">Karur, TN</div>
+          <div class="loc-country">India 🇮🇳</div>
+          <div class="loc-time" id="local-time">—</div>
+          <div class="loc-tz">IST · UTC +5:30</div>
+          <div class="loc-badge">open to remote ✦</div>
         </div>
 
-        <!-- LeetCode — live fetched, image fallback -->
-        <a href="https://leetcode.com/u/KishorePrabakar/" target="_blank" class="bento-card bento-leetcode" id="lc-card">
-          <div class="bento-label">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z"/></svg>
-            LeetCode
-            <span class="bento-live-dot" title="live data"></span>
+        <!-- F: Chess -->
+        <a href="https://www.chess.com/member/kraxonknight" target="_blank" rel="noopener noreferrer" class="tile tile-chess" id="chess-card">
+          <div class="tile-chip">♟ Chess.com <span class="live-pip"></span></div>
+          <div id="chess-loading" class="tile-loading">—</div>
+          <div id="chess-body" style="display:none">
+            <div class="chess-modes" id="chess-ratings"></div>
+            <div class="chess-rec"   id="chess-record"></div>
           </div>
-          <div id="lc-loading" class="bento-loading">fetching stats…</div>
-          <div id="lc-content" style="display:none;">
-            <div class="lc-stats"  id="lc-stats"></div>
-            <div class="lc-totals" id="lc-totals"></div>
-          </div>
-          <div id="lc-error" style="display:none;">
-            <img src="https://leetcard.jacoblin.com/KishorePrabakar?theme=dark&font=JetBrains+Mono&ext=heatmap&border=0&radius=0&bg=transparent"
-              alt="LeetCode Stats" style="width:100%;border-radius:4px;"/>
-          </div>
+          <div id="chess-error" style="display:none" class="tile-err">offline</div>
         </a>
 
-        <!-- Chess.com — live fetched -->
-        <a href="https://www.chess.com/member/kraxonknight" target="_blank" class="bento-card bento-chess" id="chess-card">
-          <div class="bento-label">
-            ♟ Chess.com
-            <span class="bento-live-dot" title="live data"></span>
-          </div>
-          <div id="chess-loading" class="bento-loading">fetching ratings…</div>
-          <div id="chess-content" style="display:none;">
-            <div class="chess-ratings" id="chess-ratings"></div>
-            <div class="chess-record"  id="chess-record"></div>
-          </div>
-          <div id="chess-error" class="bento-error" style="display:none;">couldn't load — visit profile</div>
-        </a>
-
-        <!-- Spotify — kittinanx.com embed image -->
-        <a href="https://open.spotify.com/user/xdfp9g0u7hzf8aw47583ehxhl" target="_blank" class="bento-card bento-spotify">
-          <div class="bento-label">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
-            Spotify
-            <span class="bento-live-dot" style="background:#1DB954;box-shadow:0 0 6px #1DB954;"></span>
-          </div>
-          <div class="spotify-embed-wrap">
-            <img
-              src="https://spotify-github-profile.kittinanx.com/api/view?uid=xdfp9g0u7hzf8aw47583ehxhl&cover_image=true&theme=default&show_offline=false&background_color=121212&interchange=false&profanity=false"
-              alt="Spotify now playing"
-            />
-          </div>
-        </a>
-
-        <!-- Letterboxd — RSS via bokonon + allorigins proxy -->
-        <a href="https://letterboxd.com/kraxondrafts/" target="_blank" class="bento-card bento-letterboxd" id="lb-card">
-          <div class="bento-label">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M11.988 0C5.366 0 0 5.366 0 11.988 0 18.61 5.366 24 11.988 24 18.61 24 24 18.61 24 11.988 24 5.366 18.61 0 11.988 0zM7.67 15.953L5.56 12l2.11-3.953h2.346L7.906 12l2.11 3.953zm4.318 0L9.878 12l2.11-3.953h2.346L12.224 12l2.11 3.953zm4.318 0L14.196 12l2.11-3.953h2.346L16.541 12l2.11 3.953z"/></svg>
+        <!-- G: Letterboxd -->
+        <a href="https://letterboxd.com/kraxondrafts/" target="_blank" rel="noopener noreferrer" class="tile tile-lb" id="lb-card">
+          <div class="tile-chip">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M11.988 0C5.366 0 0 5.366 0 11.988 0 18.61 5.366 24 11.988 24 18.61 24 24 18.61 24 11.988 24 5.366 18.61 0 11.988 0zM7.67 15.953L5.56 12l2.11-3.953h2.346L7.906 12l2.11 3.953zm4.318 0L9.878 12l2.11-3.953h2.346L12.224 12l2.11 3.953zm4.318 0L14.196 12l2.11-3.953h2.346L16.541 12l2.11 3.953z"/></svg>
             Letterboxd
-            <span class="bento-live-dot" style="background:#00c030;box-shadow:0 0 6px #00c030;"></span>
+            <span class="live-pip" style="background:#00c030;box-shadow:0 0 5px #00c030;"></span>
           </div>
-          <div id="lb-loading" class="bento-loading">fetching films…</div>
-          <div id="lb-content" style="display:none;">
-            <div class="lb-films"  id="lb-films"></div>
-            <div class="lb-footer" id="lb-footer"></div>
+          <div id="lb-loading" class="tile-loading">—</div>
+          <div id="lb-body" style="display:none">
+            <div class="lb-films" id="lb-films"></div>
+            <div class="lb-foot"  id="lb-footer"></div>
           </div>
-          <div id="lb-error" class="bento-error" style="display:none;">couldn't load — visit profile</div>
-        </a>
-
-        <!-- Wakatime — JSONP share endpoint -->
-        <a href="https://wakatime.com/@kraxonyanks" target="_blank" class="bento-card bento-wakatime" id="waka-card">
-          <div class="bento-label">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28a.485.485 0 0 1-.894.08l-2.35-4.07-1.94 2.08a.488.488 0 0 1-.88-.28V11.5l-3.93-2.1a.487.487 0 0 1 .09-.9l10.45-4.02a.487.487 0 0 1 .425.741z"/></svg>
-            Wakatime
-            <span class="bento-live-dot" title="live data"></span>
-          </div>
-          <div id="waka-loading" class="bento-loading">fetching coding time…</div>
-          <div id="waka-content" style="display:none;">
-            <div class="waka-total" id="waka-total">—</div>
-            <div class="waka-sub"   id="waka-sub">this week</div>
-            <div class="waka-langs" id="waka-langs"></div>
-            <div class="waka-divider"></div>
-            <div class="waka-daily-label">daily breakdown</div>
-            <div class="waka-days"  id="waka-days"></div>
-            <div class="waka-powered">via wakatime.com</div>
-          </div>
-          <div id="waka-error" class="bento-error" style="display:none;">couldn't load — visit profile</div>
-        </a>
-
-        <!-- Duolingo — stats card embed image -->
-        <a href="https://www.duolingo.com/profile/kraxonveritas" target="_blank" class="bento-card bento-duolingo">
-          <div class="bento-label">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19.43 4.79C17.09 1.86 13.3.5 9.41 1.06 4.25 1.8.36 6.25.03 11.45c-.24 3.8 1.37 7.32 4.07 9.73.99.88 2.1 1.39 3.29 1.63l.96 1.08c.23.26.56.11.56-.23l.04-1.35c5.53-.15 10.34-4.15 11.21-9.65.55-3.48-.45-5.83-1.73-7.87zM12 17.4c-.66 0-1.2-.54-1.2-1.2s.54-1.2 1.2-1.2 1.2.54 1.2 1.2-.54 1.2-1.2 1.2zm1.71-5.17c-.56.55-.71.9-.71 1.62v.35h-2v-.35c0-1.18.31-1.88 1.23-2.77.67-.64 1.03-1.06 1.03-1.82 0-.95-.77-1.46-1.63-1.46-.84 0-1.55.44-1.92 1.35l-1.79-.77C8.58 7.1 9.88 6 11.63 6c2 0 3.57 1.25 3.57 3.07 0 1.37-.75 2.3-1.49 3.16z"/></svg>
-            Duolingo
-            <span class="bento-live-dot" style="background:#58cc02;box-shadow:0 0 6px #58cc02;"></span>
-          </div>
-          <div class="duo-embed-wrap">
-            <img
-              src="https://duolingo-stats-card.vercel.app/api?username=kraxonveritas"
-              alt="Duolingo Stats"
-            />
-          </div>
+          <div id="lb-error" style="display:none" class="tile-err">offline</div>
         </a>
 
       </div>
@@ -459,8 +479,8 @@
     <div class="divider"></div>
 
     <!-- Naval quote -->
-    <div class="quote-block">
-      <a href="https://twitter.com/naval/status/1002103670400417792" target="_blank" class="quote-link" title="View original tweet">
+    <div class="quote-block reveal">
+      <a href="https://twitter.com/naval/status/1002103670400417792" target="_blank" rel="noopener noreferrer" class="quote-link" title="View original tweet">
         <span class="quote-mark">"</span>
         <span class="quote-text">Code and media are permissionless leverage. Build or die.</span>
         <span class="quote-attr">— Naval Ravikant</span>
@@ -468,13 +488,20 @@
     </div>
 
     <!-- Footer -->
-    <footer class="site-footer">
-      <p>
-        <a href="mailto:kishoreprabakar24@gmail.com" class="link">kishoreprabakar24@gmail.com</a>
-        &nbsp;·&nbsp;
-        <span class="spoiler">+91 6381487769</span>
-      </p>
-      <p class="mt-2">© 2026 Kishore Prabakar</p>
+    <footer class="site-footer reveal">
+      <div class="footer-top">
+        <a href="mailto:kishoreprabakar24@gmail.com" class="link footer-email">kishoreprabakar24@gmail.com</a>
+        <div class="footer-links">
+          <a href="https://github.com/KishorePrabakar" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub</a>
+          <a href="https://www.linkedin.com/in/kishoreprabakar24" target="_blank" rel="noopener noreferrer" class="footer-link">LinkedIn</a>
+          <a href="https://x.com/KishorePr24" target="_blank" rel="noopener noreferrer" class="footer-link">X</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>built with vanilla TS + Tailwind · deployed on Vercel</span>
+        <button class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">↑ top</button>
+      </div>
+      <p class="footer-copy">© 2026 Kishore Prabakar</p>
     </footer>
 
   </div>

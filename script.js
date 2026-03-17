@@ -1,3 +1,111 @@
+// ── Typewriter hero ───────────────────────────────────
+(function () {
+  const phrases = [
+    'backend & ai developer',
+    'i build things that scale',
+    'i break things to understand them',
+    'currently shipping something new',
+    'backend & ai developer',
+  ];
+
+  const el     = document.getElementById('typewriter-text');
+  if (!el) return;
+
+  let phraseIdx = 0;
+  let charIdx   = 0;
+  let deleting  = false;
+  let started   = false;
+
+  function tick() {
+    const phrase = phrases[phraseIdx];
+
+    if (!deleting) {
+      charIdx++;
+      el.textContent = phrase.slice(0, charIdx);
+      if (charIdx === phrase.length) {
+        // Pause before deleting — but don't delete the last (base) phrase
+        if (phraseIdx === phrases.length - 1) return; // stop on final phrase
+        deleting = true;
+        setTimeout(tick, 1800);
+        return;
+      }
+      setTimeout(tick, 55);
+    } else {
+      charIdx--;
+      el.textContent = phrase.slice(0, charIdx);
+      if (charIdx === 0) {
+        deleting  = false;
+        phraseIdx = (phraseIdx + 1) % phrases.length;
+        setTimeout(tick, 300);
+        return;
+      }
+      setTimeout(tick, 28);
+    }
+  }
+
+  // Start after hero entrance animation settles
+  setTimeout(tick, 900);
+})();
+
+// ── Floating nav ──────────────────────────────────────
+(function () {
+  const nav      = document.getElementById('float-nav');
+  const items    = document.querySelectorAll('.float-nav-item');
+  const sections = ['about', 'skills', 'projects', 'blogs', 'reading', 'stats'];
+  let heroBottom = 0;
+
+  function getHeroBottom() {
+    const hero = document.querySelector('.hero-center');
+    if (hero) heroBottom = hero.getBoundingClientRect().bottom + window.scrollY + 40;
+  }
+
+  getHeroBottom();
+  window.addEventListener('resize', getHeroBottom);
+
+  function updateNav() {
+    const scrollY = window.scrollY;
+
+    // Show / hide
+    if (scrollY > heroBottom - 200) {
+      nav.classList.add('visible');
+    } else {
+      nav.classList.remove('visible');
+    }
+
+    // Active section highlight
+    let current = '';
+    sections.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (el.getBoundingClientRect().top <= window.innerHeight * 0.45) current = id;
+    });
+
+    items.forEach(item => {
+      item.classList.toggle('active', item.dataset.section === current);
+    });
+  }
+
+  window.addEventListener('scroll', updateNav, { passive: true });
+  updateNav();
+})();
+
+// ── Scroll reveal ─────────────────────────────────────
+(function () {
+  const revealEls = document.querySelectorAll('.reveal');
+  if (!revealEls.length) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08 });
+
+  revealEls.forEach(el => observer.observe(el));
+})();
+
 // ── Theme toggle ──────────────────────────────────────
 const toggle   = document.getElementById('theme-toggle');
 const html     = document.documentElement;
@@ -36,7 +144,7 @@ let expanded = false;
 if (toggleBtn) {
   toggleBtn.addEventListener('click', () => {
     expanded = !expanded;
-    hiddenCards.forEach(c => { c.style.display = expanded ? 'block' : 'none'; });
+    hiddenCards.forEach(c => { c.style.display = expanded ? '' : 'none'; });
     toggleBtn.textContent = expanded ? 'show less ↑' : 'show 6 more ↓';
   });
 }
@@ -49,103 +157,120 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   });
 });
 
+// ── Local time clock ─────────────────────────────────
+(function () {
+  const el = document.getElementById('local-time');
+  if (!el) return;
+  function tick() {
+    const now = new Date().toLocaleTimeString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      hour12: true
+    });
+    el.textContent = now;
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
+
 // ── Chess.com ─────────────────────────────────────────
 async function loadChessStats() {
   const loadingEl = document.getElementById('chess-loading');
-  const contentEl = document.getElementById('chess-content');
+  const bodyEl    = document.getElementById('chess-body');
   const ratingsEl = document.getElementById('chess-ratings');
   const recordEl  = document.getElementById('chess-record');
   const errorEl   = document.getElementById('chess-error');
   if (!loadingEl) return;
-
   try {
     const res   = await fetch('https://api.chess.com/pub/player/kraxonknight/stats');
     if (!res.ok) throw new Error();
     const stats = await res.json();
-
     const modes = [
       { key: 'chess_rapid',  label: 'Rapid'  },
       { key: 'chess_blitz',  label: 'Blitz'  },
       { key: 'chess_bullet', label: 'Bullet' },
     ];
-
-    let totalWins = 0, totalLosses = 0, totalDraws = 0;
-
+    let wins = 0, losses = 0, draws = 0;
     ratingsEl.innerHTML = modes.map(({ key, label }) => {
-      const mode = stats[key];
-      if (!mode) return `<div class="chess-mode"><div class="chess-mode-name">${label}</div><div class="chess-mode-rating" style="font-size:0.9rem;color:var(--text-light)">—</div><div class="chess-mode-best">no games</div></div>`;
-      const current = mode.last?.rating ?? '—';
-      const best    = mode.best?.rating ?? '—';
-      const record  = mode.record ?? {};
-      totalWins   += record.win  ?? 0;
-      totalLosses += record.loss ?? 0;
-      totalDraws  += record.draw ?? 0;
-      return `<div class="chess-mode"><div class="chess-mode-name">${label}</div><div class="chess-mode-rating">${current}</div><div class="chess-mode-best">best ${best}</div></div>`;
+      const m = stats[key];
+      if (!m) return `<div class="chess-mode"><div class="chess-mode-name">${label}</div><div class="chess-mode-rating" style="font-size:0.85rem;color:var(--text-light)">—</div><div class="chess-mode-best">no games</div></div>`;
+      const r = m.record ?? {};
+      wins += r.win ?? 0; losses += r.loss ?? 0; draws += r.draw ?? 0;
+      return `<div class="chess-mode"><div class="chess-mode-name">${label}</div><div class="chess-mode-rating">${m.last?.rating ?? '—'}</div><div class="chess-mode-best">best ${m.best?.rating ?? '—'}</div></div>`;
     }).join('');
-
-    const totalGames = totalWins + totalLosses + totalDraws;
-    const winPct     = totalGames > 0 ? Math.round((totalWins / totalGames) * 100) : 0;
-
-    recordEl.innerHTML = `
-      <span><span class="chess-w">▲ ${totalWins}W</span></span>
-      <span><span class="chess-l">▼ ${totalLosses}L</span></span>
-      <span><span class="chess-d">◆ ${totalDraws}D</span></span>
-      <span style="margin-left:auto;color:var(--text-light)">${winPct}% win rate · ${totalGames} games</span>
-    `;
-
+    const total = wins + losses + draws;
+    const pct   = total > 0 ? Math.round((wins / total) * 100) : 0;
+    recordEl.innerHTML = `<span class="chess-w">▲ ${wins}W</span><span class="chess-l">▼ ${losses}L</span><span>◆ ${draws}D</span><span style="margin-left:auto;font-size:0.6rem;color:var(--text-light)">${pct}% · ${total}g</span>`;
     loadingEl.style.display = 'none';
-    contentEl.style.display = 'block';
+    bodyEl.style.display    = 'block';
   } catch {
     loadingEl.style.display = 'none';
     errorEl.style.display   = 'block';
   }
 }
 
-// ── LeetCode ──────────────────────────────────────────
+// ── LeetCode — segmented donut ────────────────────────
 async function loadLeetCode() {
   const loadingEl = document.getElementById('lc-loading');
-  const contentEl = document.getElementById('lc-content');
-  const statsEl   = document.getElementById('lc-stats');
-  const totalsEl  = document.getElementById('lc-totals');
+  const bodyEl    = document.getElementById('lc-body');
+  const numEl     = document.getElementById('lc-solved-num');
+  const legendEl  = document.getElementById('lc-legend');
+  const rankEl    = document.getElementById('lc-rank');
   const errorEl   = document.getElementById('lc-error');
   if (!loadingEl) return;
-
   try {
-    const res  = await fetch('https://leetcode-stats-api.herokuapp.com/KishorePrabakar');
+    const res = await fetch('https://leetcode-stats-api.herokuapp.com/KishorePrabakar');
     if (!res.ok) throw new Error();
-    const data = await res.json();
-    if (data.status === 'error') throw new Error();
+    const d = await res.json();
+    if (d.status === 'error') throw new Error();
 
-    const { easySolved, totalEasy, mediumSolved, totalMedium,
-            hardSolved, totalHard, totalSolved, acceptanceRate, ranking } = data;
+    // r=38, circumference = 2*pi*38 ≈ 238.76
+    const C     = 2 * Math.PI * 38;
+    const total = d.totalEasy + d.totalMedium + d.totalHard;
 
-    const diffs = [
-      { label: 'Easy',   solved: easySolved,   total: totalEasy,   cls: 'easy'   },
-      { label: 'Medium', solved: mediumSolved, total: totalMedium, cls: 'medium' },
-      { label: 'Hard',   solved: hardSolved,   total: totalHard,   cls: 'hard'   },
+    numEl.textContent = d.totalSolved;
+
+    const segs = [
+      { id: 'arc-easy',   val: d.easySolved,  color: '#00b8a3', label: 'Easy',   tot: d.totalEasy   },
+      { id: 'arc-medium', val: d.mediumSolved, color: '#ffc01e', label: 'Medium', tot: d.totalMedium },
+      { id: 'arc-hard',   val: d.hardSolved,   color: '#ef4743', label: 'Hard',   tot: d.totalHard   },
     ];
 
-    statsEl.innerHTML = diffs.map(d => {
-      const pct = d.total > 0 ? Math.round((d.solved / d.total) * 100) : 0;
-      return `
-        <div class="lc-row">
-          <span class="lc-difficulty lc-${d.cls}">${d.label}</span>
-          <div class="lc-bar-wrap"><div class="lc-bar-fill ${d.cls}" style="width:0%" data-pct="${pct}%"></div></div>
-          <span class="lc-count">${d.solved}<span style="color:var(--text-light);font-size:0.6rem;">/${d.total}</span></span>
-        </div>`;
-    }).join('');
+    legendEl.innerHTML = segs.map(s => `
+      <div class="lc-legend-row">
+        <span class="lc-dot" style="background:${s.color};box-shadow:0 0 4px ${s.color}"></span>
+        <span class="lc-legend-label">${s.label}</span>
+        <span class="lc-legend-count">${s.val}<span style="color:var(--text-light);font-size:0.55rem">/${s.tot}</span></span>
+      </div>`).join('');
 
-    totalsEl.innerHTML = `
-      <div class="lc-total-stat"><span class="lc-total-val">${totalSolved}</span><span class="lc-total-lbl">solved</span></div>
-      <div class="lc-total-stat"><span class="lc-total-val">#${ranking?.toLocaleString() ?? '—'}</span><span class="lc-total-lbl">rank</span></div>
-      <div class="lc-total-stat"><span class="lc-total-val">${acceptanceRate ? acceptanceRate.toFixed(1) + '%' : '—'}</span><span class="lc-total-lbl">acceptance</span></div>
-    `;
+    rankEl.innerHTML = `rank <span>#${d.ranking?.toLocaleString() ?? '—'}</span>${d.acceptanceRate ? ' · ' + d.acceptanceRate.toFixed(1) + '% acc' : ''}`;
 
     loadingEl.style.display = 'none';
-    contentEl.style.display = 'block';
+    bodyEl.style.display    = 'block';
 
+    // Animate after paint — stroke-dashoffset in SVG = positive means "skip ahead"
+    // SVG circles start at 3 o'clock; SVG is rotated -90deg in CSS so starts at 12
     requestAnimationFrame(() => {
-      document.querySelectorAll('.lc-bar-fill').forEach(bar => { bar.style.width = bar.dataset.pct; });
+      // Start all arcs collapsed (dash=0, gap=full circumference)
+      segs.forEach(s => {
+        const el = document.getElementById(s.id);
+        if (el) { el.setAttribute('stroke-dasharray', `0 ${C}`); el.setAttribute('stroke-dashoffset', '0'); }
+      });
+
+      // Then on next frame, set final values
+      requestAnimationFrame(() => {
+        let consumed = 0; // how much of circumference is used so far
+        segs.forEach(s => {
+          const el = document.getElementById(s.id);
+          if (!el) return;
+          const frac = total > 0 ? s.val / total : 0;
+          const len  = Math.max(frac * C - 1.5, 0); // 1.5px gap between segments
+          // dashoffset: negative = shift arc clockwise by that amount
+          el.setAttribute('stroke-dasharray', `${len} ${C - len}`);
+          el.setAttribute('stroke-dashoffset', `${-consumed}`);
+          consumed += frac * C;
+        });
+      });
     });
   } catch {
     loadingEl.style.display = 'none';
@@ -153,78 +278,48 @@ async function loadLeetCode() {
   }
 }
 
-// ── Letterboxd — RSS via allorigins proxy ─────────────
+// ── Letterboxd ────────────────────────────────────────
 async function loadLetterboxd() {
   const loadingEl = document.getElementById('lb-loading');
-  const contentEl = document.getElementById('lb-content');
+  const bodyEl    = document.getElementById('lb-body');
   const filmsEl   = document.getElementById('lb-films');
   const footerEl  = document.getElementById('lb-footer');
   const errorEl   = document.getElementById('lb-error');
   if (!loadingEl) return;
-
   try {
-    const rssUrl   = 'https://letterboxd.com/`kraxondrafts/rss/';
+    const rssUrl   = 'https://letterboxd.com/kraxondrafts/rss/';
     const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
     const res      = await fetch(proxyUrl);
     if (!res.ok) throw new Error();
     const json     = await res.json();
+    const doc      = new DOMParser().parseFromString(json.contents, 'application/xml');
+    const items    = Array.from(doc.querySelectorAll('item')).slice(0, 4);
+    if (!items.length) throw new Error();
 
-    const parser = new DOMParser();
-    const doc    = parser.parseFromString(json.contents, 'application/xml');
-    const items  = Array.from(doc.querySelectorAll('item')).slice(0, 4);
-    if (items.length === 0) throw new Error();
-
-    function parseStars(desc) {
-      if (!desc) return '';
-      const stars = (desc.match(/★/g) || []).length;
-      const half  = desc.includes('½') ? '½' : '';
-      return stars > 0 ? '★'.repeat(stars) + half : '';
-    }
-
-    function parseFilmTitle(rawTitle) {
-      // Letterboxd item titles look like: "Watched Inception, 2010 - ★★★★"
-      return rawTitle
-        .replace(/^Watched\s+/i, '')
-        .replace(/,\s*\d{4}.*$/, '')
-        .trim();
-    }
-
-    function parseYear(rawTitle) {
-      const m = rawTitle.match(/,\s*(\d{4})/);
-      return m ? m[1] : '';
-    }
+    const stars = s => { if (!s) return ''; const n = (s.match(/★/g)||[]).length; const h = s.includes('½') ? '½' : ''; return n > 0 ? '★'.repeat(n)+h : ''; };
+    const title = s => s.replace(/^Watched\s+/i,'').replace(/,\s*\d{4}.*$/,'').trim();
+    const year  = s => { const m = s.match(/,\s*(\d{4})/); return m ? m[1] : ''; };
 
     filmsEl.innerHTML = items.map(item => {
-      const rawTitle = item.querySelector('title')?.textContent || '—';
-      const desc     = item.querySelector('description')?.textContent || '';
-      const title    = parseFilmTitle(rawTitle);
-      const year     = parseYear(rawTitle);
-      const stars    = parseStars(desc) || parseStars(rawTitle);
-      return `
-        <div class="lb-film">
-          <div class="lb-film-title">${title}</div>
-          <div class="lb-film-year">${year}</div>
-          <div class="lb-stars">${stars || '·'}</div>
-        </div>`;
+      const raw  = item.querySelector('title')?.textContent || '—';
+      const desc = item.querySelector('description')?.textContent || '';
+      const st   = stars(desc) || stars(raw);
+      return `<div class="lb-film-chip"><div class="lb-title">${title(raw)}</div><div class="lb-year">${year(raw)}</div><div class="lb-stars">${st || '·'}</div></div>`;
     }).join('');
 
-    footerEl.innerHTML = `
-      <span>recent watches</span>
-      <span class="lb-count">kraxondrafts</span>
-    `;
-
+    footerEl.innerHTML = `<span>recent watches</span><span>kraxondrafts</span>`;
     loadingEl.style.display = 'none';
-    contentEl.style.display = 'block';
+    bodyEl.style.display    = 'block';
   } catch {
     loadingEl.style.display = 'none';
     errorEl.style.display   = 'block';
   }
 }
 
-// ── Wakatime — JSONP share endpoint ───────────────────
+// ── WakaTime — JSONP ──────────────────────────────────
 function loadWakatime() {
   const loadingEl = document.getElementById('waka-loading');
-  const contentEl = document.getElementById('waka-content');
+  const bodyEl    = document.getElementById('waka-body');
   const totalEl   = document.getElementById('waka-total');
   const subEl     = document.getElementById('waka-sub');
   const langsEl   = document.getElementById('waka-langs');
@@ -232,51 +327,35 @@ function loadWakatime() {
   const errorEl   = document.getElementById('waka-error');
   if (!loadingEl) return;
 
-  // JSONP callback
   window._wakaCallback = function (response) {
     try {
       const data = response.data;
+      totalEl.textContent = data.grand_total?.human_readable_total ?? '—';
+      const avg = data.grand_total?.human_readable_daily_average;
+      subEl.textContent   = avg ? `this week · ${avg}/day avg` : 'this week';
 
-      // ── Weekly total ──
-      const total    = data.grand_total?.human_readable_total ?? '—';
-      const dailyAvg = data.grand_total?.human_readable_daily_average ?? '—';
-      totalEl.textContent = total;
-      subEl.textContent   = `this week · ${dailyAvg}/day avg`;
-
-      // ── Top languages ──
       const langs = (data.languages || []).slice(0, 5);
-      langsEl.innerHTML = langs.map(lang => `
-        <div class="waka-lang-row">
-          <span class="waka-lang-name">${lang.name}</span>
-          <div class="waka-bar-wrap"><div class="waka-bar-fill" style="width:0%" data-pct="${lang.percent.toFixed(1)}%"></div></div>
-          <span class="waka-pct">${lang.percent.toFixed(1)}%</span>
+      langsEl.innerHTML = langs.map(l => `
+        <div class="waka-bar-row">
+          <span class="waka-bar-name">${l.name}</span>
+          <div class="waka-bar-track"><div class="waka-bar-fill" style="width:0%" data-pct="${l.percent.toFixed(1)}%"></div></div>
+          <span class="waka-bar-pct">${l.percent.toFixed(1)}%</span>
         </div>`).join('');
 
-      // ── Daily breakdown ──
-      const days     = data.days || [];
-      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      const maxSecs  = Math.max(...days.map(d => d.grand_total?.total_seconds ?? 0), 1);
-
+      const days    = data.days || [];
+      const names   = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+      const maxSecs = Math.max(...days.map(d => d.grand_total?.total_seconds ?? 0), 1);
       daysEl.innerHTML = days.slice(-7).map(d => {
-        const secs    = d.grand_total?.total_seconds ?? 0;
-        const heightPct = Math.round((secs / maxSecs) * 100);
-        const dateObj = new Date(d.date);
-        const label   = dayNames[dateObj.getDay()];
-        const hrs     = (secs / 3600).toFixed(1);
-        return `
-          <div class="waka-day-col" title="${label}: ${hrs}h">
-            <div style="flex:1;width:100%;display:flex;align-items:flex-end;">
-              <div class="waka-day-bar" style="height:${Math.max(heightPct, 2)}%"></div>
-            </div>
-            <span class="waka-day-lbl">${label}</span>
-          </div>`;
+        const secs = d.grand_total?.total_seconds ?? 0;
+        const h    = Math.round((secs / maxSecs) * 100);
+        const lbl  = names[new Date(d.date).getDay()];
+        return `<div class="waka-day-col" title="${lbl}: ${(secs/3600).toFixed(1)}h"><div style="flex:1;width:100%;display:flex;align-items:flex-end;"><div class="waka-day-bar" style="height:${Math.max(h,2)}%"></div></div><span class="waka-day-lbl">${lbl}</span></div>`;
       }).join('');
 
       loadingEl.style.display = 'none';
-      contentEl.style.display = 'block';
-
+      bodyEl.style.display    = 'block';
       requestAnimationFrame(() => {
-        document.querySelectorAll('.waka-bar-fill').forEach(bar => { bar.style.width = bar.dataset.pct; });
+        document.querySelectorAll('.waka-bar-fill').forEach(b => { b.style.width = b.dataset.pct; });
       });
     } catch {
       loadingEl.style.display = 'none';
@@ -284,10 +363,9 @@ function loadWakatime() {
     }
   };
 
-  // Inject JSONP script tag
-  const script   = document.createElement('script');
+  const script = document.createElement('script');
   script.onerror = () => { loadingEl.style.display = 'none'; errorEl.style.display = 'block'; };
-  script.src     = 'https://wakatime.com/share/@kraxonyanks/6804776e-f4c6-4051-b7b7-3607a7851030.json?callback=_wakaCallback';
+  script.src = 'https://wakatime.com/share/@kraxonyanks/6804776e-f4c6-4051-b7b7-3607a7851030.json?callback=_wakaCallback';
   document.head.appendChild(script);
 }
 
@@ -296,7 +374,6 @@ loadChessStats();
 loadLeetCode();
 loadLetterboxd();
 loadWakatime();
-// Spotify & Duolingo are static embed images — no JS needed.
 
 // ── Console vibe ──────────────────────────────────────
 console.log('%c portfolio loaded 🚀', 'color:#e8c547; font-size:13px; font-weight:bold;');
