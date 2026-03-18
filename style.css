@@ -543,7 +543,19 @@ a.lc:hover::after { opacity: 0.035; }
   0%   { background-position: 200% center; }
   100% { background-position: -200% center; }
 }
-.lc-err { font-size: 0.65rem; color: var(--text-light); font-style: italic; }
+.lc-err {
+  font-size: 0.65rem;
+  color: var(--text-light);
+  font-style: italic;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.lc-err img { display: block; }
+#waka-error .waka-light { display: none; }
+[data-theme="light"] #waka-error .waka-dark  { display: none; }
+[data-theme="light"] #waka-error .waka-light { display: block; }
 
 /* ═══════════════════════════════════════════════════════
    SPOTIFY — tall image-forward card
@@ -1047,9 +1059,7 @@ a.lc-chess:hover .ch-mode {
   flex-shrink: 0;
 }
 /* fallback images in error state */
-#waka-error .waka-light { display: none; }
-[data-theme="light"] #waka-error .waka-dark  { display: none; }
-[data-theme="light"] #waka-error .waka-light { display: block; }
+
 
 /* ═══════════════════════════════════════════════════════
    LEETCODE

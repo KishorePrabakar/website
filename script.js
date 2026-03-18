@@ -347,9 +347,14 @@ function loadWakatime() {
   const PAL = ['#e8c547','#f0a500','#c47ed4','#5ba4cf','#4ade80','#f87171','#60a5fa','#fb923c'];
 
   function renderArc(langs, totalText) {
-    // Abbreviate "1 hr 58 mins" → "1h 58m" for center display
-    const abbr = (t) => (t||'').replace(/\s*hours?/gi,'h').replace(/\s*mins?/gi,'m').replace(/\s*secs?/gi,'s').trim() || '—';
-    if (totalEl) totalEl.textContent = abbr(totalText);
+    // If no total provided, sum up from first lang time or show top lang
+    const abbr = (t) => (t||'').replace(/\s*hours?/gi,'h').replace(/\s*mins?/gi,'m').replace(/\s*secs?/gi,'s').trim();
+    let display = abbr(totalText);
+    if (!display && langs.length > 0) {
+      // Use top language time as proxy
+      display = abbr(langs[0].text || '') || langs[0].name.split(' ')[0];
+    }
+    if (totalEl) totalEl.textContent = display || '—';
     const R=50,CX=60,CY=60,C=2*Math.PI*R,G=2;
     const top = langs.slice(0,5);
     arcSvg.innerHTML = `<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="var(--tag-bg)" stroke-width="10"/>`;
