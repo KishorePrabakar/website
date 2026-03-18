@@ -157,17 +157,15 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   });
 });
 
-// ── Local time clock ─────────────────────────────────
+// ── Local clock ──────────────────────────────────────
 (function () {
   const el = document.getElementById('local-time');
   if (!el) return;
   function tick() {
-    const now = new Date().toLocaleTimeString('en-IN', {
+    el.textContent = new Date().toLocaleTimeString('en-IN', {
       timeZone: 'Asia/Kolkata',
-      hour: '2-digit', minute: '2-digit', second: '2-digit',
-      hour12: true
+      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
     });
-    el.textContent = now;
   }
   tick();
   setInterval(tick, 1000);
@@ -175,205 +173,347 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 
 // ── Chess.com ─────────────────────────────────────────
 async function loadChessStats() {
-  const loadingEl = document.getElementById('chess-loading');
-  const bodyEl    = document.getElementById('chess-body');
-  const ratingsEl = document.getElementById('chess-ratings');
-  const recordEl  = document.getElementById('chess-record');
-  const errorEl   = document.getElementById('chess-error');
-  if (!loadingEl) return;
+  const load = document.getElementById('chess-loading');
+  const body = document.getElementById('chess-body');
+  const rat  = document.getElementById('chess-ratings');
+  const rec  = document.getElementById('chess-record');
+  const err  = document.getElementById('chess-error');
+  const pip  = document.getElementById('chess-pip');
+  if (!load) return;
   try {
-    const res   = await fetch('https://api.chess.com/pub/player/kraxonknight/stats');
+    const res = await fetch('https://api.chess.com/pub/player/kraxonknight/stats');
     if (!res.ok) throw new Error();
-    const stats = await res.json();
-    const modes = [
-      { key: 'chess_rapid',  label: 'Rapid'  },
-      { key: 'chess_blitz',  label: 'Blitz'  },
-      { key: 'chess_bullet', label: 'Bullet' },
-    ];
-    let wins = 0, losses = 0, draws = 0;
-    ratingsEl.innerHTML = modes.map(({ key, label }) => {
-      const m = stats[key];
-      if (!m) return `<div class="chess-mode"><div class="chess-mode-name">${label}</div><div class="chess-mode-rating" style="font-size:0.85rem;color:var(--text-light)">—</div><div class="chess-mode-best">no games</div></div>`;
+    const s = await res.json();
+    let w = 0, l = 0, d = 0;
+    rat.innerHTML = [
+      { key: 'chess_rapid',  lbl: 'Rapid'  },
+      { key: 'chess_blitz',  lbl: 'Blitz'  },
+      { key: 'chess_bullet', lbl: 'Bullet' },
+    ].map(({ key, lbl }) => {
+      const m = s[key];
+      if (!m) return `<div class="ch-mode"><div class="ch-label">${lbl}</div><div class="ch-rating" style="font-size:.8rem;color:var(--text-light)">—</div></div>`;
       const r = m.record ?? {};
-      wins += r.win ?? 0; losses += r.loss ?? 0; draws += r.draw ?? 0;
-      return `<div class="chess-mode"><div class="chess-mode-name">${label}</div><div class="chess-mode-rating">${m.last?.rating ?? '—'}</div><div class="chess-mode-best">best ${m.best?.rating ?? '—'}</div></div>`;
+      w += r.win ?? 0; l += r.loss ?? 0; d += r.draw ?? 0;
+      return `<div class="ch-mode"><div class="ch-label">${lbl}</div><div class="ch-rating">${m.last?.rating ?? '—'}</div><div class="ch-best">best ${m.best?.rating ?? '—'}</div></div>`;
     }).join('');
-    const total = wins + losses + draws;
-    const pct   = total > 0 ? Math.round((wins / total) * 100) : 0;
-    recordEl.innerHTML = `<span class="chess-w">▲ ${wins}W</span><span class="chess-l">▼ ${losses}L</span><span>◆ ${draws}D</span><span style="margin-left:auto;font-size:0.6rem;color:var(--text-light)">${pct}% · ${total}g</span>`;
-    loadingEl.style.display = 'none';
-    bodyEl.style.display    = 'block';
+    const tot = w + l + d;
+    const pct = tot > 0 ? Math.round(w / tot * 100) : 0;
+    rec.innerHTML = `<span class="ch-w">▲ ${w}W</span><span class="ch-l">▼ ${l}L</span><span>◆ ${d}D</span><span style="margin-left:auto;font-size:.56rem;color:var(--text-light)">${pct}% · ${tot}g</span>`;
+    load.style.display = 'none';
+    body.style.display = 'block';
+    if (pip) pip.style.cssText = 'background:#4ade80;box-shadow:0 0 5px #4ade80';
   } catch {
-    loadingEl.style.display = 'none';
-    errorEl.style.display   = 'block';
+    load.style.display = 'none';
+    err.style.display  = 'block';
+    if (pip) pip.style.cssText = 'background:#f87171;box-shadow:0 0 5px #f87171';
   }
 }
 
-// ── LeetCode — segmented donut ────────────────────────
-async function loadLeetCode() {
-  const loadingEl = document.getElementById('lc-loading');
-  const bodyEl    = document.getElementById('lc-body');
-  const numEl     = document.getElementById('lc-solved-num');
-  const legendEl  = document.getElementById('lc-legend');
-  const rankEl    = document.getElementById('lc-rank');
-  const errorEl   = document.getElementById('lc-error');
-  if (!loadingEl) return;
+// ── Cache helpers (1hr TTL) ──────────────────────────
+const CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
+function cacheGet(key) {
   try {
-    const res = await fetch('https://leetcode-stats-api.herokuapp.com/KishorePrabakar');
-    if (!res.ok) throw new Error();
-    const d = await res.json();
-    if (d.status === 'error') throw new Error();
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const { ts, data } = JSON.parse(raw);
+    if (Date.now() - ts > CACHE_TTL) { localStorage.removeItem(key); return null; }
+    return data;
+  } catch { return null; }
+}
 
-    // r=38, circumference = 2*pi*38 ≈ 238.76
-    const C     = 2 * Math.PI * 38;
-    const total = d.totalEasy + d.totalMedium + d.totalHard;
+function cacheSet(key, data) {
+  try { localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data })); } catch {}
+}
 
-    numEl.textContent = d.totalSolved;
+// ── LeetCode — faster API + cache ────────────────────
+async function loadLeetCode() {
+  const load = document.getElementById('lc-loading');
+  const body = document.getElementById('lc-body');
+  const num  = document.getElementById('lc-solved-num');
+  const rows = document.getElementById('lc-rows');
+  const foot = document.getElementById('lc-foot');
+  const err  = document.getElementById('lc-error');
+  const pip  = document.getElementById('lc-pip');
+  if (!load) return;
+
+  function render(d) {
+    const C   = 2 * Math.PI * 32;
+    const all = d.totalEasy + d.totalMedium + d.totalHard;
+    num.textContent = d.totalSolved;
 
     const segs = [
-      { id: 'arc-easy',   val: d.easySolved,  color: '#00b8a3', label: 'Easy',   tot: d.totalEasy   },
-      { id: 'arc-medium', val: d.mediumSolved, color: '#ffc01e', label: 'Medium', tot: d.totalMedium },
-      { id: 'arc-hard',   val: d.hardSolved,   color: '#ef4743', label: 'Hard',   tot: d.totalHard   },
+      { id:'seg-easy',   val:d.easySolved,  tot:d.totalEasy,   c:'#00b8a3', lbl:'Easy'   },
+      { id:'seg-medium', val:d.mediumSolved, tot:d.totalMedium, c:'#ffc01e', lbl:'Medium' },
+      { id:'seg-hard',   val:d.hardSolved,   tot:d.totalHard,   c:'#ef4743', lbl:'Hard'   },
     ];
 
-    legendEl.innerHTML = segs.map(s => `
-      <div class="lc-legend-row">
-        <span class="lc-dot" style="background:${s.color};box-shadow:0 0 4px ${s.color}"></span>
-        <span class="lc-legend-label">${s.label}</span>
-        <span class="lc-legend-count">${s.val}<span style="color:var(--text-light);font-size:0.55rem">/${s.tot}</span></span>
+    rows.innerHTML = segs.map(s =>
+      `<div class="lc-row">
+        <span class="lc-dot" style="background:${s.c};box-shadow:0 0 4px ${s.c}66"></span>
+        <span class="lc-dname">${s.lbl}</span>
+        <span class="lc-cnt">${s.val}<span style="color:var(--text-light);font-size:.5rem">/${s.tot}</span></span>
       </div>`).join('');
 
-    rankEl.innerHTML = `rank <span>#${d.ranking?.toLocaleString() ?? '—'}</span>${d.acceptanceRate ? ' · ' + d.acceptanceRate.toFixed(1) + '% acc' : ''}`;
+    foot.innerHTML = `rank <strong>#${d.ranking?.toLocaleString() ?? '—'}</strong>${d.acceptanceRate ? ' · ' + d.acceptanceRate.toFixed(1) + '% acc' : ''}`;
 
-    loadingEl.style.display = 'none';
-    bodyEl.style.display    = 'block';
+    load.style.display = 'none';
+    body.style.display = 'block';
+    if (pip) pip.style.cssText = 'background:#4ade80;box-shadow:0 0 5px #4ade80';
 
-    // Animate after paint — stroke-dashoffset in SVG = positive means "skip ahead"
-    // SVG circles start at 3 o'clock; SVG is rotated -90deg in CSS so starts at 12
     requestAnimationFrame(() => {
-      // Start all arcs collapsed (dash=0, gap=full circumference)
       segs.forEach(s => {
         const el = document.getElementById(s.id);
-        if (el) { el.setAttribute('stroke-dasharray', `0 ${C}`); el.setAttribute('stroke-dashoffset', '0'); }
+        if (el) el.setAttribute('stroke-dasharray', `0 ${C}`);
       });
-
-      // Then on next frame, set final values
       requestAnimationFrame(() => {
-        let consumed = 0; // how much of circumference is used so far
+        let used = 0;
         segs.forEach(s => {
           const el = document.getElementById(s.id);
           if (!el) return;
-          const frac = total > 0 ? s.val / total : 0;
-          const len  = Math.max(frac * C - 1.5, 0); // 1.5px gap between segments
-          // dashoffset: negative = shift arc clockwise by that amount
+          const frac = all > 0 ? s.val / all : 0;
+          const len  = Math.max(frac * C - 1.5, 0);
           el.setAttribute('stroke-dasharray', `${len} ${C - len}`);
-          el.setAttribute('stroke-dashoffset', `${-consumed}`);
-          consumed += frac * C;
+          el.setAttribute('stroke-dashoffset', `${-used}`);
+          used += frac * C;
         });
       });
     });
-  } catch {
-    loadingEl.style.display = 'none';
-    errorEl.style.display   = 'block';
   }
-}
 
-// ── Letterboxd ────────────────────────────────────────
-async function loadLetterboxd() {
-  const loadingEl = document.getElementById('lb-loading');
-  const bodyEl    = document.getElementById('lb-body');
-  const filmsEl   = document.getElementById('lb-films');
-  const footerEl  = document.getElementById('lb-footer');
-  const errorEl   = document.getElementById('lb-error');
-  if (!loadingEl) return;
+  // Show cached immediately, then refresh in background
+  const cached = cacheGet('lc_stats');
+  if (cached) { render(cached); }
+
   try {
-    const rssUrl   = 'https://letterboxd.com/kraxondrafts/rss/';
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
-    const res      = await fetch(proxyUrl);
-    if (!res.ok) throw new Error();
-    const json     = await res.json();
-    const doc      = new DOMParser().parseFromString(json.contents, 'application/xml');
-    const items    = Array.from(doc.querySelectorAll('item')).slice(0, 4);
-    if (!items.length) throw new Error();
+    // API list: Vercel community deploy first (no cold start), then fallbacks
+    const apis = [
+      { url: 'https://leetcode-stats-api.vercel.app/KishorePrabakar', timeout: 8000 },
+      { url: 'https://leetcode-stats-api.herokuapp.com/KishorePrabakar', timeout: 15000 },
+      { url: 'https://alfa-leetcode-api.onrender.com/KishorePrabakar', timeout: 12000 },
+    ];
 
-    const stars = s => { if (!s) return ''; const n = (s.match(/★/g)||[]).length; const h = s.includes('½') ? '½' : ''; return n > 0 ? '★'.repeat(n)+h : ''; };
-    const title = s => s.replace(/^Watched\s+/i,'').replace(/,\s*\d{4}.*$/,'').trim();
-    const year  = s => { const m = s.match(/,\s*(\d{4})/); return m ? m[1] : ''; };
+    let d = null;
+    for (const { url, timeout } of apis) {
+      try {
+        const res = await Promise.race([
+          fetch(url),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), timeout))
+        ]);
+        if (!res.ok) continue;
+        const raw = await res.json();
+        if (raw.status === 'error') continue;
 
-    filmsEl.innerHTML = items.map(item => {
-      const raw  = item.querySelector('title')?.textContent || '—';
-      const desc = item.querySelector('description')?.textContent || '';
-      const st   = stars(desc) || stars(raw);
-      return `<div class="lb-film-chip"><div class="lb-title">${title(raw)}</div><div class="lb-year">${year(raw)}</div><div class="lb-stars">${st || '·'}</div></div>`;
-    }).join('');
+        // Normalize — all three APIs have slightly different shapes
+        d = {
+          easySolved:   raw.easySolved   ?? raw.easy   ?? 0,
+          totalEasy:    raw.totalEasy    ?? 876,
+          mediumSolved: raw.mediumSolved ?? raw.medium ?? 0,
+          totalMedium:  raw.totalMedium  ?? 1844,
+          hardSolved:   raw.hardSolved   ?? raw.hard   ?? 0,
+          totalHard:    raw.totalHard    ?? 808,
+          totalSolved:  raw.totalSolved  ?? raw.solvedProblem ?? (raw.easy + raw.medium + raw.hard) ?? 0,
+          acceptanceRate: raw.acceptanceRate ?? null,
+          ranking:      raw.ranking      ?? null,
+        };
+        if ((d.totalSolved ?? 0) > 0) break;
+        d = null;
+      } catch { continue; }
+    }
 
-    footerEl.innerHTML = `<span>recent watches</span><span>kraxondrafts</span>`;
-    loadingEl.style.display = 'none';
-    bodyEl.style.display    = 'block';
+    if (!d) throw new Error('all apis failed');
+    cacheSet('lc_stats', d);
+    if (!cached) render(d);
   } catch {
-    loadingEl.style.display = 'none';
-    errorEl.style.display   = 'block';
+    if (!cached) {
+      load.style.display = 'none';
+      err.style.display  = 'block';
+      if (pip) pip.style.cssText = 'background:#f87171;box-shadow:0 0 5px #f87171';
+    }
   }
 }
 
-// ── WakaTime — JSONP ──────────────────────────────────
+// ── WakaTime — arc donut, multi-strategy fetch ────────
 function loadWakatime() {
-  const loadingEl = document.getElementById('waka-loading');
-  const bodyEl    = document.getElementById('waka-body');
-  const totalEl   = document.getElementById('waka-total');
-  const subEl     = document.getElementById('waka-sub');
-  const langsEl   = document.getElementById('waka-langs');
-  const daysEl    = document.getElementById('waka-days');
-  const errorEl   = document.getElementById('waka-error');
-  if (!loadingEl) return;
+  const load    = document.getElementById('waka-loading');
+  const body    = document.getElementById('waka-body');
+  const errEl   = document.getElementById('waka-error');
+  const arcSvg  = document.getElementById('wk-arc-svg');
+  const legend  = document.getElementById('wk-legend');
+  const totalEl = document.getElementById('wk-arc-total');
+  const pip     = document.getElementById('waka-pip');
+  if (!load) return;
 
-  window._wakaCallback = function (response) {
+  const PAL = ['#e8c547','#f0a500','#c47ed4','#5ba4cf','#4ade80','#f87171','#60a5fa','#fb923c'];
+
+  function renderArc(langs, totalText) {
+    // Abbreviate "1 hr 58 mins" → "1h 58m" for center display
+    const abbr = (t) => (t||'').replace(/\s*hours?/gi,'h').replace(/\s*mins?/gi,'m').replace(/\s*secs?/gi,'s').trim() || '—';
+    if (totalEl) totalEl.textContent = abbr(totalText);
+    const R=50,CX=60,CY=60,C=2*Math.PI*R,G=2;
+    const top = langs.slice(0,5);
+    arcSvg.innerHTML = `<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="var(--tag-bg)" stroke-width="10"/>`;
+    let off=0;
+    top.forEach((l,i)=>{
+      const len=Math.max((l.percent/100)*C-G,0);
+      const el=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      el.setAttribute('cx',CX); el.setAttribute('cy',CY); el.setAttribute('r',R);
+      el.setAttribute('fill','none'); el.setAttribute('stroke',PAL[i]);
+      el.setAttribute('stroke-width','10'); el.setAttribute('stroke-linecap','butt');
+      el.setAttribute('stroke-dasharray',`0 ${C}`);
+      el.setAttribute('stroke-dashoffset',`-${off}`);
+      el.style.transition=`stroke-dasharray 0.9s cubic-bezier(.4,0,.2,1) ${i*.08}s`;
+      el.style.filter=`drop-shadow(0 0 3px ${PAL[i]}88)`;
+      arcSvg.appendChild(el);
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        el.setAttribute('stroke-dasharray',`${len} ${C-len}`);
+      }));
+      off+=(l.percent/100)*C;
+    });
+    legend.innerHTML=top.map((l,i)=>`
+      <div class="wk-leg-row">
+        <span class="wk-leg-dot" style="background:${PAL[i]};box-shadow:0 0 4px ${PAL[i]}88"></span>
+        <span class="wk-leg-name">${l.name}</span>
+        <span class="wk-leg-time">${l.text||''}</span>
+        <span class="wk-leg-pct">${l.percent.toFixed(0)}%</span>
+      </div>`).join('');
+    load.style.display='none'; body.style.display='block';
+    if(pip) pip.style.cssText='background:#4ade80;box-shadow:0 0 5px #4ade80';
+  }
+
+  function showFallback() {
+    load.style.display='none'; errEl.style.display='block';
+    if(pip) pip.style.cssText='background:#f87171;box-shadow:0 0 5px #f87171';
+  }
+
+  const cached = cacheGet('waka_v3');
+  if (cached?.languages?.length) { renderArc(cached.languages, cached.total||''); return; }
+
+  async function tryAPI() {
     try {
-      const data = response.data;
-      totalEl.textContent = data.grand_total?.human_readable_total ?? '—';
-      const avg = data.grand_total?.human_readable_daily_average;
-      subEl.textContent   = avg ? `this week · ${avg}/day avg` : 'this week';
+      const url   = 'https://wakatime.com/api/v1/users/kraxonyanks/stats/last_7_days';
+      const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+      const res   = await Promise.race([fetch(proxy),new Promise((_,r)=>setTimeout(()=>r(),6000))]);
+      if(!res?.ok) throw 0;
+      const {contents}=await res.json();
+      const d=JSON.parse(contents)?.data;
+      if(!d?.languages?.length) throw 0;
+      const ls=d.languages.map(l=>({name:l.name,text:l.text,percent:l.percent}));
+      const tot=d.grand_total?.human_readable_total||d.grand_total?.text||'';
+      cacheSet('waka_v3',{languages:ls,total:tot});
+      return {ls,total:tot};
+    } catch { return null; }
+  }
 
-      const langs = (data.languages || []).slice(0, 5);
-      langsEl.innerHTML = langs.map(l => `
-        <div class="waka-bar-row">
-          <span class="waka-bar-name">${l.name}</span>
-          <div class="waka-bar-track"><div class="waka-bar-fill" style="width:0%" data-pct="${l.percent.toFixed(1)}%"></div></div>
-          <span class="waka-bar-pct">${l.percent.toFixed(1)}%</span>
-        </div>`).join('');
+  async function run() {
+    const api = await tryAPI();
+    if(api) { renderArc(api.ls, api.total); return; }
 
-      const days    = data.days || [];
-      const names   = ['Su','Mo','Tu','We','Th','Fr','Sa'];
-      const maxSecs = Math.max(...days.map(d => d.grand_total?.total_seconds ?? 0), 1);
-      daysEl.innerHTML = days.slice(-7).map(d => {
-        const secs = d.grand_total?.total_seconds ?? 0;
-        const h    = Math.round((secs / maxSecs) * 100);
-        const lbl  = names[new Date(d.date).getDay()];
-        return `<div class="waka-day-col" title="${lbl}: ${(secs/3600).toFixed(1)}h"><div style="flex:1;width:100%;display:flex;align-items:flex-end;"><div class="waka-day-bar" style="height:${Math.max(h,2)}%"></div></div><span class="waka-day-lbl">${lbl}</span></div>`;
-      }).join('');
+    // JSONP fallback
+    const timer = setTimeout(showFallback, 5000);
+    window._wakaCallback = function(r) {
+      clearTimeout(timer);
+      try {
+        const data=r?.data??r;
+        if(!data?.languages?.length) throw 0;
+        const ls=data.languages.map(l=>({name:l.name,text:l.text,percent:l.percent}));
+        const tot=data.grand_total?.human_readable_total||data.grand_total?.text||'';
+        cacheSet('waka_v3',{languages:ls,total:tot});
+        renderArc(ls,tot);
+      } catch { showFallback(); }
+    };
+    const s=document.createElement('script');
+    s.onerror=()=>{clearTimeout(timer);showFallback();};
+    s.src='https://wakatime.com/share/@kraxonyanks/6804776e-f4c6-4051-b7b7-3607a7851030.json?callback=_wakaCallback';
+    document.head.appendChild(s);
+  }
+  run();
+}
 
-      loadingEl.style.display = 'none';
-      bodyEl.style.display    = 'block';
-      requestAnimationFrame(() => {
-        document.querySelectorAll('.waka-bar-fill').forEach(b => { b.style.width = b.dataset.pct; });
-      });
-    } catch {
-      loadingEl.style.display = 'none';
-      errorEl.style.display   = 'block';
+// ── GitHub contribution canvas ────────────────────────
+async function loadGithubCanvas() {
+  const canvas   = document.getElementById('gh-canvas');
+  const totalEl  = document.getElementById('gh-total');
+  const streakEl = document.getElementById('gh-streak');
+  const longEl   = document.getElementById('gh-longest');
+  if (!canvas) return;
+
+  function applyFallback() {
+    if(totalEl)  totalEl.textContent='233';
+    if(streakEl) streakEl.textContent='5';
+    if(longEl)   longEl.textContent='6';
+    canvas.style.display='none';
+  }
+
+  const cached = cacheGet('gh_contrib_v2');
+  if (cached?.contributions?.length) {
+    computeStats(cached);
+    drawCanvas(canvas, cached.contributions);
+    return;
+  }
+
+  try {
+    // jogruber API — dedicated public GitHub contributions API with CORS
+    const urls = [
+      'https://github-contributions-api.jogruber.de/v4/KishorePrabakar?y=last',
+      `https://api.allorigins.win/get?url=${encodeURIComponent('https://github-contributions-api.jogruber.de/v4/KishorePrabakar?y=last')}`,
+    ];
+    let data = null;
+    for (const url of urls) {
+      try {
+        const res = await Promise.race([fetch(url),new Promise((_,r)=>setTimeout(()=>r(),7000))]);
+        if (!res?.ok) continue;
+        const json = await res.json();
+        data = json.contributions ? json : (json.contents ? JSON.parse(json.contents) : null);
+        if (data?.contributions?.length) break;
+        data = null;
+      } catch { continue; }
     }
-  };
+    if (!data?.contributions?.length) throw 0;
+    cacheSet('gh_contrib_v2', data);
+    computeStats(data);
+    drawCanvas(canvas, data.contributions);
+  } catch { applyFallback(); }
 
-  const script = document.createElement('script');
-  script.onerror = () => { loadingEl.style.display = 'none'; errorEl.style.display = 'block'; };
-  script.src = 'https://wakatime.com/share/@kraxonyanks/6804776e-f4c6-4051-b7b7-3607a7851030.json?callback=_wakaCallback';
-  document.head.appendChild(script);
+  function computeStats(data) {
+    const days=data.contributions;
+    const total=Object.values(data.total||{}).reduce((s,v)=>s+v,0)||days.reduce((s,d)=>s+d.count,0);
+    let cur=0,longest=0,run=0;
+    // Find last day with actual data (skip today if no commit yet)
+    let lastActive=days.length-1;
+    while(lastActive>0 && days[lastActive].count===0) lastActive--;
+    for(let i=lastActive;i>=0;i--){ if(days[i].count>0)cur++; else break; }
+    days.forEach(d=>{ if(d.count>0){run++;longest=Math.max(longest,run);}else run=0; });
+    if(totalEl)  totalEl.textContent=total;
+    if(streakEl) streakEl.textContent=cur;
+    if(longEl)   longEl.textContent=longest;
+  }
+}
+
+function drawCanvas(canvas, days) {
+  const COLS=52,ROWS=7,S=9,GAP=2;
+  canvas.width=COLS*(S+GAP)-GAP; canvas.height=ROWS*(S+GAP)-GAP;
+  canvas.style.width='100%'; canvas.style.height='auto';
+  const ctx=canvas.getContext('2d');
+  const dark=document.documentElement.getAttribute('data-theme')!=='light';
+  const fills=dark
+    ?['#1e2126','rgba(232,197,71,.18)','rgba(232,197,71,.48)','#e8c547']
+    :['#e5e7eb','#bbf7d0','#4ade80','#16a34a'];
+  days.slice(-COLS*ROWS).forEach((d,i)=>{
+    const x=Math.floor(i/ROWS)*(S+GAP), y=(i%ROWS)*(S+GAP);
+    const lvl=Math.min(d.level??(d.count===0?0:d.count<3?1:d.count<6?2:3),3);
+    ctx.fillStyle=fills[lvl];
+    ctx.beginPath();
+    if(ctx.roundRect) ctx.roundRect(x,y,S,S,2); else ctx.rect(x,y,S,S);
+    ctx.fill();
+  });
 }
 
 // ── Fire all ──────────────────────────────────────────
 loadChessStats();
 loadLeetCode();
-loadLetterboxd();
 loadWakatime();
+loadGithubCanvas();
 
 // ── Console vibe ──────────────────────────────────────
 console.log('%c portfolio loaded 🚀', 'color:#e8c547; font-size:13px; font-weight:bold;');

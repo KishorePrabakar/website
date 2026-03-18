@@ -346,131 +346,221 @@
 
     <div class="divider"></div>
 
-    <!-- Stats -->
+    <!-- 06 / What My Life Looks Like Right Now -->
     <section id="stats" class="reveal">
       <h2 class="section-title">06 / On the Internet</h2>
-      <p class="stats-intro">a slice of my digital life · live on every load</p>
+      <p class="stats-intro">what my life looks like right now</p>
 
-      <div class="bento">
+      <div class="life-grid">
 
-        <!-- A: GitHub — heatmap, spans 2 cols -->
-        <a href="https://github.com/KishorePrabakar" target="_blank" rel="noopener noreferrer" class="tile tile-github">
-          <div class="tile-chip">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.1.82-.26.82-.58v-2.03c-3.34.72-4.04-1.6-4.04-1.6-.55-1.38-1.33-1.75-1.33-1.75-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        <!-- SPOTIFY — tall left anchor -->
+        <a href="https://open.spotify.com/user/xdfp9g0u7hzf8aw47583ehxhl"
+           target="_blank" rel="noopener noreferrer"
+           class="lc lc-spotify" aria-label="Spotify">
+          <div class="lc-tag lc-tag-green">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+            Spotify
+          </div>
+          <div class="sp-dot"></div>
+          <p class="sp-label">listening to</p>
+          <img class="sp-art" loading="lazy"
+            src="https://spotify-github-profile.kittinanx.com/api/view?uid=xdfp9g0u7hzf8aw47583ehxhl&cover_image=true&theme=default&show_offline=false&background_color=121212&interchange=false&profanity=false"
+            alt="Now playing on Spotify"/>
+          <div class="sp-eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        </a>
+
+        <!-- BOOK — currently reading -->
+        <a href="https://www.navalmanack.com/" target="_blank" rel="noopener noreferrer" class="lc lc-book" aria-label="Currently reading">
+          <div class="lc-tag">📖 reading</div>
+          <div class="book-cover">
+            <div class="book-spine"></div>
+            <div class="book-face">
+              <div class="book-title-text">The Almanack of Naval Ravikant</div>
+              <div class="book-author-text">Eric Jorgenson</div>
+              <div class="book-deco">◆</div>
+            </div>
+          </div>
+          <p class="book-caption">on wealth &amp; happiness</p>
+        </a>
+
+        <!-- GITHUB — heatmap -->
+        <a href="https://github.com/KishorePrabakar"
+           target="_blank" rel="noopener noreferrer"
+           class="lc lc-github" aria-label="GitHub">
+          <div class="lc-tag">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.1.82-.26.82-.58v-2.03c-3.34.72-4.04-1.6-4.04-1.6-.55-1.38-1.33-1.75-1.33-1.75-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
             GitHub
           </div>
-          <div class="gh-top">
-            <img id="gh-streak-img" loading="lazy"
-              src="https://github-readme-streak-stats.herokuapp.com/?user=KishorePrabakar&hide_border=true&background=00000000&ring=e8c547&fire=e8c547&currStreakLabel=e8c547&sideLabels=4e5560&dates=4e5560&currStreakNum=f0f2f5&sideNums=c9cdd4&stroke=1e2126"
-              alt="GitHub Streak" class="gh-streak"/>
+          <!-- Stats row: 3 big numbers -->
+          <div class="gh-stats-trio" id="gh-trio">
+            <div class="gh-stat">
+              <span class="gh-stat-num" id="gh-total">—</span>
+              <span class="gh-stat-lbl">contributions</span>
+            </div>
+            <div class="gh-stat gh-stat-mid">
+              <span class="gh-stat-num gh-streak-num" id="gh-streak">—</span>
+              <span class="gh-stat-lbl">day streak 🔥</span>
+            </div>
+            <div class="gh-stat">
+              <span class="gh-stat-num" id="gh-longest">—</span>
+              <span class="gh-stat-lbl">longest</span>
+            </div>
           </div>
-          <img loading="lazy"
-            src="https://ghchart.rshah.org/e8c547/KishorePrabakar"
-            alt="Contribution chart" class="gh-heatmap"/>
-          <div class="gh-footer">contribution activity · github.com/KishorePrabakar</div>
+          <!-- custom contribution calendar -->
+          <canvas class="gh-canvas" id="gh-canvas"></canvas>
+          <div class="gh-canvas-foot">
+            <span class="gh-handle">@KishorePrabakar</span>
+            <span class="gh-canvas-legend">
+              <span class="gh-leg-box" style="background:var(--border)"></span>
+              <span class="gh-leg-box" style="background:rgba(232,197,71,.25)"></span>
+              <span class="gh-leg-box" style="background:rgba(232,197,71,.55)"></span>
+              <span class="gh-leg-box" style="background:var(--accent)"></span>
+            </span>
+          </div>
         </a>
 
-        <!-- B: WakaTime -->
-        <a href="https://wakatime.com/@kraxonyanks" target="_blank" rel="noopener noreferrer" class="tile tile-waka" id="waka-card">
-          <div class="tile-chip">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28a.485.485 0 0 1-.894.08l-2.35-4.07-1.94 2.08a.488.488 0 0 1-.88-.28V11.5l-3.93-2.1a.487.487 0 0 1 .09-.9l10.45-4.02a.487.487 0 0 1 .425.741z"/></svg>
-            WakaTime <span class="live-pip"></span>
-          </div>
-          <div id="waka-loading" class="tile-loading">—</div>
-          <div id="waka-body" style="display:none">
-            <div class="waka-hero-num" id="waka-total">—</div>
-            <div class="waka-hero-sub" id="waka-sub">this week</div>
-            <div class="waka-bars" id="waka-langs"></div>
-            <div class="waka-chart" id="waka-days"></div>
-          </div>
-          <div id="waka-error" style="display:none" class="tile-err">offline</div>
-        </a>
-
-        <!-- C: LeetCode donut -->
-        <a href="https://leetcode.com/u/KishorePrabakar/" target="_blank" rel="noopener noreferrer" class="tile tile-lc" id="lc-card">
-          <div class="tile-chip">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z"/></svg>
-            LeetCode <span class="live-pip"></span>
-          </div>
-          <div id="lc-loading" class="tile-loading">—</div>
-          <div id="lc-body" style="display:none">
-            <div class="lc-donut-wrap">
-              <svg class="lc-donut" viewBox="0 0 100 100">
-                <circle class="lc-track"      cx="50" cy="50" r="38"/>
-                <circle class="lc-arc lc-easy"   cx="50" cy="50" r="38" id="arc-easy"   stroke-dasharray="0 239" stroke-dashoffset="0"/>
-                <circle class="lc-arc lc-medium" cx="50" cy="50" r="38" id="arc-medium" stroke-dasharray="0 239" stroke-dashoffset="0"/>
-                <circle class="lc-arc lc-hard"   cx="50" cy="50" r="38" id="arc-hard"   stroke-dasharray="0 239" stroke-dashoffset="0"/>
-              </svg>
-              <div class="lc-center">
-                <span class="lc-big-num" id="lc-solved-num">—</span>
-                <span class="lc-big-lbl">solved</span>
+        <!-- WATCHING — Breaking Bad -->
+        <a href="https://letterboxd.com/kraxondrafts/films/diary/" target="_blank" rel="noopener noreferrer" class="lc lc-watch" aria-label="Currently watching">
+          <div class="lc-tag">🎬 watching</div>
+          <div class="watch-layout">
+            <img class="watch-cover" loading="lazy"
+              src="https://m.media-amazon.com/images/M/MV5BYmQ4YWMxYjUtNjZmYi00MDdmLWJjOTUtYjc2OGZiNzFjN2FiXkEyXkFqcGdeQXVyMTMzNDExODE5._V1_SX300.jpg"
+              alt="Breaking Bad"
+              onerror="this.style.display='none'"
+            />
+            <div class="watch-inner">
+              <div class="watch-show">Breaking Bad</div>
+              <div class="watch-meta">AMC · Drama · 2008</div>
+              <div class="watch-bar">
+                <div class="watch-progress"></div>
               </div>
-            </div>
-            <div class="lc-legend" id="lc-legend"></div>
-            <div class="lc-rank"   id="lc-rank"></div>
-          </div>
-          <div id="lc-error" style="display:none" class="tile-err">offline</div>
-        </a>
-
-        <!-- D: Spotify -->
-        <a href="https://open.spotify.com/user/xdfp9g0u7hzf8aw47583ehxhl" target="_blank" rel="noopener noreferrer" class="tile tile-spotify">
-          <div class="tile-chip">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
-            Spotify
-            <span class="live-pip" style="background:#1DB954;box-shadow:0 0 5px #1DB954;animation:none;"></span>
-          </div>
-          <div class="spotify-inner">
-            <div class="spotify-label">now playing</div>
-            <img loading="lazy"
-              src="https://spotify-github-profile.kittinanx.com/api/view?uid=xdfp9g0u7hzf8aw47583ehxhl&cover_image=true&theme=default&show_offline=false&background_color=121212&interchange=false&profanity=false"
-              alt="Now playing" class="spotify-card-img"/>
-            <div class="spotify-eq">
-              <span class="spotify-bar"></span>
-              <span class="spotify-bar"></span>
-              <span class="spotify-bar"></span>
-              <span class="spotify-bar"></span>
-              <span class="spotify-bar"></span>
+              <div class="watch-ep">currently bingeing</div>
             </div>
           </div>
+          <div class="watch-badge">★ 9.5 / 10</div>
         </a>
 
-        <!-- E: Location -->
-        <div class="tile tile-location">
-          <div class="tile-chip">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            Location
+        <!-- X / TWITTER profile -->
+        <a href="https://x.com/KishorePr24" target="_blank" rel="noopener noreferrer"
+           class="lc lc-x" aria-label="X profile">
+          <div class="lc-tag lc-tag-x">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.259 5.626L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/></svg>
+            @KishorePr24
           </div>
-          <div class="loc-place">Karur, TN</div>
-          <div class="loc-country">India 🇮🇳</div>
+          <div class="x-handle">Kishore Prabakar</div>
+          <div class="x-bio">backend &amp; ai developer. building scalable things. tech optimist.</div>
+          <div class="x-stats">
+            <span><b>@KishorePr24</b></span>
+            <span>on X / Twitter</span>
+          </div>
+          <div class="x-cta">view profile →</div>
+        </a>
+
+        <!-- RESUME -->
+        <a href="https://drive.google.com/file/d/1PbiStNiqqVVH7gHYKMWmHeXZQKbFeJ0B/view"
+           target="_blank" rel="noopener noreferrer"
+           class="lc lc-resume" aria-label="Resume">
+          <div class="lc-tag">📄 résumé</div>
+          <div class="resume-content">
+            <div class="resume-name">Kishore Prabakar</div>
+            <div class="resume-role">Backend &amp; AI Developer</div>
+            <div class="resume-divider"></div>
+            <div class="resume-line-item">
+              <span class="resume-dot"></span>
+              <span>Node.js · Express · REST</span>
+            </div>
+            <div class="resume-line-item">
+              <span class="resume-dot"></span>
+              <span>PostgreSQL · MongoDB · Redis</span>
+            </div>
+            <div class="resume-line-item">
+              <span class="resume-dot"></span>
+              <span>LLMs · RAG · Embeddings</span>
+            </div>
+          </div>
+          <div class="resume-cta">open PDF ↗</div>
+        </a>
+
+        <!-- LOCATION + CLOCK -->
+        <div class="lc lc-loc">
+          <div class="lc-tag">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Karur, India
+          </div>
           <div class="loc-time" id="local-time">—</div>
-          <div class="loc-tz">IST · UTC +5:30</div>
-          <div class="loc-badge">open to remote ✦</div>
+          <div class="loc-tz">IST · UTC+5:30</div>
+          <div class="loc-flag">🇮🇳</div>
+          <div class="loc-open">open to remote ✦</div>
         </div>
 
-        <!-- F: Chess -->
-        <a href="https://www.chess.com/member/kraxonknight" target="_blank" rel="noopener noreferrer" class="tile tile-chess" id="chess-card">
-          <div class="tile-chip">♟ Chess.com <span class="live-pip"></span></div>
-          <div id="chess-loading" class="tile-loading">—</div>
+        <!-- CHESS -->
+        <a href="https://www.chess.com/member/kraxonknight"
+           target="_blank" rel="noopener noreferrer"
+           class="lc lc-chess" id="chess-card" aria-label="Chess.com">
+          <div class="lc-tag">♟ Chess.com <span class="lc-pip" id="chess-pip"></span></div>
+          <div id="chess-loading" class="lc-skeleton"></div>
           <div id="chess-body" style="display:none">
-            <div class="chess-modes" id="chess-ratings"></div>
-            <div class="chess-rec"   id="chess-record"></div>
+            <div class="ch-modes" id="chess-ratings"></div>
+            <div class="ch-rec"   id="chess-record"></div>
           </div>
-          <div id="chess-error" style="display:none" class="tile-err">offline</div>
+          <div id="chess-error" class="lc-err" style="display:none">offline</div>
         </a>
 
-        <!-- G: Letterboxd -->
-        <a href="https://letterboxd.com/kraxondrafts/" target="_blank" rel="noopener noreferrer" class="tile tile-lb" id="lb-card">
-          <div class="tile-chip">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M11.988 0C5.366 0 0 5.366 0 11.988 0 18.61 5.366 24 11.988 24 18.61 24 24 18.61 24 11.988 24 5.366 18.61 0 11.988 0zM7.67 15.953L5.56 12l2.11-3.953h2.346L7.906 12l2.11 3.953zm4.318 0L9.878 12l2.11-3.953h2.346L12.224 12l2.11 3.953zm4.318 0L14.196 12l2.11-3.953h2.346L16.541 12l2.11 3.953z"/></svg>
-            Letterboxd
-            <span class="live-pip" style="background:#00c030;box-shadow:0 0 5px #00c030;"></span>
+        <!-- WAKATIME + LEETCODE side by side in one row -->
+        <!-- WAKATIME -->
+        <a href="https://wakatime.com/@kraxonyanks"
+           target="_blank" rel="noopener noreferrer"
+           class="lc lc-waka" id="waka-card" aria-label="WakaTime">
+          <div class="lc-tag">⏱ WakaTime <span class="lc-pip" id="waka-pip"></span></div>
+          <div id="waka-loading" class="lc-skeleton"></div>
+          <div id="waka-body" style="display:none">
+            <!-- arc chart -->
+            <div class="wk-arc-wrap">
+              <svg class="wk-arc-svg" id="wk-arc-svg" viewBox="0 0 120 120"></svg>
+              <div class="wk-arc-center">
+                <div class="wk-arc-total" id="wk-arc-total">—</div>
+                <div class="wk-arc-sub">this week</div>
+              </div>
+            </div>
+            <!-- language legend -->
+            <div class="wk-legend" id="wk-legend"></div>
           </div>
-          <div id="lb-loading" class="tile-loading">—</div>
-          <div id="lb-body" style="display:none">
-            <div class="lb-films" id="lb-films"></div>
-            <div class="lb-foot"  id="lb-footer"></div>
+          <div id="waka-error" class="lc-err" style="display:none">
+            <img loading="lazy" class="waka-dark"
+              src="https://github-readme-stats.vercel.app/api/wakatime?username=kraxonyanks&hide_border=true&bg_color=141618&title_color=e8c547&text_color=c9cdd4&icon_color=e8c547&langs_count=5&hide_title=true&line_height=24"
+              alt="WakaTime stats" style="width:100%;border-radius:5px"/>
+            <img loading="lazy" class="waka-light"
+              src="https://github-readme-stats.vercel.app/api/wakatime?username=kraxonyanks&hide_border=true&bg_color=f9fafb&title_color=16a34a&text_color=111827&icon_color=16a34a&langs_count=5&hide_title=true&line_height=24"
+              alt="WakaTime stats" style="width:100%;border-radius:5px"/>
           </div>
-          <div id="lb-error" style="display:none" class="tile-err">offline</div>
+        </a>
+
+        <!-- LEETCODE -->
+        <a href="https://leetcode.com/u/KishorePrabakar/"
+           target="_blank" rel="noopener noreferrer"
+           class="lc lc-leet" id="lc-card" aria-label="LeetCode">
+          <div class="lc-tag">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z"/></svg>
+            LeetCode <span class="lc-pip" id="lc-pip"></span>
+          </div>
+          <div id="lc-loading" class="lc-skeleton"></div>
+          <div id="lc-body" style="display:none">
+            <div class="lc-ring-wrap">
+              <svg class="lc-svg" viewBox="0 0 80 80">
+                <circle class="lc-bg"  cx="40" cy="40" r="32"/>
+                <circle class="lc-seg lc-seg-e" cx="40" cy="40" r="32" id="seg-easy"   stroke-dasharray="0 201" stroke-dashoffset="0"/>
+                <circle class="lc-seg lc-seg-m" cx="40" cy="40" r="32" id="seg-medium" stroke-dasharray="0 201" stroke-dashoffset="0"/>
+                <circle class="lc-seg lc-seg-h" cx="40" cy="40" r="32" id="seg-hard"   stroke-dasharray="0 201" stroke-dashoffset="0"/>
+              </svg>
+              <div class="lc-center">
+                <span class="lc-num" id="lc-solved-num">—</span>
+                <span class="lc-lbl">solved</span>
+              </div>
+            </div>
+            <div class="lc-rows" id="lc-rows"></div>
+            <div class="lc-foot" id="lc-foot"></div>
+          </div>
+          <div id="lc-error" class="lc-err" style="display:none">offline</div>
         </a>
 
       </div>
