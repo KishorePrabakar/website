@@ -391,49 +391,11 @@ function loadWakatime() {
     if(pip) pip.style.cssText='background:#f87171;box-shadow:0 0 5px #f87171';
   }
 
-  const cached = cacheGet('waka_v3');
+  const cached = cacheGet('waka_v4');
   if (cached?.languages?.length) { renderArc(cached.languages, cached.total||''); return; }
 
   async function tryAPI() {
-    try {
-      const url   = 'https://wakatime.com/api/v1/users/kraxonyanks/stats/last_7_days';
-      const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-      const res   = await Promise.race([fetch(proxy),new Promise((_,r)=>setTimeout(()=>r(),6000))]);
-      if(!res?.ok) throw 0;
-      const {contents}=await res.json();
-      const d=JSON.parse(contents)?.data;
-      if(!d?.languages?.length) throw 0;
-      const ls=d.languages.map(l=>({name:l.name,text:l.text,percent:l.percent}));
-      const tot=d.grand_total?.human_readable_total||d.grand_total?.text||'';
-      cacheSet('waka_v3',{languages:ls,total:tot});
-      return {ls,total:tot};
-    } catch { return null; }
-  }
-
-  async function run() {
-    // Step 1: JSONP — no proxy, works on Vercel and all deployments
-    const jsonpOk = await new Promise(resolve => {
-      const timer = setTimeout(() => resolve(false), 6000);
-      window._wakaCallback = function(r) {
-        clearTimeout(timer);
-        try {
-          const data = r?.data ?? r;
-          if (!data?.languages?.length) { resolve(false); return; }
-          const ls  = data.languages.map(l => ({name:l.name, text:l.text, percent:l.percent}));
-          const tot = data.grand_total?.human_readable_total || data.grand_total?.text || '';
-          cacheSet('waka_v3', {languages:ls, total:tot});
-          renderArc(ls, tot);
-          resolve(true);
-        } catch { resolve(false); }
-      };
-      const s = document.createElement('script');
-      s.onerror = () => { clearTimeout(timer); resolve(false); };
-      s.src = 'https://wakatime.com/share/@kraxonyanks/6804776e-f4c6-4051-b7b7-3607a7851030.json?callback=_wakaCallback';
-      document.head.appendChild(s);
-    });
-    if (jsonpOk) return;
-
-    // Step 2: try multiple CORS proxies for the public API
+    // Try multiple CORS proxies for the public WakaTime API
     const wakaUrl = 'https://wakatime.com/api/v1/users/kraxonyanks/stats/last_7_days';
     const proxyFns = [
       u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
@@ -450,11 +412,96 @@ function loadWakatime() {
         if (!d?.languages?.length) continue;
         const ls  = d.languages.map(l => ({name:l.name, text:l.text, percent:l.percent}));
         const tot = d.grand_total?.human_readable_total || d.grand_total?.text || '';
-        cacheSet('waka_v3', {languages:ls, total:tot});
-        renderArc(ls, tot);
-        return;
+        cacheSet('waka_v4', {languages:ls, total:tot});
+        return {ls, total:tot};
       } catch { continue; }
     }
+    return null;
+  }
+
+  // Parse github-readme-stats wakatime SVG to extract real data
+  async function tryGRSSVG() {
+    try {
+      const svgUrl = 'https://github-readme-stats.vercel.app/api/wakatime?username=kraxonyanks&langs_count=6&hide_border=true&layout=compact&hide_title=true';
+      const proxy  = `https://corsproxy.io/?${encodeURIComponent(svgUrl)}`;
+      const res = await Promise.race([fetch(proxy), new Promise((_,r)=>setTimeout(()=>r(),6000))]);
+      if (!res?.ok) throw 0;
+      const svg  = await res.text();
+      if (svg.includes('No coding activity')) throw 0;
+
+      // GRS compact SVG has language names and times as text nodes
+      // Pattern: "LangName" then "Xh Ym" then "X%"
+      const nameRe = /(?:^|>)([A-Za-z+#.]+(?:\s[A-Za-z]+)?)\s*(?:<|$)/g;
+      const timeRe = /(\d+\s*(?:hr|hrs|min|mins|sec|secs)(?:\s*\d+\s*(?:hr|hrs|min|mins|sec|secs))?)/gi;
+      const pctRe  = /(\d+(?:\.\d+)?)\s*%/g;
+
+      // Simpler: extract all text content between > and <
+      const texts = [...svg.matchAll(/>([^<]{1,40})</g)]
+        .map(m => m[1].trim())
+        .filter(t => t.length > 0 && !t.startsWith('M') && !t.match(/^\d+$/));
+
+      const langs = [];
+      const timePat = /^\d+\s*(hr|min|sec)/i;
+      const pctPat  = /^(\d+\.?\d*)\s*%$/;
+      let i = 0;
+      while (i < texts.length && langs.length < 6) {
+        // If current is a name and next is a time
+        if (!timePat.test(texts[i]) && !pctPat.test(texts[i]) && texts[i].length > 1) {
+          const name = texts[i];
+          let time = '', pct = 0;
+          for (let j = i+1; j < Math.min(i+5, texts.length); j++) {
+            if (timePat.test(texts[j]) && !time) time = texts[j];
+            const pm = texts[j].match(pctPat);
+            if (pm && !pct) pct = parseFloat(pm[1]);
+          }
+          if (time && pct > 0) {
+            langs.push({name, text: time, percent: pct});
+            i += 3;
+            continue;
+          }
+        }
+        i++;
+      }
+      if (langs.length < 2) throw 0;
+      // Normalize
+      const sum = langs.reduce((s,l)=>s+l.percent,0);
+      langs.forEach(l => l.percent = (l.percent/sum)*100);
+      return langs;
+    } catch { return null; }
+  }
+
+
+  async function run() {
+    // Step 1: JSONP share URL — no proxy needed
+    const jsonpOk = await new Promise(resolve => {
+      const timer = setTimeout(() => resolve(false), 5000);
+      window._wakaCallback = function(r) {
+        clearTimeout(timer);
+        try {
+          const data = r?.data ?? r;
+          if (!data?.languages?.length) { resolve(false); return; }
+          const ls  = data.languages.map(l => ({name:l.name, text:l.text, percent:l.percent}));
+          const tot = data.grand_total?.human_readable_total || data.grand_total?.text || '';
+          cacheSet('waka_v4', {languages:ls, total:tot});
+          renderArc(ls, tot);
+          resolve(true);
+        } catch { resolve(false); }
+      };
+      const s = document.createElement('script');
+      s.onerror = () => { clearTimeout(timer); resolve(false); };
+      s.src = 'https://wakatime.com/share/@kraxonyanks/cd2f1903-a58f-4026-9514-6d8affbf5ba5.json?callback=_wakaCallback';
+      document.head.appendChild(s);
+    });
+    if (jsonpOk) return;
+
+    // Step 2: proxy chain for public API
+    const api = await tryAPI();
+    if (api) { renderArc(api.ls, api.total); return; }
+
+    // Step 3: parse GRS wakatime SVG — extracts real data to draw our arc
+    const grsLangs = await tryGRSSVG();
+    if (grsLangs) { renderArc(grsLangs, ''); return; }
+
     showFallback();
   }
   run();
