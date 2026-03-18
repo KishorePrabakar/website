@@ -411,26 +411,51 @@ function loadWakatime() {
   }
 
   async function run() {
-    const api = await tryAPI();
-    if(api) { renderArc(api.ls, api.total); return; }
+    // Step 1: JSONP — no proxy, works on Vercel and all deployments
+    const jsonpOk = await new Promise(resolve => {
+      const timer = setTimeout(() => resolve(false), 6000);
+      window._wakaCallback = function(r) {
+        clearTimeout(timer);
+        try {
+          const data = r?.data ?? r;
+          if (!data?.languages?.length) { resolve(false); return; }
+          const ls  = data.languages.map(l => ({name:l.name, text:l.text, percent:l.percent}));
+          const tot = data.grand_total?.human_readable_total || data.grand_total?.text || '';
+          cacheSet('waka_v3', {languages:ls, total:tot});
+          renderArc(ls, tot);
+          resolve(true);
+        } catch { resolve(false); }
+      };
+      const s = document.createElement('script');
+      s.onerror = () => { clearTimeout(timer); resolve(false); };
+      s.src = 'https://wakatime.com/share/@kraxonyanks/6804776e-f4c6-4051-b7b7-3607a7851030.json?callback=_wakaCallback';
+      document.head.appendChild(s);
+    });
+    if (jsonpOk) return;
 
-    // JSONP fallback
-    const timer = setTimeout(showFallback, 5000);
-    window._wakaCallback = function(r) {
-      clearTimeout(timer);
+    // Step 2: try multiple CORS proxies for the public API
+    const wakaUrl = 'https://wakatime.com/api/v1/users/kraxonyanks/stats/last_7_days';
+    const proxyFns = [
+      u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+      u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+      u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+    ];
+    for (const fn of proxyFns) {
       try {
-        const data=r?.data??r;
-        if(!data?.languages?.length) throw 0;
-        const ls=data.languages.map(l=>({name:l.name,text:l.text,percent:l.percent}));
-        const tot=data.grand_total?.human_readable_total||data.grand_total?.text||'';
-        cacheSet('waka_v3',{languages:ls,total:tot});
-        renderArc(ls,tot);
-      } catch { showFallback(); }
-    };
-    const s=document.createElement('script');
-    s.onerror=()=>{clearTimeout(timer);showFallback();};
-    s.src='https://wakatime.com/share/@kraxonyanks/6804776e-f4c6-4051-b7b7-3607a7851030.json?callback=_wakaCallback';
-    document.head.appendChild(s);
+        const res = await Promise.race([fetch(fn(wakaUrl)), new Promise((_,r)=>setTimeout(()=>r(),5000))]);
+        if (!res?.ok) continue;
+        const body = await res.json();
+        const raw  = body?.contents ? JSON.parse(body.contents) : body;
+        const d    = raw?.data ?? raw;
+        if (!d?.languages?.length) continue;
+        const ls  = d.languages.map(l => ({name:l.name, text:l.text, percent:l.percent}));
+        const tot = d.grand_total?.human_readable_total || d.grand_total?.text || '';
+        cacheSet('waka_v3', {languages:ls, total:tot});
+        renderArc(ls, tot);
+        return;
+      } catch { continue; }
+    }
+    showFallback();
   }
   run();
 }
