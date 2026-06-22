@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NEO — Kishore Prabakar</title>
+  <meta name="description" content="Kishore Prabakar's placement prep tracker" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: #090909; color: #e0e0e0; font-family: 'Inter', system-ui, sans-serif; }
+    #root { min-height: 100vh; }
+    button { font-family: inherit; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+
+// ─── DATE CONSTANTS ───────────────────────────────────────────────────────────
+const START_DATE = "2026-06-22";
+const END_DATE   = "2026-08-01";
+const PHASE_CUT  = "2026-07-15";
+
+// ─── CURRICULUM DATA ─────────────────────────────────────────────────────────
+const DSA_SECTIONS = [
+  { id:"arrays", label:"Arrays", items:["Two Pointer — opposite ends (pair sum, container with most water)","Two Pointer — same direction / slow-fast (remove duplicates, move zeroes)","Sliding Window — fixed size (max sum subarray of size k)","Sliding Window — variable size (longest substring without repeat)","Prefix Sum — range sum queries, subarray sum equals k","Prefix XOR — subarray XOR queries","Difference Array — range update queries in O(1)","Kadane's Algorithm — maximum subarray sum","Dutch National Flag — 3-way partition (sort 0s, 1s, 2s)","Moore's Voting Algorithm — majority element","Merge Intervals — overlapping interval merging, insert interval","Activity Selection / Greedy Interval Scheduling","Sweep Line — event-based interval problems","Cyclic Sort — find missing/duplicate in range [1, n]","In-place Rotation — rotate array by k","Next Permutation — lexicographically next arrangement","Jump Game / Greedy Reachability","Trapping Rain Water — two pointer and stack","Stock Buy-Sell — single, multiple, cooldown, k transactions","Product of Array Except Self — no division trick","Subarray with Given XOR","Count Inversions — merge sort approach","Longest Consecutive Sequence — hash set O(n)"]},
+  { id:"strings", label:"Strings", items:["Sliding Window on Strings — anagram check, permutation in string","Two Pointer on Strings — valid palindrome, reverse words","Hashing / Frequency Map — character count comparison","KMP — pattern matching with failure function","Z-Algorithm — pattern matching via Z-array","Rabin-Karp — rolling hash pattern matching","Trie Insert / Search / Delete","Trie — prefix count, word search II","Manacher's Algorithm — longest palindromic substring O(n)","Expand Around Center — palindrome detection","String Hashing — polynomial rolling hash","Anagram Grouping — sorted key / frequency key","Balanced Parentheses — stack-based validation","Minimum Bracket Reversal","Decode Ways — DP on strings","Wildcard Matching — DP (? and *)","Regular Expression Matching — DP (. and *)","Edit Distance (Levenshtein)","Longest Palindromic Subsequence","Count Distinct Subsequences"]},
+  { id:"hashing", label:"Hashing & Maps", items:["HashMap for frequency count","HashMap for index tracking (two sum, subarray sum = k)","HashMap for grouping / bucketing","Prefix Sum + HashMap — zero sum subarray, divisible by k","Rolling Hash — duplicate substring detection","LRU Cache — doubly linked list + hashmap","LFU Cache — doubly linked list + two hashmaps"]},
+  { id:"sorting", label:"Sorting", items:["Comparison-based lower bound — Ω(n log n)","Merge Sort — divide and conquer, stable sort","Quick Sort — Lomuto / Hoare partitioning, pivot strategies","Heap Sort — in-place using max-heap","Counting Sort — integer keys in [0, k]","Radix Sort — digit-by-digit","Bucket Sort — uniform distribution","Topological Sort — DFS-based and Kahn's BFS-based","Partial Sort / Quickselect — k-th smallest"]},
+  { id:"binsearch", label:"Binary Search", items:["Binary Search — classic sorted array","Binary Search on Answer — monotonic predicate","Lower Bound / Upper Bound — first/last occurrence","Search in Rotated Sorted Array","Find Peak Element","Kth Smallest in Sorted Matrix","Aggressive Cows / Allocate Minimum Pages","Capacity to Ship Packages in D Days","Median of Two Sorted Arrays — O(log(min(m,n)))","Nth Root using Binary Search"]},
+  { id:"backtrack", label:"Recursion & Backtracking", items:["Subset Generation — power set","Subsets with Duplicates","Combination Sum — unbounded and bounded","Permutations — with and without duplicates","N-Queens Problem","Sudoku Solver","Word Search in Grid","Palindrome Partitioning","Letter Combinations of Phone Number","Generate Parentheses","Rat in a Maze","M-Coloring Problem","Expression Add Operators"]},
+  { id:"linkedlist", label:"Linked List", items:["Reverse a Linked List — iterative and recursive","Detect Cycle — Floyd's Tortoise and Hare","Find Cycle Start Node","Find Middle Node — slow-fast pointer","Merge Two Sorted Lists","Merge K Sorted Lists — heap or divide and conquer","Remove Nth Node from End","Intersection of Two Linked Lists","Flatten a Multilevel Linked List","Deep Copy with Random Pointers","Reverse Nodes in k-Group","Add Two Numbers as Linked Lists","Sort Linked List — merge sort","Reorder List — find middle, reverse, merge","Palindrome Linked List"]},
+  { id:"stack", label:"Stack", items:["Valid Parentheses / Matching Brackets","Next Greater Element — monotonic stack","Next Smaller Element","Previous Greater / Smaller Element","Largest Rectangle in Histogram — monotonic stack","Maximal Rectangle in Binary Matrix","Daily Temperatures","Asteroid Collision","Decode String — stack-based","Evaluate Reverse Polish Notation","Min Stack — O(1) getMin","Implement Queue using Two Stacks","Celebrity Problem — stack elimination"]},
+  { id:"queue", label:"Queue & Deque", items:["Sliding Window Maximum — monotonic deque","First Non-Repeating Character in Stream","BFS using Queue","Circular Queue implementation","Implement Stack using Queues"]},
+  { id:"trees", label:"Trees", items:["Inorder / Preorder / Postorder — recursive and iterative","Level Order Traversal — BFS","Zigzag Level Order Traversal","Vertical Order Traversal","Boundary Traversal","Morris Traversal — O(1) space inorder","Height / Depth of Binary Tree","Diameter of Binary Tree","Maximum Path Sum","Balanced Binary Tree check","Symmetric Tree check","LCA — binary tree and BST","Serialize and Deserialize Binary Tree","Flatten Binary Tree to Linked List","Construct Tree from Inorder + Preorder / Postorder","Right Side View of Binary Tree","Count Nodes in Complete Binary Tree","BST Insert / Delete / Search","Validate BST","Kth Smallest in BST — inorder","Convert Sorted Array to BST","BST to Greater Sum Tree","Recover BST — two swapped nodes","Segment Tree — build, point update, range query","Lazy Propagation in Segment Tree","Fenwick Tree / BIT — prefix sum updates O(log n)","Sparse Table — RMQ O(1) query"]},
+  { id:"heaps", label:"Heaps & Priority Queue", items:["Min-Heap and Max-Heap operations — insert, extract, heapify","K Largest / K Smallest Elements","Kth Largest in a Stream","Top K Frequent Elements","Sort a K-sorted Array","Merge K Sorted Arrays","Median of a Data Stream — two-heap approach","Task Scheduler — greedy with heap","Find Minimum Cost to Connect Ropes","Maximum Sum Combination from Two Arrays"]},
+  { id:"graphs", label:"Graphs", items:["Graph Representation — adjacency list, matrix, edge list","BFS — shortest path in unweighted graph","DFS — connected components, cycle detection","Cycle Detection in Undirected Graph — DFS / Union-Find","Cycle Detection in Directed Graph — DFS with color marking","Topological Sort — DFS and Kahn's","Bipartite Graph Check — 2-coloring","SCC — Kosaraju's Algorithm","SCC — Tarjan's Algorithm","Articulation Points and Bridges — Tarjan's","Dijkstra's Algorithm — single source shortest path","Bellman-Ford — negative weights, negative cycle detection","Floyd-Warshall — all pairs shortest path","Prim's Algorithm — Minimum Spanning Tree","Kruskal's Algorithm — MST using Union-Find","Union-Find / DSU — path compression + union by rank","Multi-source BFS / 0-1 BFS — rotten oranges","Flood Fill — DFS/BFS on grid","Number of Islands","Word Ladder — BFS shortest transformation","Alien Dictionary — topological sort","Course Schedule — cycle detection","Clone a Graph","Cheapest Flights within K Stops","Critical Connections — bridges","Eulerian Path and Circuit"]},
+  { id:"dp", label:"Dynamic Programming", items:["0/1 Knapsack — tabulation and memoization","Unbounded Knapsack — coin change (min coins, count ways), rod cutting","Subset Sum / Partition Equal Subset Sum","Minimum Subset Sum Difference","Count Subsets with Given Sum / Target Sum","Longest Common Subsequence (LCS)","Shortest Common Supersequence","Minimum Insertions/Deletions to convert string","Edit Distance DP","Wildcard Matching DP / Regex Matching DP","Longest Increasing Subsequence — O(n²) and O(n log n)","Longest Bitonic Subsequence","Russian Doll Envelopes — 2D LIS","Matrix Chain Multiplication","Burst Balloons","Palindrome Partitioning II — minimum cuts","Egg Drop Problem","Interleaving Strings","DP on Trees — diameter, max path sum","DP on Grids — unique paths, min path sum, dungeon game","Digit DP — count numbers with property in range [L, R]","Bitmask DP — TSP, assignment problem","Interval DP — burst balloons, matrix chain","DP on Stocks — k transactions, cooldown, fee","Catalan Numbers — via DP","House Robber — linear, circular, tree DP","Staircase / Fibonacci variants — climbing stairs, decode ways"]},
+  { id:"greedy", label:"Greedy", items:["Activity Selection / Interval Scheduling","Job Sequencing with Deadlines","Minimum Platforms","Huffman Encoding","Gas Station — circular route feasibility","Candy Distribution","Minimum Arrows to Burst Balloons","Non-overlapping Intervals — minimum removal","Largest Number from Array","Meeting Rooms — minimum rooms needed","Reorganize String"]},
+  { id:"bitmanip", label:"Bit Manipulation", items:["Check / Set / Clear / Toggle a bit","Count set bits — Brian Kernighan's algorithm","Power of 2 check — n & (n-1) == 0","XOR properties — find single non-duplicate, find two non-repeating","Find missing number — XOR all indices and values","Generate all subsets using bitmask","Bitmask DP","Reverse bits / Number of bits to flip"]},
+  { id:"math", label:"Math & Number Theory", items:["GCD and LCM — Euclidean algorithm","Extended Euclidean Algorithm","Modular Exponentiation — fast power","Modular Inverse — Fermat's little theorem","Sieve of Eratosthenes — prime generation","Segmented Sieve","Prime Factorization","Euler's Totient Function φ(n)","Chinese Remainder Theorem","Binomial Coefficient with modular inverse","Combinatorics — permutations, combinations, inclusion-exclusion","Trailing Zeros in n! — Legendre's formula"]},
+  { id:"misc", label:"Misc Patterns", items:["Meet in the Middle — knapsack on large n","Reservoir Sampling, Fisher-Yates Shuffle","Two Sum / Three Sum / Four Sum","Monotonic Stack pattern — generalized template","Monotonic Queue pattern — generalized template","Fast and Slow Pointer — generalized template","Sqrt Decomposition — range queries"]},
+];
+
+const CORE_SECTIONS = [
+  { id:"python", label:"Python", items:["GIL — impact on multithreading, multiprocessing for CPU-bound","Python Memory Model — reference counting, garbage collection","Mutable vs Immutable — list vs tuple, dict key hashability","List Comprehensions, Generator Expressions — lazy eval","Iterators vs Generators — __iter__, __next__, yield, yield from","Decorators — function, class decorators, functools.wraps","Context Managers — with, __enter__/__exit__, contextlib","Closures — free variables, LEGB scope resolution","functools — lru_cache, partial, reduce","Dunder Methods — __str__, __repr__, __eq__, __hash__, __len__","Dataclasses — @dataclass, field(), comparison and hashing","Type Hints — Optional, Union, TypeVar, Generic","asyncio — event loop, coroutines, async/await, gather, create_task","asyncio vs threading vs multiprocessing — I/O vs CPU bound","Exception Handling — custom exceptions, exception chaining, finally"]},
+  { id:"java", label:"Java", items:["JVM Architecture — ClassLoader, JIT compiler, Heap vs Stack","Java Memory Model — heap (young/old gen), Metaspace","Garbage Collection — mark-and-sweep, G1GC, Serial, Parallel GC","OOP Principles — Encapsulation, Inheritance, Polymorphism, Abstraction","final / finally / finalize — distinctions","Abstract Class vs Interface — default methods, multiple inheritance","Generics — type parameters, bounded wildcards","Collections Framework — List, Set, Map, Queue hierarchy","ArrayList vs LinkedList — internals, time complexities","HashMap internals — hash function, buckets, load factor, treeification","ConcurrentHashMap — segment locking vs CAS (Java 8+)","TreeMap vs HashMap vs LinkedHashMap — ordering","Java Streams API — map, filter, reduce, collect, flatMap","Lambda Expressions and Functional Interfaces — Predicate, Function","String vs StringBuilder vs StringBuffer — immutability, thread safety","Exception Hierarchy — Throwable, Error, checked vs unchecked","Multithreading — Thread, Runnable, Callable, Future, ExecutorService","synchronized / volatile — visibility, happens-before","ReentrantLock, ReadWriteLock — explicit locking","CountDownLatch, CyclicBarrier, Semaphore","BlockingQueue — ArrayBlockingQueue, producer-consumer","CompletableFuture — thenApply, thenCompose, allOf","Design Patterns in Java — Singleton, Builder, Factory, Observer","equals() and hashCode() contract","Java I/O vs NIO — blocking vs non-blocking, Channel, Selector","SOLID Principles applied in Java"]},
+  { id:"js", label:"JavaScript & Node.js", items:["Event Loop — call stack, Web APIs, callback queue, microtask queue","Microtasks vs Macrotasks — Promise before setTimeout","Promises — .then(), .catch(), .finally(), chaining","async/await — error handling with try/catch","Promise.all, race, allSettled, any","Closures in JS — lexical scoping, IIFE","Prototype Chain — __proto__, Object.create(), class syntax","this keyword — default, implicit, explicit, new binding","var vs let vs const — hoisting, temporal dead zone","Node.js Non-blocking I/O — libuv, thread pool, event-driven","Node.js Streams — Readable, Writable, Transform, pipe","Express.js — middleware chain, routing, error handling middleware","JWT Auth — header.payload.signature, HS256 vs RS256"]},
+  { id:"fastapi", label:"FastAPI & Async Backend", items:["ASGI vs WSGI — why FastAPI uses ASGI","Uvicorn / Gunicorn — worker processes, concurrency model","FastAPI Dependency Injection — Depends(), scoped dependencies","Pydantic v2 — BaseModel, model_validator, field_validator","FastAPI Request Lifecycle — middleware → routing → dependency → response","Background Tasks in FastAPI — offloading non-critical work","WebSocket support in FastAPI — connection manager pattern","SSE — StreamingResponse, async generator for LLM streaming","OAuth2 + JWT in FastAPI — OAuth2PasswordBearer, token scopes","FastAPI with SQLAlchemy — async sessions, get_db dependency","Alembic Migrations — autogenerate, upgrade/downgrade","Rate Limiting patterns — token bucket, sliding window counter","Async I/O patterns — asyncio.gather, avoiding blocking in async"]},
+  { id:"databases", label:"Databases", items:["ACID Properties — Atomicity, Consistency, Isolation, Durability","Isolation Levels — Read Committed, Repeatable Read, Serializable","MVCC — how PostgreSQL handles concurrent reads/writes","Indexes — B-tree, Hash, GIN, GiST — when to use which","Composite Indexes — column order, leading column rule","EXPLAIN ANALYZE — reading query plans, seq scan vs index scan","WAL (Write-Ahead Logging) — durability, replication","Connection Pooling — PgBouncer, asyncpg pool","SELECT FOR UPDATE — row-level locking, avoiding lost updates","Schema migrations best practices — zero-downtime","MongoDB Document Model — embedded vs referenced documents","MongoDB Aggregation Pipeline — $match, $group, $lookup","Vector Search in MongoDB Atlas — $vectorSearch, embedding storage","Redis Data Structures — String, Hash, List, Set, Sorted Set, Stream","Redis as Queue — List-based, Sorted Set for priority queues","Redis Streams — XADD, XREAD, consumer groups, XACK","Redis persistence — RDB snapshots vs AOF","Distributed Locking with Redis — Redlock algorithm","Redis as rate limiter — INCR + EXPIRE, sliding window","Dead Letter Queue — failed job isolation, replay"]},
+  { id:"sysdesign", label:"System Design", items:["CAP Theorem — trade-offs with real examples","BASE vs ACID — eventual consistency","Consistent Hashing — virtual nodes, minimizing rehashing","Horizontal vs Vertical Scaling — stateless services","Load Balancing — round robin, least connections, IP hash","API Gateway — routing, auth, rate limiting, transformation","Webhook Architecture — event producer, routing, subscriber registry","Retry Queue — exponential backoff with jitter","Dead Letter Queue (DLQ) — permanently failed deliveries","Idempotency Keys — preventing duplicate processing","HMAC-SHA256 Request Signing — signature verification","At-Least-Once vs Exactly-Once delivery","RAG Architecture — query → embed → retrieve → augment → generate","Chunking Strategies — fixed-size, semantic, overlap","Vector Similarity Search — cosine similarity, HNSW index","Saga Pattern — distributed transaction via compensating transactions","Outbox Pattern — reliable event publishing alongside DB writes","Circuit Breaker Pattern — closed, open, half-open states","CQRS — Command Query Responsibility Segregation","Rate Limiting — token bucket, leaky bucket, sliding window","Design URL Shortener / Notification System (walkthrough)"]},
+  { id:"apis", label:"APIs & Protocols", items:["REST Constraints — stateless, uniform interface, HATEOAS","HTTP Methods — GET, POST, PUT, PATCH, DELETE semantics","HTTP Status Codes — 2xx, 3xx, 4xx, 5xx with key examples","HTTP/1.1 vs HTTP/2 — multiplexing, header compression","HTTPS — TLS handshake, symmetric vs asymmetric encryption","JWT Structure — header.payload.signature, RS256 vs HS256","OAuth2 Flows — Authorization Code, Client Credentials, PKCE","Cursor-based pagination — why it scales better than offset","CORS — preflight request, Access-Control-Allow-Origin","WebSocket Lifecycle — upgrade handshake, frames, ping/pong","SSE vs WebSocket vs Long Polling — use case matrix"]},
+  { id:"docker", label:"Docker & Infra", items:["Container vs VM — lightweight isolation, shared kernel","Dockerfile — FROM, RUN, COPY, WORKDIR, CMD, ENTRYPOINT","Docker layers — cache invalidation, build ordering","Multi-stage builds — smaller production images","Docker Compose — service definitions, depends_on, volumes, networks","Container Networking — bridge, host, overlay","Health checks in Docker Compose","Secrets Management — never bake secrets into images","CI/CD Pipeline — build → test → push image → deploy","12-Factor App — config, stateless processes, port binding"]},
+  { id:"os", label:"Operating Systems", items:["Process vs Thread — memory space, context switching overhead","CPU Scheduling — FCFS, SJF, Round Robin, Priority, MLFQ","Deadlock — four conditions (MHCW), prevention, avoidance, detection","Banker's Algorithm — deadlock avoidance","Memory Management — paging, segmentation, virtual memory","Page Replacement — FIFO, LRU, Optimal","Semaphore vs Mutex — binary semaphore, ownership","Producer-Consumer / Readers-Writers / Dining Philosophers","System Calls — fork(), exec(), wait(), pipe(), socket()","Signals — SIGKILL, SIGTERM, SIGINT — graceful shutdown","Linux File Permissions — rwx, chmod, chown"]},
+  { id:"networks", label:"Computer Networks", items:["OSI Model — 7 layers, functions and protocols at each layer","TCP vs UDP — reliable vs unreliable, use cases","TCP — 3-way handshake, flow control, congestion control","IP Addressing — IPv4 vs IPv6, subnetting, CIDR","DNS Resolution — recursive vs iterative, resolver chain","SSL/TLS — certificate chain, CA, mutual TLS (mTLS)","WebSocket upgrade — 101 Switching Protocols","Load Balancer — L4 vs L7","CDN — edge caching, anycast routing"]},
+  { id:"security", label:"Security", items:["OWASP Top 10 — SQLi, XSS, CSRF, Broken Auth, IDOR","SQL Injection — parameterized queries, ORM protection","XSS — stored vs reflected, Content Security Policy","CSRF — SameSite cookies, CSRF tokens","JWT Security — short-lived tokens, refresh rotation, revocation","HMAC — signing webhooks with HMAC-SHA256","Password Hashing — bcrypt, Argon2, why MD5/SHA1 fail","SHA-256 Pre-hashing — bcrypt + SHA-256 for long passwords","Rate Limiting as security — brute force protection","Secrets Management — env vars, vault, never commit to git"]},
+  { id:"react", label:"React & Frontend", items:["Virtual DOM — diffing algorithm, reconciliation","useState, useReducer — local state management","useEffect — side effects, dependency array, cleanup","useMemo, useCallback — memoization, referential equality","Custom Hooks — extracting reusable stateful logic","React Query — server state, stale-while-revalidate, caching","WebSocket / SSE integration in React — EventSource, cleanup","Code Splitting — React.lazy, Suspense, dynamic imports","React performance — memo, key prop, avoiding re-renders","Tailwind CSS — JIT mode, responsive prefixes"]},
+  { id:"aiml", label:"AI/ML & RAG", items:["LLM Architecture basics — transformer, attention (conceptual)","Tokens — tokenization, context window limits, cost implications","Prompt Engineering — system prompt, few-shot, chain-of-thought","Embeddings — dense vector representations, semantic similarity","Cosine Similarity — formula, range [-1, 1]","HNSW — graph-based ANN index structure","RAG vs Fine-tuning — when to use which","Chunking overlap — why overlap prevents context loss","Hallucination — LLM generating plausible but incorrect info","Grounding — constraining LLM to retrieved context","OpenAI API — chat/completions, embeddings, streaming"]},
+  { id:"aptitude", label:"Aptitude & Reasoning", items:["Divisibility Rules — 2,3,4,5,6,7,8,9,11","HCF and LCM — prime factorization method","Remainder Theorems — Fermat's, Euler's, Wilson's","Percentages — successive percentage change","Profit and Loss — marked price, discount, cost price","Simple Interest and Compound Interest","Time and Work — LCM method, efficiency method","Time, Speed and Distance — relative speed, average speed","Trains / Boats and Streams","Mixtures and Alligation","Arithmetic and Geometric Progressions","Permutations and Combinations — nPr, nCr, circular","Probability — classical, conditional, Bayes' Theorem","Blood Relations, Direction & Distance","Seating Arrangement — linear and circular","Syllogisms — Venn diagram approach","Coding-Decoding — letter shift, number coding","Series Completion — number, letter, alphanumeric"]},
+];
+
+// Flatten all items with stable IDs
+function buildCurriculum() {
+  const all = [];
+  DSA_SECTIONS.forEach(sec => {
+    sec.items.forEach((item, i) => {
+      all.push({ id: `dsa_${sec.id}_${i}`, type: "dsa", sectionId: sec.id, sectionLabel: sec.label, item });
+    });
+  });
+  CORE_SECTIONS.forEach(sec => {
+    sec.items.forEach((item, i) => {
+      all.push({ id: `core_${sec.id}_${i}`, type: "core", sectionId: sec.id, sectionLabel: sec.label, item });
+    });
+  });
+  return all;
+}
+
+const CURRICULUM = buildCurriculum();
+
+// ─── DAILY HABITS ─────────────────────────────────────────────────────────────
+// auto: true = derived from study checklist, not manually toggled
+const DAILY_HABITS = [
+  { id: "lc1",   label: "LC Easy",             detail: "1 easy — solve + explain the pattern",           auto: "dsa" },
+  { id: "lc2",   label: "LC Medium",            detail: "1 medium — timed, under 25 min",                auto: "dsa" },
+  { id: "lc3",   label: "LC Medium/Hard",       detail: "1 harder medium or hard",                       auto: "dsa" },
+  { id: "cs",    label: "Core Subject",         detail: "1 section from the concepts md — recall it",    auto: "core" },
+  { id: "proj",  label: "Project Articulation", detail: "Explain one decision from Webhook/RAG/APEX out loud" },
+  { id: "sd",    label: "System Design 30m",    detail: "Read DDIA / Gaurav Sen OR draw a design from scratch" },
+  { id: "sleep", label: "Sleep + Workout",      detail: "Non-negotiable" },
+];
+
+const WEEKLY_HABITS = [
+  { id: "w_mon", day: 1, dayName: "Mon", label: "DSA Mock",           detail: "2 timed problems (45 min) + explain solutions" },
+  { id: "w_wed", day: 3, dayName: "Wed", label: "Deep Core Subject",  detail: "1.5 hr deep dive — OS/Networks/DB/Java, rotate" },
+  { id: "w_fri", day: 5, dayName: "Fri", label: "System Design Mock", detail: "Design one system end-to-end, write it out" },
+  { id: "w_sun", day: 0, dayName: "Sun", label: "Weekly Review",      detail: "Wrong patterns list + adjust next week's focus" },
+];
+
+// ─── DATE HELPERS ─────────────────────────────────────────────────────────────
+function toDate(s) { return new Date(s + "T00:00:00"); }
+function toStr(d) { return d.toISOString().split("T")[0]; }
+function today() { return toStr(new Date()); }
+function daysLeft() { return Math.max(0, Math.ceil((toDate(END_DATE) - new Date()) / 86400000)); }
+
+function allDates() {
+  const out = [];
+  for (let d = new Date(toDate(START_DATE)); d <= toDate(END_DATE); d.setDate(d.getDate() + 1))
+    out.push(toStr(d));
+  return out;
+}
+
+const DATES = allDates();
+
+function dayIndex(dateStr) {
+  return DATES.indexOf(dateStr);
+}
+
+// Items assigned to a day — deterministic by index
+function itemsForDay(dateStr) {
+  const idx = dayIndex(dateStr);
+  if (idx < 0) return [];
+  return CURRICULUM.filter((_, i) => i % DATES.length === idx);
+}
+
+function habitsForDate(dateStr) {
+  const dow = toDate(dateStr).getDay();
+  return { daily: DAILY_HABITS, weekly: WEEKLY_HABITS.filter(h => h.day === dow) };
+}
+
+function totalHabitsForDate(dateStr) {
+  const { daily, weekly } = habitsForDate(dateStr);
+  return daily.length + weekly.length;
+}
+
+function completedHabits(dateStr, checked) {
+  const { daily, weekly } = habitsForDate(dateStr);
+  return [...daily, ...weekly].filter(h => checked[h.id]).length;
+}
+
+function habitPct(dateStr, checked) {
+  const t = totalHabitsForDate(dateStr);
+  return t ? Math.round((completedHabits(dateStr, checked) / t) * 100) : 0;
+}
+
+function isFullDay(dateStr, checked) { return habitPct(dateStr, checked) === 100; }
+
+// ─── STORAGE (localStorage) ───────────────────────────────────────────────────
+function lsGet(key) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch { return null; }
+}
+function lsSet(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+}
+
+async function loadDay(d) {
+  return lsGet("day:" + d) || { checked: {} };
+}
+async function saveDay(d, data) {
+  lsSet("day:" + d, data);
+}
+async function loadStudied() {
+  return lsGet("studied_items") || {};
+}
+async function saveStudied(s) {
+  lsSet("studied_items", s);
+}
+async function loadMeta() {
+  return lsGet("placement_meta") || { streak: 0, bestStreak: 0 };
+}
+async function saveMeta(m) {
+  lsSet("placement_meta", m);
+}
+async function loadRevisions() {
+  return lsGet("revisions") || {};
+}
+async function saveRevisions(r) {
+  lsSet("revisions", r);
+}
+
+// ─── COLOR HELPERS ────────────────────────────────────────────────────────────
+function cellColor(pct, isFuture) {
+  if (isFuture) return "#0f0f0f";
+  if (pct === 0) return "#161616";
+  if (pct < 50)  return "#2d1a0a";
+  if (pct < 100) return "#1a2d1a";
+  return "#14532d";
+}
+function cellBorder(pct, isToday) {
+  if (isToday) return "1.5px solid #a78bfa";
+  return "1px solid #1e1e1e";
+}
+
+// ─── COUNTDOWN CLOCK ─────────────────────────────────────────────────────────
+function CountdownClock({ endDate }) {
+  const [timeLeft, setTimeLeft] = useState(null);
+
+  useEffect(() => {
+    function calc() {
+      const now = new Date();
+      const end = new Date(endDate + "T23:59:59");
+      const diff = end - now;
+      if (diff <= 0) return setTimeLeft({ d:0, h:0, m:0, s:0, pct:100 });
+      const totalSecs = (end - new Date(START_DATE + "T00:00:00")) / 1000;
+      const remainSecs = diff / 1000;
+      const pct = Math.round(((totalSecs - remainSecs) / totalSecs) * 100);
+      setTimeLeft({
+        d: Math.floor(diff / 86400000),
+        h: Math.floor((diff % 86400000) / 3600000),
+        m: Math.floor((diff % 3600000) / 60000),
+        s: Math.floor((diff % 60000) / 1000),
+        pct,
+      });
+    }
+    calc();
+    const t = setInterval(calc, 1000);
+    return () => clearInterval(t);
+  }, [endDate]);
+
+  if (!timeLeft) return null;
+  const urgent = timeLeft.d <= 10;
+  const accent = urgent ? "#f87171" : "#a78bfa";
+  const arc = 2 * Math.PI * 40;
+  const dash = arc - (arc * timeLeft.pct / 100);
+
+  return (
+    <div style={{ background: "#0d0d0d", border: `1px solid ${urgent ? "#4a1010" : "#1e1e2e"}`, borderRadius: 12, padding: "14px 18px", marginBottom: 18, display: "flex", alignItems: "center", gap: 16 }}>
+      {/* Circular arc progress */}
+      <div style={{ flexShrink: 0, position: "relative", width: 68, height: 68 }}>
+        <svg width="68" height="68" style={{ transform: "rotate(-90deg)" }}>
+          <circle cx="34" cy="34" r="28" fill="none" stroke="#161616" strokeWidth="5" />
+          <circle cx="34" cy="34" r="28" fill="none" stroke={accent} strokeWidth="5"
+            strokeDasharray={`${2 * Math.PI * 28}`}
+            strokeDashoffset={`${2 * Math.PI * 28 * (1 - timeLeft.pct / 100)}`}
+            strokeLinecap="round"
+            style={{ transition: "stroke-dashoffset 1s linear" }}
+          />
+        </svg>
+        <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+          <span style={{ fontSize: 14, fontWeight: 800, color: accent, lineHeight: 1 }}>{timeLeft.d}</span>
+          <span style={{ fontSize: 8, color: "#3a3a3a", letterSpacing: 1 }}>days</span>
+        </div>
+      </div>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 9, color: "#3a3a3a", letterSpacing: 2, textTransform: "uppercase", marginBottom: 4 }}>
+          {urgent ? "⚡ FINAL STRETCH" : "TIME REMAINING"}
+        </div>
+        <div style={{ display: "flex", gap: 10, alignItems: "baseline" }}>
+          {[["h", timeLeft.h], ["m", timeLeft.m], ["s", timeLeft.s]].map(([unit, val]) => (
+            <div key={unit} style={{ textAlign: "center" }}>
+              <span style={{ fontSize: 18, fontWeight: 800, color: accent, fontVariantNumeric: "tabular-nums", fontFamily: "monospace" }}>
+                {String(val).padStart(2, "0")}
+              </span>
+              <span style={{ fontSize: 9, color: "#3a3a3a", marginLeft: 2 }}>{unit}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{ marginTop: 6, background: "#161616", borderRadius: 3, height: 3 }}>
+          <div style={{ width: `${timeLeft.pct}%`, height: "100%", borderRadius: 3, background: accent, transition: "width 1s linear" }} />
+        </div>
+        <div style={{ fontSize: 9, color: "#2a2a2a", marginTop: 3 }}>{timeLeft.pct}% of prep time used</div>
+      </div>
+    </div>
+  );
+}
+
+// Mock test topic guidance by day-of-week
+function getMockGuidance(dateStr) {
+  const dow = toDate(dateStr).getDay();
+  const isPhase2 = dateStr >= PHASE_CUT;
+  if (dow === 1) { // Monday DSA Mock
+    return isPhase2
+      ? ["Arrays + Strings (Two Pointer, Sliding Window)", "Trees / Graphs BFS/DFS", "DP (Knapsack, LCS variants)", "Stack/Queue monotonic patterns"]
+      : ["Two Pointer / Sliding Window", "Binary Search on answer", "Linked List + Stack patterns"];
+  }
+  if (dow === 5) { // Friday System Design Mock
+    return isPhase2
+      ? ["Design URL Shortener (scale to 100M req/day)", "Notification System (push, email, SMS fanout)", "RAG pipeline + vector store design", "Webhook delivery system with retry + DLQ"]
+      : ["Load balancer + CDN setup", "API Gateway + Rate Limiting", "CQRS + Outbox pattern"];
+  }
+  return null;
+}
+
+// ─── APP ──────────────────────────────────────────────────────────────────────
+function App() {
+  const [view, setView] = useState("today");
+  const [todayChecked, setTodayChecked] = useState({});
+  const [historyData, setHistoryData] = useState({});
+  const [studied, setStudied] = useState({});
+  const [revisions, setRevisions] = useState({}); // { itemId: { r1: dateStr, r2: dateStr, r3: dateStr } }
+  const [meta, setMeta] = useState({ streak: 0, bestStreak: 0 });
+  const [loading, setLoading] = useState(true);
+  const [selectedDay, setSelectedDay] = useState(null);
+  const [currTab, setCurrTab] = useState("dsa");
+  const [currFilter, setCurrFilter] = useState("all");
+  const [search, setSearch] = useState("");
+
+  const T = today();
+
+  useEffect(() => {
+    async function init() {
+      const [todayData, studiedData, m, revisionsData] = await Promise.all([loadDay(T), loadStudied(), loadMeta(), loadRevisions()]);
+      setTodayChecked(todayData.checked || {});
+      setStudied(studiedData);
+      setRevisions(revisionsData);
+      setMeta(m);
+      const hist = {};
+      await Promise.all(DATES.filter(d => d < T).map(async d => {
+        const data = await loadDay(d);
+        hist[d] = { checked: data.checked || {} };
+      }));
+      setHistoryData(hist);
+      setLoading(false);
+    }
+    init();
+  }, []);
+
+  // Recalculate streak
+  useEffect(() => {
+    if (loading) return;
+    let cur = 0, best = meta.bestStreak || 0;
+    for (const d of DATES) {
+      if (d > T) break;
+      const chk = d === T ? todayChecked : (historyData[d]?.checked || {});
+      if (isFullDay(d, chk)) { cur++; if (cur > best) best = cur; }
+      else cur = 0;
+    }
+    const nm = { streak: cur, bestStreak: best };
+    setMeta(nm);
+    saveMeta(nm);
+  }, [todayChecked, historyData, loading]);
+
+  async function toggleHabit(id) {
+    const next = { ...todayChecked, [id]: !todayChecked[id] };
+    setTodayChecked(next);
+    await saveDay(T, { checked: next, savedAt: Date.now() });
+  }
+
+  async function toggleStudied(id) {
+    const next = { ...studied, [id]: !studied[id] };
+    setStudied(next);
+    await saveStudied(next);
+    // Store/clear the studied date in revisions
+    const itemRevs = revisions[id] || {};
+    if (!studied[id]) {
+      // marking as studied — record studiedDate if not already set
+      if (!itemRevs._studiedDate) {
+        const updated = { ...revisions, [id]: { ...itemRevs, _studiedDate: T } };
+        setRevisions(updated);
+        await saveRevisions(updated);
+      }
+    } else {
+      // unmarking — clear all revision data
+      const updated = { ...revisions };
+      delete updated[id];
+      setRevisions(updated);
+      await saveRevisions(updated);
+    }
+  }
+
+  async function toggleRevision(id, rev) {
+    // rev = "r1" | "r2" | "r3"
+    const itemRevs = revisions[id] || {};
+    let next;
+    if (itemRevs[rev]) {
+      // untoggle
+      const r = { ...itemRevs };
+      delete r[rev];
+      next = { ...revisions, [id]: r };
+    } else {
+      next = { ...revisions, [id]: { ...itemRevs, [rev]: T } };
+    }
+    setRevisions(next);
+    await saveRevisions(next);
+  }
+
+  // Compute next revision date for an item
+  function getNextRevDate(itemId) {
+    const revItem = revisions[itemId] || {};
+    const studiedDate = revItem._studiedDate;
+    if (!studiedDate) return null;
+    if (!revItem.r1) {
+      const d = new Date(studiedDate + "T00:00:00");
+      d.setDate(d.getDate() + 1);
+      return { tag: "R1", date: toStr(d) };
+    }
+    if (!revItem.r2) {
+      const d = new Date(revItem.r1 + "T00:00:00");
+      d.setDate(d.getDate() + 3);
+      return { tag: "R2", date: toStr(d) };
+    }
+    if (!revItem.r3) {
+      const d = new Date(revItem.r2 + "T00:00:00");
+      d.setDate(d.getDate() + 7);
+      return { tag: "R3", date: toStr(d) };
+    }
+    return null; // all done
+  }
+
+  // Compute items due for revision today
+  function getRevisionsDueToday() {
+    const due = [];
+    CURRICULUM.forEach(item => {
+      if (!studied[item.id]) return;
+      const next = getNextRevDate(item.id);
+      if (!next) return;
+      if (next.date <= T) {
+        const revItem = revisions[item.id] || {};
+        let note = "";
+        if (next.tag === "R1") note = `due since ${revItem._studiedDate ? revItem._studiedDate.slice(5) : "?"}+1d`;
+        else if (next.tag === "R2") note = `due since ${revItem.r1 ? revItem.r1.slice(5) : "?"}+3d`;
+        else if (next.tag === "R3") note = `due since ${revItem.r2 ? revItem.r2.slice(5) : "?"}+7d`;
+        due.push({ ...item, revTag: next.tag, note });
+      }
+    });
+    return due.slice(0, 20);
+  }
+
+  const revisionsDueToday = getRevisionsDueToday();
+
+  // Auto-derive habit state from studied topics today
+  const todayDsaStudied  = todayItems.filter(it => it.type === "dsa"  && studied[it.id]).length;
+  const todayCoreStudied = todayItems.filter(it => it.type === "core" && studied[it.id]).length;
+  const todayDsaTotal    = todayItems.filter(it => it.type === "dsa").length;
+  const todayCoreTotal   = todayItems.filter(it => it.type === "core").length;
+
+  // lc1: ≥1 DSA done, lc2: ≥2 DSA done, lc3: all DSA done for today
+  function derivedHabitDone(habitId) {
+    if (habitId === "lc1")  return todayDsaStudied >= 1;
+    if (habitId === "lc2")  return todayDsaStudied >= 2;
+    if (habitId === "lc3")  return todayDsaTotal > 0 && todayDsaStudied >= todayDsaTotal;
+    if (habitId === "cs")   return todayCoreStudied >= 1;
+    return null; // not auto
+  }
+
+  // Effective checked state: auto habits use derived value
+  function effectiveChecked(habitId) {
+    const derived = derivedHabitDone(habitId);
+    if (derived !== null) return derived;
+    return !!todayChecked[habitId];
+  }
+
+  // For streak/progress counting, merge auto state into checked map
+  const effectiveCheckedMap = { ...todayChecked };
+  DAILY_HABITS.forEach(h => {
+    if (h.auto) effectiveCheckedMap[h.id] = derivedHabitDone(h.id);
+  });
+
+  // Stats
+  const T_pct = habitPct(T, effectiveCheckedMap);
+  const T_done = completedHabits(T, effectiveCheckedMap);
+  const T_total = totalHabitsForDate(T);
+  const T_weekly = WEEKLY_HABITS.filter(h => h.day === toDate(T).getDay());
+  const pastDays = DATES.filter(d => d < T);
+  const perfectDays = pastDays.filter(d => isFullDay(d, historyData[d]?.checked || {})).length;
+  const studiedCount = Object.values(studied).filter(Boolean).length;
+  const totalItems = CURRICULUM.length;
+  const studiedPct = Math.round((studiedCount / totalItems) * 100);
+
+  // Today's curriculum items
+  const todayItems = itemsForDay(T);
+  const todayStudied = todayItems.filter(it => studied[it.id]).length;
+
+  if (loading) return (
+    <div style={{ background: "#090909", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <span style={{ color: "#333", fontFamily: "monospace", fontSize: 13 }}>loading...</span>
+    </div>
+  );
+
+  return (
+    <div style={{ background: "#090909", minHeight: "100vh", fontFamily: "'Inter', system-ui, sans-serif", color: "#e0e0e0" }}>
+      <div style={{ maxWidth: 660, margin: "0 auto", padding: "24px 16px 80px" }}>
+
+        {/* ── HEADER ── */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
+          <div>
+            <div style={{ fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: "#3a3a3a", marginBottom: 3 }}>Kishore Prabakar</div>
+            <div style={{ fontSize: 21, fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>Placement Prep</div>
+            <div style={{ fontSize: 11, color: "#444", marginTop: 2 }}>{T}</div>
+          </div>
+          <div style={{ textAlign: "right", maxWidth: 180 }}>
+            <div style={{ fontSize: 11, color: "#3a3a3a", fontStyle: "italic", lineHeight: 1.5 }}>
+              "Stay hungry,<br/>stay foolish."
+            </div>
+            <div style={{ fontSize: 9, color: "#252525", marginTop: 3, letterSpacing: 1 }}>— Steve Jobs</div>
+          </div>
+        </div>
+
+        {/* ── STAT CARDS ── */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8, marginBottom: 20 }}>
+          <StatCard label="Streak" value={`${meta.streak}🔥`} accent="#a78bfa" />
+          <StatCard label="Best" value={meta.bestStreak} accent="#60a5fa" />
+          <StatCard label="Perfect" value={`${perfectDays}d`} accent="#4ade80" />
+          <StatCard label="Studied" value={`${studiedPct}%`} sub={`${studiedCount}/${totalItems}`} accent="#fb923c" />
+        </div>
+
+        {/* ── TABS ── */}
+        <div style={{ display: "flex", gap: 2, background: "#111", borderRadius: 10, padding: 3, marginBottom: 20 }}>
+          {[["today","Today"],["curriculum","Curriculum"],["progress","Progress"]].map(([v,l]) => (
+            <button key={v} onClick={() => { setView(v); setSelectedDay(null); }} style={{
+              flex: 1, padding: "8px 0", borderRadius: 7, border: "none", cursor: "pointer",
+              background: view === v ? "#1d1d1d" : "transparent",
+              color: view === v ? "#fff" : "#4a4a4a",
+              fontWeight: view === v ? 600 : 400, fontSize: 12,
+              transition: "all 0.15s",
+            }}>{l}</button>
+          ))}
+        </div>
+
+        {/* ════════════ TODAY VIEW ════════════ */}
+        {view === "today" && (
+          <>
+            {/* Phase banner */}
+            {T >= PHASE_CUT
+              ? <Banner color="#f87171" bg="#1a0808" border="#4a1010">🔒 July 15 passed — revision and mocks only. No new topics.</Banner>
+              : <Banner color="#f59e0b" bg="#1a1208" border="#3d2e0a">🔒 July 15 cutoff: stop learning new things. Only revision + mocks from that point.</Banner>
+            }
+
+            {/* Countdown Clock */}
+            <CountdownClock endDate={END_DATE} />
+
+            {/* Habits progress */}
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 7 }}>
+                <span style={{ fontSize: 12, color: "#555" }}>Today's habits</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: T_pct === 100 ? "#4ade80" : "#a78bfa" }}>
+                  {T_done}/{T_total} {T_pct === 100 ? "✓" : `${T_pct}%`}
+                </span>
+              </div>
+              <ProgressBar pct={T_pct} />
+            </div>
+
+            {/* Habits — minimal rows */}
+            <div style={{ marginBottom: 20 }}>
+              {DAILY_HABITS.map(h => {
+                const isAuto = !!h.auto;
+                const done = effectiveChecked(h.id);
+                return (
+                  <div key={h.id}
+                    onClick={isAuto ? undefined : () => toggleHabit(h.id)}
+                    style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0",
+                      borderBottom: "1px solid #0f0f0f", cursor: isAuto ? "default" : "pointer",
+                      opacity: isAuto && !done ? 0.45 : 1 }}>
+                    <div style={{ width: 14, height: 14, borderRadius: 3, flexShrink: 0,
+                      border: done ? "2px solid #4ade80" : isAuto ? "1px dashed #2a2a2a" : "1px solid #252525",
+                      background: done ? "#4ade80" : "transparent",
+                      display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" }}>
+                      {done && <svg width="8" height="6" viewBox="0 0 8 6"><path d="M1 2.5L3 5L7 1" stroke="#000" strokeWidth="1.5" strokeLinecap="round"/></svg>}
+                    </div>
+                    <span style={{ fontSize: 12, color: done ? "#4ade80" : "#666", fontWeight: done ? 500 : 400,
+                      textDecoration: done ? "line-through" : "none", textDecorationColor: "#1e3a1e", flex: 1 }}>
+                      {h.label}
+                    </span>
+                    {isAuto && (
+                      <span style={{ fontSize: 9, color: "#252525", letterSpacing: 0.5 }}>
+                        {h.auto === "dsa"
+                          ? `${todayDsaStudied}/${todayDsaTotal} dsa`
+                          : `${todayCoreStudied}/${todayCoreTotal} core`}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+
+              {T_weekly.length > 0 && (
+                <div style={{ marginTop: 8 }}>
+                  <div style={{ fontSize: 9, color: "#2a2a2a", letterSpacing: 2, textTransform: "uppercase", padding: "6px 0 4px" }}>
+                    {["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][toDate(T).getDay()]} weekly
+                  </div>
+                  {T_weekly.map(h => (
+                    <div key={h.id} onClick={() => toggleHabit(h.id)}
+                      style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0",
+                        borderBottom: "1px solid #0f0f0f", cursor: "pointer" }}>
+                      <div style={{ width: 14, height: 14, borderRadius: 3, flexShrink: 0,
+                        border: todayChecked[h.id] ? "2px solid #4ade80" : "1px solid #252525",
+                        background: todayChecked[h.id] ? "#4ade80" : "transparent",
+                        display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        {todayChecked[h.id] && <svg width="8" height="6" viewBox="0 0 8 6"><path d="M1 2.5L3 5L7 1" stroke="#000" strokeWidth="1.5" strokeLinecap="round"/></svg>}
+                      </div>
+                      <span style={{ fontSize: 12, color: todayChecked[h.id] ? "#4ade80" : "#666",
+                        textDecoration: todayChecked[h.id] ? "line-through" : "none", textDecorationColor: "#1e3a1e", flex: 1 }}>
+                        {h.label}
+                      </span>
+                      <span style={{ fontSize: 9, color: "#252525" }}>{h.dayName}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Today's study topics */}
+            <SectionHdr label={`Study Plan — ${todayStudied}/${todayItems.length} topics covered`} />
+            <div style={{ marginBottom: 10 }}>
+              <ProgressBar pct={todayItems.length ? Math.round(todayStudied/todayItems.length*100) : 0} color="#fb923c" />
+            </div>
+
+            {["dsa","core"].map(type => {
+              const items = todayItems.filter(it => it.type === type);
+              if (!items.length) return null;
+              // Group by section
+              const bySection = {};
+              items.forEach(it => {
+                if (!bySection[it.sectionLabel]) bySection[it.sectionLabel] = [];
+                bySection[it.sectionLabel].push(it);
+              });
+              return (
+                <div key={type} style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 10, color: type === "dsa" ? "#60a5fa" : "#c084fc", letterSpacing: 2, textTransform: "uppercase", marginBottom: 6, marginTop: 8 }}>
+                    {type === "dsa" ? "DSA" : "Core Subjects"}
+                  </div>
+                  {Object.entries(bySection).map(([sec, secItems]) => (
+                    <div key={sec} style={{ marginBottom: 8 }}>
+                      <div style={{ fontSize: 10, color: "#3a3a3a", marginBottom: 4, letterSpacing: 1 }}>{sec}</div>
+                      {secItems.map(it => (
+                        <TopicRow key={it.id} item={it} done={!!studied[it.id]} onToggle={() => toggleStudied(it.id)}
+                          revisions={revisions[it.id] || {}} onRevision={(rev) => toggleRevision(it.id, rev)}
+                          nextRevDate={studied[it.id] ? getNextRevDate(it.id) : null} />
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+
+            {/* Revision Due Today */}
+            {revisionsDueToday.length > 0 && <>
+              <SectionHdr label={`🔁 Revise Today — ${revisionsDueToday.length} topic${revisionsDueToday.length > 1 ? "s" : ""}`} />
+              <div style={{ marginBottom: 14, padding: "10px 14px", background: "#0d1a2d", border: "1px solid #1a3a5c", borderRadius: 8 }}>
+                <div style={{ fontSize: 10, color: "#60a5fa", marginBottom: 8, letterSpacing: 1 }}>Spaced repetition — mark done when revised</div>
+                {revisionsDueToday.map(it => {
+                  const itemRevs = revisions[it.id] || {};
+                  const isDone = !!itemRevs[it.revTag.toLowerCase()];
+                  return (
+                    <div key={it.id + it.revTag} onClick={() => toggleRevision(it.id, it.revTag.toLowerCase())}
+                      style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "7px 0", borderBottom: "1px solid #0f1f3a", cursor: "pointer" }}>
+                      <div style={{ width: 15, height: 15, borderRadius: 3, flexShrink: 0, marginTop: 1,
+                        border: isDone ? "2px solid #60a5fa" : "1px solid #1a3a5c",
+                        background: isDone ? "#60a5fa" : "transparent",
+                        display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        {isDone && <svg width="8" height="6" viewBox="0 0 8 6"><path d="M1 2.5L3 5L7 1" stroke="#000" strokeWidth="1.5" strokeLinecap="round"/></svg>}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                          <span style={{ fontSize: 9, color: "#60a5fa", background: "#0a2040", border: "1px solid #1a3a5c", borderRadius: 3, padding: "1px 6px", fontWeight: 700 }}>{it.revTag}</span>
+                          <span style={{ fontSize: 11, color: isDone ? "#4a7a9b" : "#8ab4d4", textDecoration: isDone ? "line-through" : "none", lineHeight: 1.5 }}>{it.item}</span>
+                        </div>
+                        <div style={{ fontSize: 10, color: "#2a4a6a", marginTop: 2 }}>{it.sectionLabel} · {it.note}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>}
+
+            <SectionHdr label="Hard Rules" />
+            {["No passive watching — pause and implement or explain.",
+              "Can't solve in 20 min? Add to revisit list. Review every Sunday.",
+              "By July 15 — stop learning new things. Revision + mocks only.",
+              "Gap is DSA under pressure + design articulation. Everything else is strong."
+            ].map((r,i,a) => (
+              <div key={i} style={{ padding:"9px 0", borderBottom: i<a.length-1?"1px solid #131313":"none", fontSize:12, color:"#444", display:"flex", gap:10, lineHeight:1.6 }}>
+                <span style={{ color:"#252525", flexShrink:0 }}>—</span><span>{r}</span>
+              </div>
+            ))}
+          </>
+        )}
+
+        {/* ════════════ CURRICULUM VIEW ════════════ */}
+        {view === "curriculum" && (
+          <>
+            {/* Sub-tabs */}
+            <div style={{ display: "flex", gap: 2, background: "#111", borderRadius: 8, padding: 3, marginBottom: 14 }}>
+              {[["dsa","DSA Patterns"],["core","Core Subjects"]].map(([v,l]) => (
+                <button key={v} onClick={() => setCurrTab(v)} style={{
+                  flex:1, padding:"7px 0", borderRadius:6, border:"none", cursor:"pointer",
+                  background: currTab===v ? "#1d1d1d" : "transparent",
+                  color: currTab===v ? "#fff" : "#4a4a4a",
+                  fontWeight: currTab===v ? 600 : 400, fontSize:12, transition:"all 0.15s",
+                }}>{l}</button>
+              ))}
+            </div>
+
+            {/* Filter + search */}
+            <div style={{ display:"flex", gap:6, marginBottom:14, flexWrap:"wrap" }}>
+              {["all","remaining","done","rev-due"].map(f => (
+                <button key={f} onClick={() => setCurrFilter(f)} style={{
+                  padding:"5px 12px", borderRadius:6, border:`1px solid ${currFilter===f?"#a78bfa":"#1e1e1e"}`,
+                  background: currFilter===f ? "#1a1a2e" : "transparent",
+                  color: currFilter===f ? "#a78bfa" : "#555",
+                  fontSize:11, cursor:"pointer",
+                }}>{f === "rev-due" ? "🔁 rev due" : f}</button>
+              ))}
+              <input
+                value={search} onChange={e => setSearch(e.target.value)}
+                placeholder="Search..."
+                style={{ flex:1, background:"#111", border:"1px solid #1e1e1e", borderRadius:6, padding:"5px 10px", color:"#ccc", fontSize:11, outline:"none" }}
+              />
+            </div>
+
+            {/* Sections */}
+            {(currTab === "dsa" ? DSA_SECTIONS : CORE_SECTIONS).map(sec => {
+              const secItems = sec.items.map((item,i) => ({
+                id: `${currTab}_${sec.id}_${i}`, type: currTab, sectionId: sec.id, sectionLabel: sec.label, item
+              }));
+              const filtered = secItems.filter(it => {
+                if (currFilter === "remaining" && studied[it.id]) return false;
+                if (currFilter === "done" && !studied[it.id]) return false;
+                if (currFilter === "rev-due") {
+                  if (!studied[it.id]) return false;
+                  const next = getNextRevDate(it.id);
+                  if (!next || next.date > T) return false;
+                }
+                if (search && !it.item.toLowerCase().includes(search.toLowerCase())) return false;
+                return true;
+              });
+              if (!filtered.length) return null;
+              const doneCnt = secItems.filter(it => studied[it.id]).length;
+              const secPct = Math.round(doneCnt / secItems.length * 100);
+              return (
+                <div key={sec.id} style={{ marginBottom:16 }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 }}>
+                    <span style={{ fontSize:11, fontWeight:600, color: secPct===100?"#4ade80":"#888", letterSpacing:0.5 }}>{sec.label}</span>
+                    <span style={{ fontSize:10, color: secPct===100?"#4ade80":secPct>60?"#a78bfa":"#555" }}>{doneCnt}/{secItems.length}</span>
+                  </div>
+                  <div style={{ background:"#131313", borderRadius:2, height:2, marginBottom:8 }}>
+                    <div style={{ width:`${secPct}%`, height:"100%", borderRadius:2, background: secPct===100?"#4ade80":secPct>50?"#7c3aed":"#b45309", transition:"width 0.4s" }} />
+                  </div>
+                  {filtered.map(it => (
+                    <TopicRow key={it.id} item={it} done={!!studied[it.id]} onToggle={() => toggleStudied(it.id)}
+                      revisions={revisions[it.id] || {}} onRevision={(rev) => toggleRevision(it.id, rev)}
+                      nextRevDate={studied[it.id] ? getNextRevDate(it.id) : null} />
+                  ))}
+                </div>
+              );
+            })}
+          </>
+        )}
+
+        {/* ════════════ PROGRESS VIEW ════════════ */}
+        {view === "progress" && !selectedDay && (
+          <>
+            {/* Overall curriculum progress */}
+            <div style={{ background:"#111", border:"1px solid #1e1e1e", borderRadius:10, padding:"14px 16px", marginBottom:16 }}>
+              <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
+                <span style={{ fontSize:12, color:"#888" }}>Overall curriculum</span>
+                <span style={{ fontSize:12, fontWeight:700, color:"#fb923c" }}>{studiedCount}/{totalItems}</span>
+              </div>
+              <ProgressBar pct={studiedPct} color="#fb923c" />
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:6, marginTop:12 }}>
+                {[
+                  ["DSA Patterns", DSA_SECTIONS],
+                  ["Core Subjects", CORE_SECTIONS],
+                ].map(([label, sections]) => {
+                  const ids = sections.flatMap((s,_) => s.items.map((_,i) => `${label==="DSA Patterns"?"dsa":"core"}_${s.id}_${i}`));
+                  const done = ids.filter(id => studied[id]).length;
+                  const pct = Math.round(done/ids.length*100);
+                  return (
+                    <div key={label} style={{ background:"#161616", borderRadius:7, padding:"10px 12px" }}>
+                      <div style={{ fontSize:10, color:"#555", marginBottom:4 }}>{label}</div>
+                      <div style={{ fontSize:18, fontWeight:700, color: pct>70?"#4ade80":pct>40?"#a78bfa":"#888" }}>{pct}%</div>
+                      <div style={{ fontSize:10, color:"#444", marginTop:2 }}>{done}/{ids.length}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Calendar heatmap */}
+            <SectionHdr label="Daily Habit Calendar" />
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:4, marginBottom:6 }}>
+              {["S","M","T","W","T","F","S"].map((d,i) => (
+                <div key={i} style={{ textAlign:"center", fontSize:9, color:"#2a2a2a", paddingBottom:3 }}>{d}</div>
+              ))}
+              {Array.from({ length: toDate(START_DATE).getDay() }).map((_,i) => <div key={"p"+i} />)}
+              {DATES.map(d => {
+                const isFuture = d > T, isToday = d === T;
+                const chk = isToday ? todayChecked : (historyData[d]?.checked || {});
+                const pct = habitPct(d, chk);
+                return (
+                  <div key={d} onClick={() => !isFuture && setSelectedDay(d)} title={`${d}: ${pct}%`} style={{
+                    aspectRatio:"1", borderRadius:5,
+                    background: cellColor(pct, isFuture),
+                    border: cellBorder(pct, isToday),
+                    cursor: isFuture ? "default" : "pointer",
+                    display:"flex", alignItems:"center", justifyContent:"center", flexDirection:"column",
+                  }}>
+                    <span style={{ fontSize:10, fontWeight: isToday?700:400, color: isFuture?"#222": pct===100?"#4ade80": pct>0?"#888":"#2a2a2a" }}>{toDate(d).getDate()}</span>
+                    {!isFuture && pct>0 && <span style={{ fontSize:7, color: pct===100?"#4ade80":"#555" }}>{pct===100?"✓":`${pct}%`}</span>}
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ display:"flex", gap:10, marginBottom:20, flexWrap:"wrap" }}>
+              {[["#161616","0%"],["#2d1a0a","1–49%"],["#1a2d1a","50–99%"],["#14532d","100%"]].map(([bg,l]) => (
+                <div key={l} style={{ display:"flex", alignItems:"center", gap:4, fontSize:10, color:"#444" }}>
+                  <div style={{ width:9, height:9, borderRadius:2, background:bg, border:"1px solid #222" }} />
+                  {l}
+                </div>
+              ))}
+            </div>
+
+            {/* Per-habit stats */}
+            <SectionHdr label="Habit Consistency" />
+            {[...DAILY_HABITS, ...WEEKLY_HABITS].map(h => {
+              const relevantDays = DATES.filter(d => {
+                if (d > T) return false;
+                const { daily, weekly } = habitsForDate(d);
+                return [...daily, ...weekly].some(x => x.id === h.id);
+              });
+              const done = relevantDays.filter(d => {
+                const chk = d === T ? todayChecked : (historyData[d]?.checked || {});
+                return !!chk[h.id];
+              }).length;
+              const total = relevantDays.length;
+              const pct = total ? Math.round(done/total*100) : 0;
+              return (
+                <div key={h.id} style={{ padding:"9px 0", borderBottom:"1px solid #121212" }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
+                    <span style={{ fontSize:12, color:"#bbb" }}>{h.label}</span>
+                    <span style={{ fontSize:11, color: pct===100?"#4ade80":pct>60?"#a78bfa":"#555" }}>{done}/{total}</span>
+                  </div>
+                  <div style={{ background:"#131313", borderRadius:3, height:3 }}>
+                    <div style={{ width:`${pct}%`, height:"100%", borderRadius:3, background: pct===100?"#4ade80":pct>60?"#7c3aed":"#b45309", transition:"width 0.4s" }} />
+                  </div>
+                </div>
+              );
+            })}
+          </>
+        )}
+
+        {/* Day detail */}
+        {view === "progress" && selectedDay && (
+          <DayDetail
+            dateStr={selectedDay}
+            checked={selectedDay === T ? todayChecked : (historyData[selectedDay]?.checked || {})}
+            studiedItems={studied}
+            onBack={() => setSelectedDay(null)}
+          />
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+// ─── SUB COMPONENTS ───────────────────────────────────────────────────────────
+
+function StatCard({ label, value, sub, accent }) {
+  return (
+    <div style={{ background:"#111", border:"1px solid #191919", borderRadius:8, padding:"10px 12px" }}>
+      <div style={{ fontSize:9, color:"#3a3a3a", textTransform:"uppercase", letterSpacing:1.5, marginBottom:3 }}>{label}</div>
+      <div style={{ fontSize:18, fontWeight:800, color:accent, lineHeight:1 }}>{value}</div>
+      {sub && <div style={{ fontSize:10, color:"#3a3a3a", marginTop:2 }}>{sub}</div>}
+    </div>
+  );
+}
+
+function Banner({ children, color, bg, border }) {
+  return (
+    <div style={{ marginBottom:16, padding:"10px 14px", background:bg, border:`1px solid ${border}`, borderRadius:8, fontSize:12, color, lineHeight:1.6 }}>
+      {children}
+    </div>
+  );
+}
+
+function SectionHdr({ label }) {
+  return (
+    <div style={{ fontSize:9, letterSpacing:3, textTransform:"uppercase", color:"#2e2e2e", marginTop:20, marginBottom:10, paddingBottom:7, borderBottom:"1px solid #141414" }}>
+      {label}
+    </div>
+  );
+}
+
+function ProgressBar({ pct, color }) {
+  const c = color || (pct === 100 ? "#4ade80" : "#7c3aed");
+  return (
+    <div style={{ background:"#161616", borderRadius:4, height:5 }}>
+      <div style={{ width:`${pct}%`, height:"100%", borderRadius:4, background: pct===100&&!color?"#4ade80":c, transition:"width 0.4s" }} />
+    </div>
+  );
+}
+
+function HabitRow({ habit, done, onToggle, dim=false, tag }) {
+  return (
+    <div onClick={dim ? undefined : onToggle} style={{ display:"flex", alignItems:"flex-start", gap:11, padding:"10px 0", borderBottom:"1px solid #111", cursor:dim?"default":"pointer", opacity:dim?0.2:1 }}>
+      <div style={{ width:17, height:17, borderRadius:4, flexShrink:0, marginTop:1, border:done?"2px solid #4ade80":"2px solid #222", background:done?"#4ade80":"transparent", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s" }}>
+        {done && <svg width="9" height="7" viewBox="0 0 9 7"><path d="M1 3L3.5 6L8 1" stroke="#000" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+      </div>
+      <div style={{ flex:1 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
+          <span style={{ fontSize:13, fontWeight:600, color:done?"#4ade80":"#d0d0d0", textDecoration:done?"line-through":"none", textDecorationColor:"#1e3a1e" }}>{habit.label}</span>
+          {tag && <span style={{ fontSize:9, color:"#3a3a3a", background:"#141414", border:"1px solid #1e1e1e", borderRadius:3, padding:"1px 5px" }}>{tag}</span>}
+        </div>
+        <div style={{ fontSize:11, color:done?"#2a4a2a":"#3a3a3a", marginTop:2, lineHeight:1.5 }}>{habit.detail}</div>
+      </div>
+    </div>
+  );
+}
+
+function TopicRow({ item, done, onToggle, revisions = {}, onRevision, nextRevDate }) {
+  const revTags = ["r1", "r2", "r3"];
+  const showRevTags = done;
+  const allDone = revisions.r1 && revisions.r2 && revisions.r3;
+  return (
+    <div style={{ padding: "7px 0", borderBottom: "1px solid #0f0f0f" }}>
+      <div onClick={onToggle} style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer" }}>
+        <div style={{ width: 14, height: 14, borderRadius: 3, flexShrink: 0, marginTop: 1,
+          border: done ? "2px solid #4ade80" : "1px solid #252525",
+          background: done ? "#4ade80" : "transparent",
+          display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" }}>
+          {done && <svg width="8" height="6" viewBox="0 0 8 6"><path d="M1 2.5L3 5L7 1" stroke="#000" strokeWidth="1.5" strokeLinecap="round"/></svg>}
+        </div>
+        <span style={{ fontSize: 12, color: done ? (allDone ? "#1a4a1a" : "#2a5c2a") : "#5a5a5a",
+          textDecoration: done ? "line-through" : "none", textDecorationColor: "#1a3a1a", lineHeight: 1.5, flex: 1 }}>
+          {item.item}
+        </span>
+      </div>
+      {showRevTags && onRevision && (
+        <div style={{ display: "flex", gap: 5, marginTop: 5, paddingLeft: 24, flexWrap: "wrap", alignItems: "center" }}>
+          {revTags.map(rev => {
+            const isDone = !!revisions[rev];
+            return (
+              <button key={rev} onClick={() => onRevision(rev)} style={{
+                fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 4, cursor: "pointer",
+                border: `1px solid ${isDone ? "#7c3aed" : "#222"}`,
+                background: isDone ? "#1a0a3a" : "transparent",
+                color: isDone ? "#a78bfa" : "#333",
+                transition: "all 0.15s",
+              }}>{rev.toUpperCase()} {isDone ? `✓ ${revisions[rev].slice(5)}` : "○"}</button>
+            );
+          })}
+          {nextRevDate && !allDone && (
+            <span style={{ fontSize: 9, color: nextRevDate.date === new Date().toISOString().split("T")[0] ? "#f59e0b" : "#2a2a2a", marginLeft: 2 }}>
+              next: {nextRevDate.tag} on {nextRevDate.date.slice(5)}
+            </span>
+          )}
+          {allDone && <span style={{ fontSize: 9, color: "#7c3aed", marginLeft: 2 }}>✦ all revisions done</span>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DayDetail({ dateStr, checked, studiedItems, onBack }) {
+  const { daily, weekly } = habitsForDate(dateStr);
+  const all = [...daily, ...weekly];
+  const done = all.filter(h => checked[h.id]).length;
+  const pct = habitPct(dateStr, checked);
+  const dayItems = itemsForDay(dateStr);
+  const dayStudied = dayItems.filter(it => studiedItems[it.id]).length;
+  const dayNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
+  return (
+    <div>
+      <button onClick={onBack} style={{ background:"none", border:"none", color:"#a78bfa", fontSize:12, cursor:"pointer", padding:"0 0 14px 0", display:"flex", alignItems:"center", gap:5 }}>
+        ← Back to calendar
+      </button>
+      <div style={{ marginBottom:16 }}>
+        <div style={{ fontSize:10, color:"#444", marginBottom:3 }}>{dayNames[toDate(dateStr).getDay()]}</div>
+        <div style={{ fontSize:18, fontWeight:700, color:"#fff" }}>{dateStr}</div>
+        <div style={{ marginTop:8, display:"flex", alignItems:"center", gap:10 }}>
+          <div style={{ flex:1, background:"#161616", borderRadius:3, height:4 }}>
+            <div style={{ width:`${pct}%`, height:"100%", borderRadius:3, background:pct===100?"#4ade80":pct>60?"#7c3aed":"#b45309" }} />
+          </div>
+          <span style={{ fontSize:12, color:pct===100?"#4ade80":"#666", fontWeight:600 }}>Habits {done}/{all.length}</span>
+        </div>
+      </div>
+
+      <SectionHdr label="Habits" />
+      {all.map(h => (
+        <div key={h.id} style={{ display:"flex", alignItems:"center", gap:9, padding:"8px 0", borderBottom:"1px solid #111" }}>
+          <div style={{ width:13, height:13, borderRadius:3, background:checked[h.id]?"#4ade80":"#161616", border:checked[h.id]?"none":"1px solid #222", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+            {checked[h.id] && <svg width="7" height="6"><path d="M1 2.5L3 5L6 1" stroke="#000" strokeWidth="1.5" strokeLinecap="round"/></svg>}
+          </div>
+          <span style={{ fontSize:12, color:checked[h.id]?"#4ade80":"#444" }}>{h.label}</span>
+          {"dayName" in h && <span style={{ fontSize:9, color:"#2a2a2a", marginLeft:"auto" }}>{h.dayName}</span>}
+        </div>
+      ))}
+
+      {dayItems.length > 0 && <>
+        <SectionHdr label={`Study Topics — ${dayStudied}/${dayItems.length} studied`} />
+        {dayItems.map(it => (
+          <div key={it.id} style={{ display:"flex", alignItems:"flex-start", gap:9, padding:"6px 0", borderBottom:"1px solid #0f0f0f" }}>
+            <div style={{ width:12, height:12, borderRadius:2, background:studiedItems[it.id]?"#4ade80":"#161616", border:studiedItems[it.id]?"none":"1px solid #222", flexShrink:0, marginTop:2 }} />
+            <span style={{ fontSize:11, color:studiedItems[it.id]?"#2a5c2a":"#444", lineHeight:1.5 }}>{it.item}</span>
+            <span style={{ fontSize:9, color:"#252525", marginLeft:"auto", flexShrink:0 }}>{it.sectionLabel}</span>
+          </div>
+        ))}
+      </>}
+    </div>
+  );
+}
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
