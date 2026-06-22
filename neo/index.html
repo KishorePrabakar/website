@@ -424,7 +424,7 @@ function App() {
 
   const revisionsDueToday = getRevisionsDueToday();
 
-  // Get today's assigned curriculum items
+  // Today's curriculum items
   const todayItems = itemsForDay(T);
 
   // Auto-derive habit state from studied topics today
@@ -466,8 +466,6 @@ function App() {
   const totalItems = CURRICULUM.length;
   const studiedPct = Math.round((studiedCount / totalItems) * 100);
 
-  // Today's curriculum items
-  const todayItems = itemsForDay(T);
   const todayStudied = todayItems.filter(it => studied[it.id]).length;
 
   if (loading) return (
