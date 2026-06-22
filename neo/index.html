@@ -342,7 +342,7 @@ function App() {
     for (const d of DATES) {
       if (d > T) break;
       const chk = d === T ? todayChecked : (historyData[d]?.checked || {});
-      if (isFullDay(d, chk)) { cur++; if (cur > best) best = cur; }
+      if (habitPct(d, chk) >= 80) { cur++; if (cur > best) best = cur; }
       else cur = 0;
     }
     const nm = { streak: cur, bestStreak: best };
