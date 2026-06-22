@@ -424,6 +424,9 @@ function App() {
 
   const revisionsDueToday = getRevisionsDueToday();
 
+  // Get today's assigned curriculum items
+  const todayItems = itemsForDay(T);
+
   // Auto-derive habit state from studied topics today
   const todayDsaStudied  = todayItems.filter(it => it.type === "dsa"  && studied[it.id]).length;
   const todayCoreStudied = todayItems.filter(it => it.type === "core" && studied[it.id]).length;
