@@ -313,6 +313,7 @@ function App() {
   const [currTab, setCurrTab] = useState("dsa");
   const [currFilter, setCurrFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [showBacklog, setShowBacklog] = useState(false);
 
   const T = today();
 
@@ -437,6 +438,14 @@ function App() {
 
   const revisionsDueToday = getRevisionsDueToday();
 
+  // Compute items from past days not yet studied
+  const backlogItems = CURRICULUM.filter(it => {
+    if (studied[it.id]) return false;
+    const idx = CURRICULUM.indexOf(it);
+    const assignedDate = DATES[idx % DATES.length];
+    return assignedDate < T;
+  });
+
   // Today's curriculum items
   const todayItems = itemsForDay(T);
 
@@ -538,6 +547,26 @@ function App() {
 
             {/* Countdown Clock */}
             <CountdownClock endDate={END_DATE} />
+
+            {/* Backlog Section */}
+            {backlogItems.length > 0 && (
+              <div style={{ marginBottom: 24, padding: "16px", background: "rgba(248, 113, 113, 0.03)", border: "1px solid rgba(248, 113, 113, 0.1)", borderRadius: 12 }}>
+                <div onClick={() => setShowBacklog(!showBacklog)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 11, color: "#f87171", fontWeight: 700, letterSpacing: 1 }}>⚠️ UNFINISHED TOPICS</span>
+                    <span style={{ fontSize: 10, color: "rgba(248, 113, 113, 0.4)", fontWeight: 600, background: "rgba(248, 113, 113, 0.1)", padding: "2px 6px", borderRadius: 4 }}>{backlogItems.length}</span>
+                  </div>
+                  <span style={{ fontSize: 10, color: "rgba(255,255,255,0.2)", fontWeight: 700 }}>{showBacklog ? "HIDE" : "SHOW"}</span>
+                </div>
+                {showBacklog && (
+                  <div style={{ marginTop: 16 }}>
+                    {backlogItems.map(it => (
+                      <TopicRow key={it.id} item={it} done={!!studied[it.id]} onToggle={() => toggleStudied(it.id)} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Habits progress */}
             <div style={{ marginBottom: 24 }}>
