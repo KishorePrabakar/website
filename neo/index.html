@@ -446,8 +446,9 @@ function App() {
     return assignedDate < T;
   });
 
-  // Today's curriculum items
-  const todayItems = itemsForDay(T);
+  // Today's curriculum items — Filter out any that are in backlog (just in case)
+  const backlogIds = new Set(backlogItems.map(it => it.id));
+  const todayItems = itemsForDay(T).filter(it => !backlogIds.has(it.id));
 
   // Auto-derive habit state from studied topics today
   const todayDsaStudied  = todayItems.filter(it => it.type === "dsa"  && studied[it.id]).length;
@@ -548,26 +549,6 @@ function App() {
             {/* Countdown Clock */}
             <CountdownClock endDate={END_DATE} />
 
-            {/* Backlog Section */}
-            {backlogItems.length > 0 && (
-              <div style={{ marginBottom: 24, padding: "16px", background: "rgba(248, 113, 113, 0.03)", border: "1px solid rgba(248, 113, 113, 0.1)", borderRadius: 12 }}>
-                <div onClick={() => setShowBacklog(!showBacklog)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 11, color: "#f87171", fontWeight: 700, letterSpacing: 1 }}>⚠️ UNFINISHED TOPICS</span>
-                    <span style={{ fontSize: 10, color: "rgba(248, 113, 113, 0.4)", fontWeight: 600, background: "rgba(248, 113, 113, 0.1)", padding: "2px 6px", borderRadius: 4 }}>{backlogItems.length}</span>
-                  </div>
-                  <span style={{ fontSize: 10, color: "rgba(255,255,255,0.2)", fontWeight: 700 }}>{showBacklog ? "HIDE" : "SHOW"}</span>
-                </div>
-                {showBacklog && (
-                  <div style={{ marginTop: 16 }}>
-                    {backlogItems.map(it => (
-                      <TopicRow key={it.id} item={it} done={!!studied[it.id]} onToggle={() => toggleStudied(it.id)} />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
             {/* Habits progress */}
             <div style={{ marginBottom: 24 }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, alignItems: "baseline" }}>
@@ -637,45 +618,47 @@ function App() {
               )}
             </div>
 
-            {/* Today's study topics */}
-            <SectionHdr label={`Study Plan — ${todayStudied}/${todayItems.length} topics covered`} />
-            <div style={{ marginBottom: 16 }}>
-              <ProgressBar pct={todayItems.length ? Math.round(todayStudied/todayItems.length*100) : 0} color="#fb923c" />
-            </div>
-
+            {/* Today's study topics — Board Layout */}
+            <SectionHdr label={`Study Plan — ${todayStudied}/${todayItems.length} topics`} />
+            
             {["dsa","core"].map(type => {
-              const items = todayItems.filter(it => it.type === type);
-              if (!items.length) return null;
-              // Group by section
+              const allOfType = todayItems.filter(it => it.type === type);
+              if (!allOfType.length) return null;
+              
               const bySection = {};
-              items.forEach(it => {
+              allOfType.forEach(it => {
                 if (!bySection[it.sectionLabel]) bySection[it.sectionLabel] = [];
                 bySection[it.sectionLabel].push(it);
               });
+
               return (
-                <div key={type} style={{ marginBottom: 12 }}>
-                  <div style={{ fontSize: 11, color: type === "dsa" ? "#60a5fa" : "#c084fc", letterSpacing: 2, textTransform: "uppercase", marginBottom: 10, marginTop: 12, fontWeight: 600 }}>
-                    {type === "dsa" ? "DSA" : "Core Subjects"}
+                <div key={type} style={{ marginBottom: 24 }}>
+                  <div style={{ fontSize: 10, color: type === "dsa" ? "#60a5fa" : "#c084fc", letterSpacing: 3, textTransform: "uppercase", marginBottom: 16, fontWeight: 700, opacity: 0.8 }}>
+                    {type === "dsa" ? "DSA Patterns" : "Core Concepts"}
                   </div>
-                  {Object.entries(bySection).map(([sec, secItems]) => (
-                    <div key={sec} style={{ marginBottom: 12 }}>
-                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginBottom: 8, letterSpacing: 1, fontWeight: 500 }}>{sec}</div>
-                      {secItems.map(it => (
-                        <TopicRow key={it.id} item={it} done={!!studied[it.id]} onToggle={() => toggleStudied(it.id)}
-                          revisions={revisions[it.id] || {}} onRevision={(rev) => toggleRevision(it.id, rev)}
-                          nextRevDate={studied[it.id] ? getNextRevDate(it.id) : null} />
-                      ))}
-                    </div>
-                  ))}
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12 }}>
+                    {Object.entries(bySection).map(([sec, items]) => (
+                      <div key={sec} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 12, padding: "16px" }}>
+                        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginBottom: 12, fontWeight: 600, display: "flex", justifyContent: "space-between" }}>
+                          <span>{sec}</span>
+                          <span style={{ color: "rgba(255,255,255,0.1)" }}>{items.length}</span>
+                        </div>
+                        {items.map(it => (
+                          <TopicRow key={it.id} item={it} done={!!studied[it.id]} onToggle={() => toggleStudied(it.id)}
+                            revisions={revisions[it.id] || {}} onRevision={(rev) => toggleRevision(it.id, rev)}
+                            nextRevDate={studied[it.id] ? getNextRevDate(it.id) : null} />
+                        ))}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               );
             })}
 
             {/* Revision Due Today */}
             {revisionsDueToday.length > 0 && <>
-              <SectionHdr label={`🔁 Revise Today — ${revisionsDueToday.length} topic${revisionsDueToday.length > 1 ? "s" : ""}`} />
-              <div style={{ marginBottom: 20, padding: "16px", background: "rgba(96, 165, 250, 0.05)", border: "1px solid rgba(96, 165, 250, 0.15)", borderRadius: 12 }}>
-                <div style={{ fontSize: 11, color: "rgba(96, 165, 250, 0.6)", marginBottom: 12, letterSpacing: 1, fontWeight: 500 }}>Spaced repetition — mark done when revised</div>
+              <SectionHdr label={`🔁 Spaced Repetition — ${revisionsDueToday.length} due`} />
+              <div style={{ marginBottom: 24, padding: "16px", background: "rgba(96, 165, 250, 0.05)", border: "1px solid rgba(96, 165, 250, 0.1)", borderRadius: 12 }}>
                 {revisionsDueToday.map(it => {
                   const itemRevs = revisions[it.id] || {};
                   const isDone = !!itemRevs[it.revTag.toLowerCase()];
@@ -693,13 +676,45 @@ function App() {
                           <span style={{ fontSize: 10, color: "#60a5fa", background: "rgba(96, 165, 250, 0.1)", border: "1px solid rgba(96, 165, 250, 0.2)", borderRadius: 4, padding: "2px 8px", fontWeight: 700 }}>{it.revTag}</span>
                           <span style={{ fontSize: 13, color: isDone ? "rgba(255,255,255,0.3)" : "#fff", textDecoration: isDone ? "line-through" : "none", lineHeight: 1.5, fontWeight: 500 }}>{it.item}</span>
                         </div>
-                        <div style={{ fontSize: 11, color: "rgba(96, 165, 250, 0.4)", marginTop: 4, fontWeight: 500 }}>{it.sectionLabel} · {it.note}</div>
                       </div>
                     </div>
                   );
                 })}
               </div>
             </>}
+
+            {/* Backlog at bottom */}
+            {backlogItems.length > 0 && (
+              <div style={{ marginTop: 40, padding: "24px 16px", background: "rgba(248, 113, 113, 0.02)", border: "1px dashed rgba(248, 113, 113, 0.2)", borderRadius: 16 }}>
+                <div onClick={() => setShowBacklog(!showBacklog)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontSize: 12, color: "#f87171", fontWeight: 800, letterSpacing: 2 }}>BACKLOG</span>
+                    <span style={{ background: "#f87171", color: "#000", fontSize: 10, fontWeight: 900, padding: "1px 8px", borderRadius: 10 }}>{backlogItems.length} PENDING</span>
+                  </div>
+                  <span style={{ fontSize: 10, color: "rgba(255,255,255,0.2)", fontWeight: 800 }}>{showBacklog ? "CLOSE" : "VISUALIZE"}</span>
+                </div>
+                
+                {showBacklog && (
+                  <div style={{ marginTop: 20, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 12 }}>
+                    {(() => {
+                      const bySec = {};
+                      backlogItems.forEach(it => {
+                        if (!bySec[it.sectionLabel]) bySec[it.sectionLabel] = [];
+                        bySec[it.sectionLabel].push(it);
+                      });
+                      return Object.entries(bySec).map(([sec, items]) => (
+                        <div key={sec} style={{ background: "rgba(0,0,0,0.2)", borderRadius: 8, padding: "12px", border: "1px solid rgba(255,255,255,0.03)" }}>
+                          <div style={{ fontSize: 10, color: "rgba(248, 113, 113, 0.5)", marginBottom: 8, fontWeight: 700, textTransform: "uppercase" }}>{sec}</div>
+                          {items.map(it => (
+                            <TopicRow key={it.id} item={it} done={!!studied[it.id]} onToggle={() => toggleStudied(it.id)} />
+                          ))}
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                )}
+              </div>
+            )}
 
             <SectionHdr label="Hard Rules" />
             {["No passive watching — pause and implement or explain.",
