@@ -841,7 +841,7 @@ function App() {
                 const chk = isToday ? todayChecked : (historyData[d]?.checked || {});
                 const pct = habitPct(d, chk);
                 return (
-                  <div key={d} onClick={() => !isFuture && setSelectedDay(d)} title={`${d}: ${pct}%`} style={{
+                  <div key={d} onClick={() => setSelectedDay(d)} title={`${d}: ${pct}%`} style={{
                     aspectRatio:"1", borderRadius:6,
                     background: cellColor(pct, isFuture),
                     border: cellBorder(pct, isToday),
