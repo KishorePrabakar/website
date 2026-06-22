@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/neo/(.*)",
+      "destination": "/neo/index.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
