@@ -372,7 +372,7 @@ h1, .hero-name {
 @media (min-width: 640px) { .kanban-board { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 900px) { .kanban-board { grid-template-columns: repeat(3, 1fr); } }
 
-.kanban-card { display: block; background: var(--bg-raised); border: 1px solid var(--border); border-radius: 0.5rem; text-decoration: none; color: inherit; position: relative; overflow: visible; transition: border-color 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease; }
+.kanban-card { display: block; background: var(--bg-raised); border: 1px solid var(--border); border-radius: 0.5rem; text-decoration: none; color: inherit; position: relative; overflow: visible; transition: border-color 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease; z-index: 1; }
 .kanban-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, var(--accent) 0%, transparent 55%); opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
 .kanban-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
 [data-theme="light"] .kanban-card:hover { box-shadow: 0 8px 24px rgba(22,163,74,0.15); }
@@ -398,6 +398,7 @@ h1, .hero-name {
   right: 0.75rem;
   display: flex;
   gap: 0.5rem;
+  z-index: 10;
 }
 .corner-icon {
   display: flex;
@@ -410,6 +411,8 @@ h1, .hero-name {
   border: 1px solid var(--border);
   color: var(--text-dim);
   transition: border-color 0.2s, color 0.2s, background 0.2s;
+  position: relative;
+  z-index: 10;
 }
 .corner-icon a {
   display: flex;
