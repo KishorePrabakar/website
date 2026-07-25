@@ -594,3 +594,97 @@ loadGithubCanvas();
 
 // ── Console vibe ──────────────────────────────────────
 console.log('%c portfolio loaded 🚀', 'color:#e8c547; font-size:13px; font-weight:bold;');
+
+// ── Blog Popup Modal ──────────────────────────────────
+const blogData = {
+  meta: {
+    title: 'Meta Engineering Blog',
+    links: [
+      { text: 'Engineering at Meta', url: 'https://engineering.fb.com/' },
+      { text: 'Meta AI Research', url: 'https://ai.facebook.com/research/' },
+      { text: 'Meta Infrastructure', url: 'https://engineering.fb.com/category/infrastructure/' },
+      { text: 'Meta Security', url: 'https://engineering.fb.com/category/security/' },
+    ]
+  },
+  hackernews: {
+    title: 'Hacker News',
+    links: [
+      { text: 'Hacker News Front Page', url: 'https://news.ycombinator.com/' },
+      { text: 'Hacker News Best', url: 'https://news.ycombinator.com/best' },
+      { text: 'Hacker News New', url: 'https://news.ycombinator.com/new' },
+      { text: 'Hacker News Show', url: 'https://news.ycombinator.com/show' },
+    ]
+  },
+  patrickcollison: {
+    title: 'Patrick Collison',
+    links: [
+      { text: 'Patrick Collison Blog', url: 'https://patrickcollison.com/' },
+      { text: 'Fast Papers', url: 'https://patrickcollison.com/fast_papers' },
+      { text: 'Progress Studies', url: 'https://patrickcollison.com/progress' },
+    ]
+  },
+  balaji: {
+    title: 'Balaji Srinivasan',
+    links: [
+      { text: 'Balaji Blog', url: 'https://balajis.com/' },
+      { text: 'The Network State', url: 'https://thenetworkstate.com/' },
+      { text: 'Balaji Twitter', url: 'https://twitter.com/balajis' },
+    ]
+  },
+  naval: {
+    title: 'Naval Ravikant',
+    links: [
+      { text: 'Naval Blog', url: 'https://nav.al/' },
+      { text: 'Naval Podcast', url: 'https://navalmanack.com/' },
+      { text: 'Naval Twitter', url: 'https://twitter.com/naval' },
+    ]
+  },
+  paulgraham: {
+    title: 'Paul Graham Essays',
+    links: [
+      { text: 'Paul Graham Essays', url: 'http://paulgraham.com/articles.html' },
+      { text: 'How to Start a Startup', url: 'http://paulgraham.com/start.html' },
+      { text: 'Great Hackers', url: 'http://paulgraham.com/great.html' },
+    ]
+  }
+};
+
+function openBlogPopup(type) {
+  const popup = document.getElementById('blog-popup');
+  const titleEl = document.getElementById('popup-title');
+  const linksEl = document.getElementById('popup-links');
+  
+  if (!popup || !titleEl || !linksEl) return;
+  
+  const data = blogData[type];
+  if (!data) return;
+  
+  titleEl.textContent = data.title;
+  linksEl.innerHTML = data.links.map(link => `
+    <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="popup-link-item">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+      <span class="popup-link-text">${link.text}</span>
+    </a>
+  `).join('');
+  
+  popup.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeBlogPopup() {
+  const popup = document.getElementById('blog-popup');
+  if (popup) {
+    popup.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+}
+
+// Close popup on escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeBlogPopup();
+});
+
+// Close popup on backdrop click
+document.getElementById('blog-popup')?.addEventListener('click', (e) => {
+  if (e.target.id === 'blog-popup') closeBlogPopup();
+});
