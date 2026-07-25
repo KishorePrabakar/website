@@ -368,9 +368,7 @@ h1, .hero-name {
 .cert-badge:hover { border-color: var(--accent); color: var(--accent); }
 
 /* ─── Project cards ──────────────────────────────────── */
-.kanban-board { display: grid; grid-template-columns: 1fr; gap: 1rem; }
-@media (min-width: 640px) { .kanban-board { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 900px) { .kanban-board { grid-template-columns: repeat(3, 1fr); } }
+.kanban-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
 
 .kanban-card { display: block; background: var(--bg-raised); border: 1px solid var(--border); border-radius: 0.5rem; text-decoration: none; color: inherit; position: relative; overflow: visible; transition: border-color 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease; z-index: 1; }
 .kanban-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, var(--accent) 0%, transparent 55%); opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
