@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conquer - Impossible List Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Conquer specific styles to augment style.css */
+        
+        .conquer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .conquer-header h1 {
+            margin: 0;
+            font-size: 2.2rem;
+        }
+        
+        .conquer-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .conquer-stat-card {
+            background: var(--bg-raised);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 0.3rem;
+        }
+        
+        .conquer-stat-val {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            line-height: 1;
+        }
+        
+        .conquer-stat-lbl {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .conquer-progress-wrap {
+            margin-bottom: 2.5rem;
+        }
+        
+        .conquer-progress-track {
+            height: 6px;
+            background: var(--border);
+            border-radius: 99px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        
+        .conquer-progress-fill {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+        
+        .conquer-toolbar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .conquer-search {
+            flex: 1;
+            min-width: 200px;
+            background: var(--bg-raised);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.5rem 1rem;
+            border-radius: 0.4rem;
+            font-family: inherit;
+        }
+        
+        .conquer-search:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        .conquer-btn {
+            background: var(--bg-raised);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.5rem 1rem;
+            border-radius: 0.4rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        
+        .conquer-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        
+        .conquer-btn.primary {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+            font-weight: 700;
+        }
+        
+        .conquer-btn.small {
+            padding: 0.2rem 0.5rem;
+            font-size: 0.8rem;
+        }
+        
+        /* Section styling */
+        .conquer-section {
+            background: var(--bg-raised);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+        
+        .conquer-section-header {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: color-mix(in srgb, var(--bg-raised) 90%, var(--border));
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .conquer-section-drag-handle {
+            cursor: grab;
+            color: var(--text-dim);
+            margin-right: 0.75rem;
+            user-select: none;
+            opacity: 0.5;
+        }
+        .conquer-section-drag-handle:hover { opacity: 1; }
+        
+        .conquer-section-title-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .conquer-section-title {
+            font-weight: 700;
+            color: var(--white);
+            outline: none;
+        }
+        
+        .conquer-section-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .conquer-progress-text {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+        }
+        
+        .conquer-mini-progress {
+            width: 40px;
+            height: 4px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .conquer-mini-progress-fill {
+            height: 100%;
+            background: var(--accent);
+            transition: width 0.3s ease;
+        }
+        
+        .conquer-section-actions {
+            display: flex;
+            gap: 0.4rem;
+        }
+        
+        .conquer-chevron {
+            width: 14px;
+            height: 14px;
+            transition: transform 0.2s;
+        }
+        
+        .conquer-chevron.expanded {
+            transform: rotate(180deg);
+        }
+        
+        /* Tasks */
+        .conquer-tasks-container {
+            padding: 0.5rem;
+            min-height: 10px;
+        }
+        
+        .conquer-empty-tasks {
+            padding: 1rem;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            text-align: center;
+        }
+        
+        .conquer-task {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            gap: 0.75rem;
+        }
+        
+        .conquer-task:hover {
+            background: color-mix(in srgb, var(--bg-raised) 80%, var(--border));
+        }
+        
+        .conquer-task-drag-handle {
+            cursor: grab;
+            color: var(--text-dim);
+            user-select: none;
+            opacity: 0.3;
+            font-size: 0.8rem;
+        }
+        .conquer-task:hover .conquer-task-drag-handle { opacity: 0.8; }
+        
+        .conquer-checkbox {
+            width: 1.2rem;
+            height: 1.2rem;
+            border: 1.5px solid var(--border-hover);
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .conquer-checkbox:hover { border-color: var(--accent); }
+        .conquer-checkbox.checked {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--bg);
+        }
+        
+        .conquer-checkbox svg {
+            width: 12px;
+            height: 12px;
+        }
+        
+        .conquer-task-title {
+            flex: 1;
+            outline: none;
+            transition: color 0.2s;
+        }
+        
+        .conquer-task.completed .conquer-task-title {
+            color: var(--text-dim);
+            text-decoration: line-through;
+        }
+        
+        .btn-delete-task {
+            opacity: 0;
+        }
+        .conquer-task:hover .btn-delete-task { opacity: 1; }
+        
+        .new-task-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text);
+            outline: none;
+            font-family: inherit;
+        }
+        
+        /* Toast */
+        .conquer-toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--bg-raised);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transform: translateY(150%);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+        }
+        
+        .conquer-toast.show { transform: translateY(0); }
+        .conquer-toast.success { border-color: var(--accent); }
+        .conquer-toast.error { border-color: #ef4444; }
+        
+        .sortable-ghost {
+            opacity: 0.4;
+        }
+        
+        .hidden { display: none !important; }
+        
+        /* Auth View */
+        .auth-container {
+            max-w: 400px;
+            margin: 10vh auto;
+            text-align: center;
+            padding: 2rem;
+            background: var(--bg-raised);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+        }
+        
+        .auth-title { margin-bottom: 2rem; }
+        .auth-btn { width: 100%; margin-bottom: 1rem; justify-content: center; padding: 0.75rem; }
+        
+        /* Config notice */
+        .config-notice {
+            padding: 1rem;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            color: #ffb3b3;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            text-align: left;
+            font-size: 0.85rem;
+        }
+
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Supabase Setup Notice (only visible if variables not set) -->
+    <div id="auth-view" class="hidden auth-container">
+        <h1 class="auth-title">Conquer</h1>
+        <p class="text-dim mb-4" style="margin-bottom: 2rem;">Log in to track your impossible list.</p>
+        
+        <div id="config-notice" class="hidden config-notice">
+            <strong>Setup Required!</strong><br>
+            Please edit <code>conquer.js</code> and replace <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> with your Supabase credentials. Run the provided <code>supabase_migration.sql</code> to create the schema.
+        </div>
+        
+        <button id="btn-login-google" class="conquer-btn primary auth-btn">Continue with Google</button>
+        <button id="btn-login-github" class="conquer-btn auth-btn">Continue with GitHub</button>
+        <div style="margin-top: 1rem;">
+            <a href="/" class="placeholder-link">← Back to Home</a>
+        </div>
+    </div>
+
+    <!-- loading state -->
+    <div id="loading-view" class="max-w-4xl mx-auto px-6 py-16 text-center">
+        <div class="lc-skeleton" style="width: 200px; margin: 2rem auto;"></div>
+        <p class="text-dim">Loading conquer list...</p>
+    </div>
+
+    <!-- Main App -->
+    <div id="app-view" class="hidden max-w-4xl mx-auto px-6 py-16">
+        
+        <div class="conquer-header">
+            <div>
+                <h1>Conquer</h1>
+                <p class="text-dim mt-2" style="margin-top: 0;">The Impossible List</p>
+            </div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <a href="/" class="placeholder-link">← Home</a>
+                <button id="btn-logout" class="conquer-btn small">Sign Out</button>
+            </div>
+        </div>
+
+        <div class="conquer-stats-grid">
+            <div class="conquer-stat-card">
+                <span class="conquer-stat-val" id="stat-progress">0%</span>
+                <span class="conquer-stat-lbl">Overall</span>
+            </div>
+            <div class="conquer-stat-card">
+                <span class="conquer-stat-val" id="stat-completed">0</span>
+                <span class="conquer-stat-lbl">Completed</span>
+            </div>
+            <div class="conquer-stat-card">
+                <span class="conquer-stat-val" id="stat-remaining">0</span>
+                <span class="conquer-stat-lbl">Remaining</span>
+            </div>
+            <div class="conquer-stat-card">
+                <span class="conquer-stat-val" id="stat-total">0</span>
+                <span class="conquer-stat-lbl">Total</span>
+            </div>
+        </div>
+
+        <div class="conquer-progress-wrap">
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-dim);">
+                <span>Progress Engine</span>
+                <span>Lifetime</span>
+            </div>
+            <div class="conquer-progress-track">
+                <div class="conquer-progress-fill" id="overall-progress-bar"></div>
+            </div>
+        </div>
+
+        <div class="conquer-toolbar">
+            <input type="text" id="search-input" class="conquer-search" placeholder="Search tasks...">
+            <button id="btn-add-section" class="conquer-btn primary">Add Section</button>
+            <button id="btn-collapse-all" class="conquer-btn">Collapse All</button>
+            <button id="btn-expand-all" class="conquer-btn">Expand All</button>
+        </div>
+
+        <div id="sections-container">
+            <!-- Sections rendered here via JS -->
+        </div>
+
+    </div>
+
+    <div id="toast" class="conquer-toast"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script type="module" src="conquer.js"></script>
+</body>
+</html>

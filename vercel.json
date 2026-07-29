@@ -5,6 +5,14 @@
       "destination": "/neo/index.html"
     },
     {
+      "source": "/conquer",
+      "destination": "/conquer.html"
+    },
+    {
+      "source": "/conquer/(.*)",
+      "destination": "/conquer.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
