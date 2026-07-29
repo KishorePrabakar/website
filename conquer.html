@@ -354,8 +354,14 @@
             Please edit <code>conquer.js</code> and replace <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> with your Supabase credentials. Run the provided <code>supabase_migration.sql</code> to create the schema.
         </div>
         
-        <button id="btn-login-google" class="conquer-btn primary auth-btn">Continue with Google</button>
-        <button id="btn-login-github" class="conquer-btn auth-btn">Continue with GitHub</button>
+        <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1rem;">
+            <input type="email" id="input-login-email" class="conquer-search" placeholder="Enter your email address" style="min-width: 100%; border-radius: 0.5rem;" required>
+            <input type="password" id="input-login-password" class="conquer-search" placeholder="Enter your password" style="min-width: 100%; border-radius: 0.5rem;" required>
+            <button id="btn-signup-password" class="conquer-btn primary auth-btn" style="margin-bottom: 0;">Create Account</button>
+            <button id="btn-login-password" class="conquer-btn primary auth-btn" style="margin-bottom: 0;">Login with Password</button>
+            <button id="btn-login-email" class="conquer-btn auth-btn" style="margin-bottom: 0;">Send Magic Link</button>
+            <button id="btn-login-google" class="conquer-btn auth-btn" type="button">Continue with Google</button>
+        </div>
         <div style="margin-top: 1rem;">
             <a href="/" class="placeholder-link">← Back to Home</a>
         </div>

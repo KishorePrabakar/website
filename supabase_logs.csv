@@ -1,0 +1,306 @@
+id,date,timestamp,level,status,method,host,pathname,event_message,headers,regions,log_type,latency,log_count,logs,auth_user
+9a9aa5a4-5591-44f2-89b6-7dff3dc43393,"""2026-07-29T11:15:17.113Z""",2026-07-29T11:15:17.113000,warning,429,POST,,/auth/v1/signup,"POST | 429 | https://kbmimkfdhblyrdskdcxc.supabase.co/auth/v1/signup | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",{},[],edge,0,null,[],null
+4a814f0f-2eef-4690-b8de-20f0d82634fa,"""2026-07-29T11:15:14.888Z""",2026-07-29T11:15:14.888000,warning,429,POST,,/auth/v1/signup,"POST | 429 | https://kbmimkfdhblyrdskdcxc.supabase.co/auth/v1/signup | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",{},[],edge,0,null,[],null
+c7d387d5-fbc2-419a-ae04-2cbf2302b897,"""2026-07-29T11:15:00.273Z""",2026-07-29T11:15:00.273000,warning,429,POST,,/auth/v1/signup,"POST | 429 | https://kbmimkfdhblyrdskdcxc.supabase.co/auth/v1/signup | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",{},[],edge,0,null,[],null
+44498243-f1fd-46d4-80c3-a223ca9e5422,"""2026-07-29T11:14:56.046Z""",2026-07-29T11:14:56.046000,warning,429,POST,,/auth/v1/signup,"POST | 429 | https://kbmimkfdhblyrdskdcxc.supabase.co/auth/v1/signup | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",{},[],edge,0,null,[],null
+22e2ca75-6aec-4460-be6e-d1d28126f865,"""2026-07-29T11:14:52.921Z""",2026-07-29T11:14:52.921000,warning,429,POST,,/auth/v1/signup,"POST | 429 | https://kbmimkfdhblyrdskdcxc.supabase.co/auth/v1/signup | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",{},[],edge,0,null,[],null
+c2199025-cfce-4f1e-880c-860b81941323,"""2026-07-29T11:14:27.504Z""",2026-07-29T11:14:27.504000,warning,422,POST,,/auth/v1/signup,"POST | 422 | https://kbmimkfdhblyrdskdcxc.supabase.co/auth/v1/signup | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",{},[],edge,0,null,[],null
+148e5bc6-3245-4bfd-a7ee-4e4e403fc30a,"""2026-07-29T11:14:27.172Z""",2026-07-29T11:14:27.172000,success,200,OPTIONS,,/auth/v1/signup,"OPTIONS | 200 | https://kbmimkfdhblyrdskdcxc.supabase.co/auth/v1/signup | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",{},[],edge,0,null,[],null
+733b5ae3-90fa-4312-935f-60ad5e03a24a,"""2026-07-29T11:13:52.854Z""",2026-07-29T11:13:52.854000,success,00000,,,,"checkpoint complete: wrote 28 buffers (0.1%); 0 WAL file(s) added, 0 removed, 1 recycled; write=2.730 s, sync=0.004 s, total=2.755 s; sync files=28, longest=0.003 s, average=0.001 s; distance=16406 kB, estimate=45682 kB; lsn=0/17005A60, redo lsn=0/17005A08",{},[],postgres,0,null,[],null
+c5a238a7-7a3d-49e6-b6d4-addb4b822c9d,"""2026-07-29T11:13:50.100Z""",2026-07-29T11:13:50.100000,success,00000,,,,checkpoint starting: time,{},[],postgres,0,null,[],null
+0b67aa71-26f9-494e-8079-6e8c813b195c,"""2026-07-29T11:13:24.623Z""",2026-07-29T11:13:24.623000,success,200,GET,,/auth/v1/health,GET | 200 | https://kbmimkfdhblyrdskdcxc.supabase.co/auth/v1/health | @supabase-infra/mgmt-api/3d19bb2,{},[],edge,0,null,[],null
+53f7fb5a-e075-44b5-b455-497fbc7a5fbc,"""2026-07-29T11:13:24.617Z""",2026-07-29T11:13:24.617000,success,200,HEAD,,/rest-admin/v1/ready,HEAD | 200 | https://kbmimkfdhblyrdskdcxc.supabase.co/rest-admin/v1/ready | @supabase-infra/mgmt-api/3d19bb2,{},[],edge,0,null,[],null
+ba572505-d57f-403f-9af5-7017eb7e967b,"""2026-07-29T11:12:42.152Z""",2026-07-29T11:12:42.152000,success,00000,,,,"statement: SET statement_timeout='58s'; SET idle_session_timeout='58s';
+CREATE OR REPLACE FUNCTION pg_temp.count_estimate(
+    query text
+) RETURNS integer LANGUAGE plpgsql AS $$
+DECLARE
+    plan jsonb;
+BEGIN
+    EXECUTE 'EXPLAIN (FORMAT JSON)' || query INTO plan;
+    RETURN plan->0->'Plan'->'Plan Rows';
+END;
+$$;
+
+
+with approximation as (select reltuples as estimate from pg_class where oid = 'auth.users'::regclass)
+select 
+  case 
+    when estimate = -1 then (select pg_temp.count_estimate('select * from auth.users'))::int
+    when estimate > 50000 then estimate::int
+    else (select count(*) from auth.users)
+  end as count,
+  estimate = -1 or estimate > 50000 as is_estimate
+from approximation
+
+-- source: dashboard
+-- user: session:467139a8-c601-492a-9f68-d8f99342c009
+-- date: 2026-07-29T11:12:40.509Z",{},[],postgres,0,null,[],null
+f02b2ee5-7cd5-4a31-9a05-902d70a4c281,"""2026-07-29T11:12:42.003Z""",2026-07-29T11:12:42.003000,success,00000,,,,"statement: SET statement_timeout='58s'; SET idle_session_timeout='58s';
+CREATE OR REPLACE FUNCTION pg_temp.count_estimate(
+    query text
+) RETURNS integer LANGUAGE plpgsql AS $$
+DECLARE
+    plan jsonb;
+BEGIN
+    EXECUTE 'EXPLAIN (FORMAT JSON)' || query INTO plan;
+    RETURN plan->0->'Plan'->'Plan Rows';
+END;
+$$;
+
+
+with approximation as (select reltuples as estimate from pg_class where oid = 'auth.users'::regclass)
+select 
+  case 
+    when estimate = -1 then (select pg_temp.count_estimate('select * from auth.users'))::int
+    when estimate > 50000 then estimate::int
+    else (select count(*) from auth.users)
+  end as count,
+  estimate = -1 or estimate > 50000 as is_estimate
+from approximation
+
+-- source: dashboard
+-- user: session:467139a8-c601-492a-9f68-d8f99342c009
+-- date: 2026-07-29T11:12:40.361Z",{},[],postgres,0,null,[],null
+1d74c91b-08d7-4a9f-8ce7-e842df010a5a,"""2026-07-29T11:12:39.064Z""",2026-07-29T11:12:39.064000,success,200,POST,,/admin/v1/network-bans/retrieve,POST | 200 | https://kbmimkfdhblyrdskdcxc.supabase.co/admin/v1/network-bans/retrieve | @supabase-infra/mgmt-api/3d19bb2,{},[],edge,0,null,[],null
+8350fc69-e982-4ea9-858c-ed82decc4702,"""2026-07-29T11:11:40.020Z""",2026-07-29T11:11:40.020000,success,200,POST,,/admin/v1/network-bans/retrieve,POST | 200 | https://kbmimkfdhblyrdskdcxc.supabase.co/admin/v1/network-bans/retrieve | @supabase-infra/mgmt-api/3d19bb2,{},[],edge,0,null,[],null
+a1eb3358-b4d5-4958-b1be-a50844674078,"""2026-07-29T11:09:36.951Z""",2026-07-29T11:09:36.951000,warning,429,POST,,/auth/v1/signup,"POST | 429 | https://kbmimkfdhblyrdskdcxc.supabase.co/auth/v1/signup?redirect_to=http%3A%2F%2F127.0.0.1%3A5500%2Fconquer | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",{},[],edge,0,null,[],null
+1a4de154-a6ba-4732-8e0c-500620845db4,"""2026-07-29T11:09:36.908Z""",2026-07-29T11:09:36.908000,success,200,OPTIONS,,/auth/v1/signup,"OPTIONS | 200 | https://kbmimkfdhblyrdskdcxc.supabase.co/auth/v1/signup?redirect_to=http%3A%2F%2F127.0.0.1%3A5500%2Fconquer | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",{},[],edge,0,null,[],null
+0d878e71-b65b-4f4b-98e4-2ea89503ffa2,"""2026-07-29T11:08:49.816Z""",2026-07-29T11:08:49.816000,success,00000,,,,"checkpoint complete: wrote 1 buffers (0.0%); 0 WAL file(s) added, 0 removed, 1 recycled; write=0.101 s, sync=0.003 s, total=0.118 s; sync files=1, longest=0.003 s, average=0.003 s; distance=16362 kB, estimate=48935 kB; lsn=0/160001D0, redo lsn=0/16000178",{},[],postgres,0,null,[],null
+e986e859-1af6-48b4-a65e-c89be9b2bc0b,"""2026-07-29T11:08:49.698Z""",2026-07-29T11:08:49.698000,success,00000,,,,checkpoint starting: time,{},[],postgres,0,null,[],null
+470914be-202b-4bb8-bc80-70799b0f0c79,"""2026-07-29T11:08:16.035Z""",2026-07-29T11:08:16.035000,warning,400,POST,,/auth/v1/token,"POST | 400 | https://kbmimkfdhblyrdskdcxc.supabase.co/auth/v1/token?grant_type=password | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",{},[],edge,0,null,[],null
+69fde37f-2f50-4d1e-af1e-9f8059a1df1f,"""2026-07-29T11:08:15.715Z""",2026-07-29T11:08:15.715000,success,200,OPTIONS,,/auth/v1/token,"OPTIONS | 200 | https://kbmimkfdhblyrdskdcxc.supabase.co/auth/v1/token?grant_type=password | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",{},[],edge,0,null,[],null
+e086f7ff-246b-4379-b77e-934c9056fc3e,"""2026-07-29T11:07:48.777Z""",2026-07-29T11:07:48.777000,success,200,GET,,/auth/v1/admin/custom-providers,"GET | 200 | https://kbmimkfdhblyrdskdcxc.supabase.co/auth/v1/admin/custom-providers | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",{},[],edge,0,null,[],null
+4b2f5753-66ee-4b78-b574-3ce261eec599,"""2026-07-29T11:05:52.381Z""",2026-07-29T11:05:52.381000,success,200,GET,,/auth/v1/admin/custom-providers,"GET | 200 | https://kbmimkfdhblyrdskdcxc.supabase.co/auth/v1/admin/custom-providers | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",{},[],edge,0,null,[],null
+8f9939a0-a844-49a7-9344-f04a8492d0cb,"""2026-07-29T11:03:54.762Z""",2026-07-29T11:03:54.762000,success,200,GET,,/auth/v1/admin/custom-providers,"GET | 200 | https://kbmimkfdhblyrdskdcxc.supabase.co/auth/v1/admin/custom-providers | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",{},[],edge,0,null,[],null
+49ab94ba-08ff-4b21-b0f9-138cd03bd5b2,"""2026-07-29T11:03:52.435Z""",2026-07-29T11:03:52.435000,success,00000,,,,"checkpoint complete: wrote 28 buffers (0.1%); 0 WAL file(s) added, 0 removed, 2 recycled; write=2.721 s, sync=0.004 s, total=2.747 s; sync files=28, longest=0.003 s, average=0.001 s; distance=32790 kB, estimate=52555 kB; lsn=0/150058A0, redo lsn=0/15005848",{},[],postgres,0,null,[],null
+aa5cb109-cc9b-45b2-b4de-5424b73f0ad1,"""2026-07-29T11:03:49.689Z""",2026-07-29T11:03:49.689000,success,00000,,,,checkpoint starting: time,{},[],postgres,0,null,[],null
+2fd707b8-ce6a-41cc-8a4c-34f20384d6ee,"""2026-07-29T11:02:39.882Z""",2026-07-29T11:02:39.882000,success,200,GET,,/auth/v1/admin/custom-providers,"GET | 200 | https://kbmimkfdhblyrdskdcxc.supabase.co/auth/v1/admin/custom-providers | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",{},[],edge,0,null,[],null
+716e08d3-dc84-4f31-93ba-6e785d84d254,"""2026-07-29T11:02:02.530Z""",2026-07-29T11:02:02.530000,success,00000,,,,"statement: SET statement_timeout='58s'; SET idle_session_timeout='58s';
+CREATE OR REPLACE FUNCTION pg_temp.count_estimate(
+    query text
+) RETURNS integer LANGUAGE plpgsql AS $$
+DECLARE
+    plan jsonb;
+BEGIN
+    EXECUTE 'EXPLAIN (FORMAT JSON)' || query INTO plan;
+    RETURN plan->0->'Plan'->'Plan Rows';
+END;
+$$;
+
+
+with approximation as (select reltuples as estimate from pg_class where oid = 'auth.users'::regclass)
+select 
+  case 
+    when estimate = -1 then (select pg_temp.count_estimate('select * from auth.users'))::int
+    when estimate > 50000 then estimate::int
+    else (select count(*) from auth.users)
+  end as count,
+  estimate = -1 or estimate > 50000 as is_estimate
+from approximation
+
+-- source: dashboard
+-- user: session:467139a8-c601-492a-9f68-d8f99342c009
+-- date: 2026-07-29T11:02:00.852Z",{},[],postgres,0,null,[],null
+b09d7dd9-4e37-44a1-aae3-c9d050fee257,"""2026-07-29T11:02:02.278Z""",2026-07-29T11:02:02.278000,success,00000,,,,"statement: SET statement_timeout='58s'; SET idle_session_timeout='58s';
+CREATE OR REPLACE FUNCTION pg_temp.count_estimate(
+    query text
+) RETURNS integer LANGUAGE plpgsql AS $$
+DECLARE
+    plan jsonb;
+BEGIN
+    EXECUTE 'EXPLAIN (FORMAT JSON)' || query INTO plan;
+    RETURN plan->0->'Plan'->'Plan Rows';
+END;
+$$;
+
+
+with approximation as (select reltuples as estimate from pg_class where oid = 'auth.users'::regclass)
+select 
+  case 
+    when estimate = -1 then (select pg_temp.count_estimate('select * from auth.users'))::int
+    when estimate > 50000 then estimate::int
+    else (select count(*) from auth.users)
+  end as count,
+  estimate = -1 or estimate > 50000 as is_estimate
+from approximation
+
+-- source: dashboard
+-- user: session:467139a8-c601-492a-9f68-d8f99342c009
+-- date: 2026-07-29T11:02:00.660Z",{},[],postgres,0,null,[],null
+d7795af9-3cbf-43a9-b11e-3b4e77738763,"""2026-07-29T10:59:59.678Z""",2026-07-29T10:59:59.678000,warning,429,POST,,/auth/v1/otp,"POST | 429 | https://kbmimkfdhblyrdskdcxc.supabase.co/auth/v1/otp?redirect_to=http%3A%2F%2F127.0.0.1%3A5500%2Fconquer | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",{},[],edge,0,null,[],null
+faf97b19-6dfb-4543-a11d-3f1eb3d03e3e,"""2026-07-29T10:59:59.429Z""",2026-07-29T10:59:59.429000,success,200,OPTIONS,,/auth/v1/otp,"OPTIONS | 200 | https://kbmimkfdhblyrdskdcxc.supabase.co/auth/v1/otp?redirect_to=http%3A%2F%2F127.0.0.1%3A5500%2Fconquer | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",{},[],edge,0,null,[],null
+8cece2ce-25af-44f8-9d9d-4e0861d7d12d,"""2026-07-29T10:53:51.231Z""",2026-07-29T10:53:51.231000,success,00000,,,,"checkpoint complete: wrote 16 buffers (0.1%); 0 WAL file(s) added, 0 removed, 2 recycled; write=1.509 s, sync=0.003 s, total=1.531 s; sync files=16, longest=0.003 s, average=0.001 s; distance=32759 kB, estimate=54751 kB; lsn=0/13000080, redo lsn=0/13000028",{},[],postgres,0,null,[],null
+ee044b3c-81c3-494c-804e-7fba6f195a86,"""2026-07-29T10:53:49.702Z""",2026-07-29T10:53:49.702000,success,00000,,,,checkpoint starting: time,{},[],postgres,0,null,[],null
+2b16f7b4-6f8d-4543-a13f-0e52d29ef3a5,"""2026-07-29T10:50:52.180Z""",2026-07-29T10:50:52.180000,warning,429,POST,,/auth/v1/otp,POST | 429 | https://kbmimkfdhblyrdskdcxc.supabase.co/auth/v1/otp?redirect_to=http%3A%2F%2Flocalhost%3A3000%2Fconquer | node,{},[],edge,0,null,[],null
+52413ece-bcd4-41cf-9e20-da4f2b48ce04,"""2026-07-29T10:50:38.519Z""",2026-07-29T10:50:38.519000,warning,429,POST,,/auth/v1/otp,POST | 429 | https://kbmimkfdhblyrdskdcxc.supabase.co/auth/v1/otp?redirect_to=http%3A%2F%2Flocalhost%3A3000%2Fconquer | node,{},[],edge,0,null,[],null
+be656d43-f1c7-4174-b12c-0903c6cc849e,"""2026-07-29T10:49:10.263Z""",2026-07-29T10:49:10.263000,warning,429,POST,,/auth/v1/otp,POST | 429 | https://kbmimkfdhblyrdskdcxc.supabase.co/auth/v1/otp?redirect_to=http%3A%2F%2Flocalhost%3A3000%2Fconquer | node,{},[],edge,0,null,[],null
+a24106f1-cafc-454e-8c25-affd0c3bf102,"""2026-07-29T10:48:52.382Z""",2026-07-29T10:48:52.382000,success,00000,,,,"checkpoint complete: wrote 29 buffers (0.1%); 0 WAL file(s) added, 0 removed, 1 recycled; write=2.811 s, sync=0.004 s, total=2.828 s; sync files=16, longest=0.003 s, average=0.001 s; distance=16392 kB, estimate=57194 kB; lsn=0/11002128, redo lsn=0/110020D0",{},[],postgres,0,null,[],null
+49f68773-6abd-4832-a6a7-d2b6c0bd97bf,"""2026-07-29T10:48:49.554Z""",2026-07-29T10:48:49.554000,success,00000,,,,checkpoint starting: time,{},[],postgres,0,null,[],null
+7afe560c-3882-4092-8290-581ab178d349,"""2026-07-29T10:48:30.212Z""",2026-07-29T10:48:30.212000,warning,400,POST,,/auth/v1/otp,POST | 400 | https://kbmimkfdhblyrdskdcxc.supabase.co/auth/v1/otp?redirect_to=http%3A%2F%2Flocalhost%3A3000%2Fconquer | node,{},[],edge,0,null,[],null
+a2c228ea-5b3f-4cf1-8607-2620d5e35b4c,"""2026-07-29T10:48:15.056Z""",2026-07-29T10:48:15.056000,warning,400,POST,,/auth/v1/otp,POST | 400 | https://kbmimkfdhblyrdskdcxc.supabase.co/auth/v1/otp?redirect_to=http%3A%2F%2Flocalhost%3A3000%2Fconquer | node,{},[],edge,0,null,[],null
+a3d3d6ef-d911-4790-9631-0fd806f5ea2d,"""2026-07-29T10:43:50.295Z""",2026-07-29T10:43:50.295000,success,00000,,,,"checkpoint complete: wrote 13 buffers (0.0%); 0 WAL file(s) added, 0 removed, 2 recycled; write=1.216 s, sync=0.004 s, total=1.242 s; sync files=13, longest=0.003 s, average=0.001 s; distance=32768 kB, estimate=61728 kB; lsn=0/10000080, redo lsn=0/10000028",{},[],postgres,0,null,[],null
+2729767d-508e-4e1e-9122-3c7be167a7a1,"""2026-07-29T10:43:49.055Z""",2026-07-29T10:43:49.055000,success,00000,,,,checkpoint starting: time,{},[],postgres,0,null,[],null
+95b4a425-a5e1-499e-9dda-0f52313598bb,"""2026-07-29T10:40:15.716Z""",2026-07-29T10:40:15.716000,warning,400,GET,,/auth/v1/authorize,"GET | 400 | https://kbmimkfdhblyrdskdcxc.supabase.co/auth/v1/authorize?provider=google&redirect_to=https%3A%2F%2Fkishorepr.vercel.app%2Fconquer | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",{},[],edge,0,null,[],null
+1482cffa-483e-49e7-aac2-722b797269eb,"""2026-07-29T10:39:59.767Z""",2026-07-29T10:39:59.767000,success,00000,,,,"statement: SET statement_timeout='58s'; SET idle_session_timeout='58s';
+CREATE OR REPLACE FUNCTION pg_temp.count_estimate(
+    query text
+) RETURNS integer LANGUAGE plpgsql AS $$
+DECLARE
+    plan jsonb;
+BEGIN
+    EXECUTE 'EXPLAIN (FORMAT JSON)' || query INTO plan;
+    RETURN plan->0->'Plan'->'Plan Rows';
+END;
+$$;
+
+
+with approximation as (select reltuples as estimate from pg_class where oid = 'auth.users'::regclass)
+select 
+  case 
+    when estimate = -1 then (select pg_temp.count_estimate('select * from auth.users'))::int
+    when estimate > 50000 then estimate::int
+    else (select count(*) from auth.users)
+  end as count,
+  estimate = -1 or estimate > 50000 as is_estimate
+from approximation
+
+-- source: dashboard
+-- user: session:467139a8-c601-492a-9f68-d8f99342c009
+-- date: 2026-07-29T10:39:58.101Z",{},[],postgres,0,null,[],null
+e93eaf7e-f140-455d-a93e-b8da264fc0c8,"""2026-07-29T10:39:59.582Z""",2026-07-29T10:39:59.582000,success,00000,,,,"statement: SET statement_timeout='58s'; SET idle_session_timeout='58s';
+CREATE OR REPLACE FUNCTION pg_temp.count_estimate(
+    query text
+) RETURNS integer LANGUAGE plpgsql AS $$
+DECLARE
+    plan jsonb;
+BEGIN
+    EXECUTE 'EXPLAIN (FORMAT JSON)' || query INTO plan;
+    RETURN plan->0->'Plan'->'Plan Rows';
+END;
+$$;
+
+
+with approximation as (select reltuples as estimate from pg_class where oid = 'auth.users'::regclass)
+select 
+  case 
+    when estimate = -1 then (select pg_temp.count_estimate('select * from auth.users'))::int
+    when estimate > 50000 then estimate::int
+    else (select count(*) from auth.users)
+  end as count,
+  estimate = -1 or estimate > 50000 as is_estimate
+from approximation
+
+-- source: dashboard
+-- user: session:467139a8-c601-492a-9f68-d8f99342c009
+-- date: 2026-07-29T10:39:57.998Z",{},[],postgres,0,null,[],null
+f73bae06-7ce1-4444-9a13-109a6b8a0ad1,"""2026-07-29T10:38:50.736Z""",2026-07-29T10:38:50.736000,success,00000,,,,"checkpoint complete: wrote 20 buffers (0.1%); 0 WAL file(s) added, 0 removed, 4 recycled; write=1.952 s, sync=0.004 s, total=2.025 s; sync files=17, longest=0.003 s, average=0.001 s; distance=64946 kB, estimate=64946 kB; lsn=0/E000080, redo lsn=0/E000028",{},[],postgres,0,null,[],null
+b0237272-5d88-4866-adcd-7c9ca28103d9,"""2026-07-29T10:38:48.712Z""",2026-07-29T10:38:48.712000,success,00000,,,,checkpoint starting: time,{},[],postgres,0,null,[],null
+72855faf-b340-4fb8-bcf4-c3ed60a656bb,"""2026-07-29T10:37:24.930Z""",2026-07-29T10:37:24.930000,success,00000,,,,"statement: SET statement_timeout='58s'; SET idle_session_timeout='58s';
+CREATE OR REPLACE FUNCTION pg_temp.count_estimate(
+    query text
+) RETURNS integer LANGUAGE plpgsql AS $$
+DECLARE
+    plan jsonb;
+BEGIN
+    EXECUTE 'EXPLAIN (FORMAT JSON)' || query INTO plan;
+    RETURN plan->0->'Plan'->'Plan Rows';
+END;
+$$;
+
+
+with approximation as (select reltuples as estimate from pg_class where oid = 'auth.users'::regclass)
+select 
+  case 
+    when estimate = -1 then (select pg_temp.count_estimate('select * from auth.users'))::int
+    when estimate > 50000 then estimate::int
+    else (select count(*) from auth.users)
+  end as count,
+  estimate = -1 or estimate > 50000 as is_estimate
+from approximation
+
+-- source: dashboard
+-- user: session:467139a8-c601-492a-9f68-d8f99342c009
+-- date: 2026-07-29T10:37:23.288Z",{},[],postgres,0,null,[],null
+73bb9ffd-f7df-4528-a426-2ff5f566fa1b,"""2026-07-29T10:37:24.890Z""",2026-07-29T10:37:24.890000,success,00000,,,,"statement: SET statement_timeout='58s'; SET idle_session_timeout='58s';
+CREATE OR REPLACE FUNCTION pg_temp.count_estimate(
+    query text
+) RETURNS integer LANGUAGE plpgsql AS $$
+DECLARE
+    plan jsonb;
+BEGIN
+    EXECUTE 'EXPLAIN (FORMAT JSON)' || query INTO plan;
+    RETURN plan->0->'Plan'->'Plan Rows';
+END;
+$$;
+
+
+with approximation as (select reltuples as estimate from pg_class where oid = 'auth.users'::regclass)
+select 
+  case 
+    when estimate = -1 then (select pg_temp.count_estimate('select * from auth.users'))::int
+    when estimate > 50000 then estimate::int
+    else (select count(*) from auth.users)
+  end as count,
+  estimate = -1 or estimate > 50000 as is_estimate
+from approximation
+
+-- source: dashboard
+-- user: session:467139a8-c601-492a-9f68-d8f99342c009
+-- date: 2026-07-29T10:37:23.220Z",{},[],postgres,0,null,[],null
+9b739f7b-c36a-4189-b0d1-a2d767f16e75,"""2026-07-29T10:37:14.790Z""",2026-07-29T10:37:14.790000,success,200,GET,,/auth/v1/admin/custom-providers,"GET | 200 | https://kbmimkfdhblyrdskdcxc.supabase.co/auth/v1/admin/custom-providers | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",{},[],edge,0,null,[],null
+e76b521d-977f-4872-bf81-e4b71846deb7,"""2026-07-29T10:35:41.512Z""",2026-07-29T10:35:41.512000,success,200,GET,,/auth/v1/admin/custom-providers,"GET | 200 | https://kbmimkfdhblyrdskdcxc.supabase.co/auth/v1/admin/custom-providers | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",{},[],edge,0,null,[],null
+771aa3f8-306b-4bc1-b44c-0bb9ab825301,"""2026-07-29T10:35:41.186Z""",2026-07-29T10:35:41.186000,success,200,OPTIONS,,/auth/v1/admin/custom-providers,"OPTIONS | 200 | https://kbmimkfdhblyrdskdcxc.supabase.co/auth/v1/admin/custom-providers | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",{},[],edge,0,null,[],null
+9b6f58e8-962e-405c-aa09-f553790b9740,"""2026-07-29T10:35:34.285Z""",2026-07-29T10:35:34.285000,success,00000,,,,"statement: SET statement_timeout='58s'; SET idle_session_timeout='58s';
+CREATE OR REPLACE FUNCTION pg_temp.count_estimate(
+    query text
+) RETURNS integer LANGUAGE plpgsql AS $$
+DECLARE
+    plan jsonb;
+BEGIN
+    EXECUTE 'EXPLAIN (FORMAT JSON)' || query INTO plan;
+    RETURN plan->0->'Plan'->'Plan Rows';
+END;
+$$;
+
+
+with approximation as (select reltuples as estimate from pg_class where oid = 'auth.users'::regclass)
+select 
+  case 
+    when estimate = -1 then (select pg_temp.count_estimate('select * from auth.users'))::int
+    when estimate > 50000 then estimate::int
+    else (select count(*) from auth.users)
+  end as count,
+  estimate = -1 or estimate > 50000 as is_estimate
+from approximation
+
+-- source: dashboard
+-- user: session:467139a8-c601-492a-9f68-d8f99342c009
+-- date: 2026-07-29T10:35:32.631Z",{},[],postgres,0,null,[],null
+de37a677-5bb6-4fbe-a499-2586500df670,"""2026-07-29T10:35:34.270Z""",2026-07-29T10:35:34.270000,success,00000,,,,"statement: SET statement_timeout='58s'; SET idle_session_timeout='58s';
+CREATE OR REPLACE FUNCTION pg_temp.count_estimate(
+    query text
+) RETURNS integer LANGUAGE plpgsql AS $$
+DECLARE
+    plan jsonb;
+BEGIN
+    EXECUTE 'EXPLAIN (FORMAT JSON)' || query INTO plan;
+    RETURN plan->0->'Plan'->'Plan Rows';
+END;
+$$;
+
+
+with approximation as (select reltuples as estimate from pg_class where oid = 'auth.users'::regclass)
+select 
+  case 
+    when estimate = -1 then (select pg_temp.count_estimate('select * from auth.users'))::int
+    when estimate > 50000 then estimate::int
+    else (select count(*) from auth.users)
+  end as count,
+  estimate = -1 or estimate > 50000 as is_estimate
+from approximation
+
+-- source: dashboard
+-- user: session:467139a8-c601-492a-9f68-d8f99342c009
+-- date: 2026-07-29T10:35:32.630Z",{},[],postgres,0,null,[],null
+9cf70264-10b9-4cac-8ecd-40625a92ce0c,"""2026-07-29T10:34:48.867Z""",2026-07-29T10:34:48.867000,success,200,POST,,/admin/v1/network-bans/retrieve,POST | 200 | https://kbmimkfdhblyrdskdcxc.supabase.co/admin/v1/network-bans/retrieve | @supabase-infra/mgmt-api/3d19bb2,{},[],edge,0,null,[],null

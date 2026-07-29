@@ -16,6 +16,24 @@ if (window.supabase) {
     }
 }
 
+const REQUEST_TIMEOUT_MS = 2000;
+
+function requestWithTimeout(promiseFactory, timeoutMs) {
+    let timeoutId;
+    const controller = new AbortController();
+    const promise = promiseFactory(controller.signal);
+    const timeoutPromise = new Promise((_, reject) => {
+        timeoutId = setTimeout(() => {
+            controller.abort?.();
+            reject(new Error(`Request timed out after ${timeoutMs}ms`));
+        }, timeoutMs);
+    });
+
+    return Promise.race([promise, timeoutPromise]).finally(() => {
+        clearTimeout(timeoutId);
+    });
+}
+
 // App State
 let state = {
     user: null,
@@ -32,8 +50,12 @@ const els = {
     authView: document.getElementById('auth-view'),
     appView: document.getElementById('app-view'),
     loadingView: document.getElementById('loading-view'),
-    loginBtn: document.getElementById('btn-login-google'),
-    loginGithubBtn: document.getElementById('btn-login-github'),
+    loginEmailInput: document.getElementById('input-login-email'),
+    loginPasswordInput: document.getElementById('input-login-password'),
+    signUpPasswordBtn: document.getElementById('btn-signup-password'),
+    loginPasswordBtn: document.getElementById('btn-login-password'),
+    loginEmailBtn: document.getElementById('btn-login-email'),
+    loginGoogleBtn: document.getElementById('btn-login-google'),
     logoutBtn: document.getElementById('btn-logout'),
     sectionsContainer: document.getElementById('sections-container'),
     toast: document.getElementById('toast'),
@@ -571,14 +593,141 @@ function showToast(msg, type='info') {
     toastTimeout = setTimeout(() => { els.toast.classList.remove('show'); }, 3000);
 }
 
+function updateButtonState(button, text, disabled) {
+    if (!button) return;
+    button.innerText = text;
+    button.disabled = disabled;
+}
+
+async function handleAuthRequest(button, action, originalText) {
+    updateButtonState(button, originalText, true);
+    try {
+        return await requestWithTimeout(action, REQUEST_TIMEOUT_MS);
+    } catch (error) {
+        showToast(error.message, 'error');
+        throw error;
+    } finally {
+        updateButtonState(button, originalText, false);
+    }
+}
+
 // DOM Events Setup
 function setupEventListeners() {
-    els.loginBtn.addEventListener('click', () => {
-        supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/conquer' } });
+    if (els.signUpPasswordBtn) els.signUpPasswordBtn.addEventListener('click', async () => {
+        const email = els.loginEmailInput.value.trim();
+        const password = els.loginPasswordInput.value;
+        if (!email || !password) {
+            showToast('Enter both email and password', 'error');
+            return;
+        }
+        const originalText = els.signUpPasswordBtn.innerText;
+        updateButtonState(els.signUpPasswordBtn, 'Creating...', true);
+
+        try {
+            const { data, error } = await requestWithTimeout((signal) =>
+                supabase.auth.signUp(
+                    { email, password },
+                    { redirectTo: window.location.origin + '/conquer', signal }
+                ),
+                REQUEST_TIMEOUT_MS
+            );
+
+            if (error) {
+                showToast(error.message, 'error');
+            } else if (data?.user) {
+                showToast('Account created and logged in!', 'success');
+            } else {
+                showToast('Account created. Check your email to confirm.', 'success');
+            }
+        } catch (err) {
+            // handled by requestWithTimeout
+        } finally {
+            updateButtonState(els.signUpPasswordBtn, originalText, false);
+        }
     });
-    // Optional Github
-    if(els.loginGithubBtn) els.loginGithubBtn.addEventListener('click', () => {
-        supabase.auth.signInWithOAuth({ provider: 'github', options: { redirectTo: window.location.origin + '/conquer' } });
+
+    if (els.loginPasswordBtn) els.loginPasswordBtn.addEventListener('click', async () => {
+        const email = els.loginEmailInput.value.trim();
+        const password = els.loginPasswordInput.value;
+        if (!email || !password) {
+            showToast('Enter both email and password', 'error');
+            return;
+        }
+        const originalText = els.loginPasswordBtn.innerText;
+        updateButtonState(els.loginPasswordBtn, 'Logging in...', true);
+
+        try {
+            const { error } = await requestWithTimeout((signal) =>
+                supabase.auth.signInWithPassword({ email, password }, { signal }),
+                REQUEST_TIMEOUT_MS
+            );
+
+            if (error) {
+                showToast(error.message, 'error');
+            }
+        } catch (err) {
+            // handled by requestWithTimeout
+        } finally {
+            updateButtonState(els.loginPasswordBtn, originalText, false);
+        }
+    });
+
+    if (els.loginEmailBtn) els.loginEmailBtn.addEventListener('click', async () => {
+        const email = els.loginEmailInput.value.trim();
+        if (!email) {
+            showToast('Please enter your email', 'error');
+            return;
+        }
+        const originalText = els.loginEmailBtn.innerText;
+        updateButtonState(els.loginEmailBtn, 'Sending...', true);
+
+        try {
+            const { error } = await requestWithTimeout((signal) =>
+                supabase.auth.signInWithOtp({
+                    email,
+                    options: {
+                        emailRedirectTo: window.location.origin + '/conquer',
+                        signal
+                    }
+                }),
+                REQUEST_TIMEOUT_MS
+            );
+
+            if (error) {
+                showToast(error.message, 'error');
+            } else {
+                showToast('Magic link sent! Check your inbox.', 'success');
+            }
+        } catch (err) {
+            // handled by requestWithTimeout
+        } finally {
+            updateButtonState(els.loginEmailBtn, originalText, false);
+        }
+    });
+
+    if (els.loginGoogleBtn) els.loginGoogleBtn.addEventListener('click', async () => {
+        const originalText = els.loginGoogleBtn.innerText;
+        updateButtonState(els.loginGoogleBtn, 'Redirecting...', true);
+
+        try {
+            const { error } = await requestWithTimeout(() =>
+                supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: window.location.origin + '/conquer'
+                    }
+                }),
+                REQUEST_TIMEOUT_MS
+            );
+
+            if (error) {
+                showToast(error.message, 'error');
+            }
+        } catch (err) {
+            // handled by requestWithTimeout
+        } finally {
+            updateButtonState(els.loginGoogleBtn, originalText, false);
+        }
     });
 
     els.logoutBtn.addEventListener('click', async () => {
