@@ -1,827 +1,1035 @@
 import { SEED_DATA } from './conquer-data.js';
 
-// Configuration
+// ─── Config ────────────────────────────────────────────────────────────────
 const SUPABASE_URL = 'https://kbmimkfdhblyrdskdcxc.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_fBTnwIh34wJb61_aXNzk6Q_sv5oZkoG';
 
 let supabase = null;
 if (window.supabase) {
-    try {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } catch (e) {
-        console.warn("Supabase client failed to initialize:", e);
-    }
+    try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
+    catch (e) { console.warn('Supabase init failed', e); }
 }
 
-const REQUEST_TIMEOUT_MS = 2000;
+// ─── Section colour palette ─────────────────────────────────────────────────
+const SECTION_COLORS = [
+    '#f5c542','#4f9ef5','#6ee7b7','#f87171',
+    '#c084fc','#fb923c','#34d399','#e879f9','#38bdf8'
+];
 
-function requestWithTimeout(promiseFactory, timeoutMs) {
-    let timeoutId;
-    const controller = new AbortController();
-    const promise = promiseFactory(controller.signal);
-    const timeoutPromise = new Promise((_, reject) => {
-        timeoutId = setTimeout(() => {
-            controller.abort?.();
-            reject(new Error(`Request timed out after ${timeoutMs}ms`));
-        }, timeoutMs);
-    });
-
-    return Promise.race([promise, timeoutPromise]).finally(() => {
-        clearTimeout(timeoutId);
-    });
-}
-
-// App State
-let state = {
+// ─── App State ──────────────────────────────────────────────────────────────
+const state = {
     user: null,
     sections: [],
-    goals: [], // conceptually our tasks table
+    goals: [],
     subtasks: [],
     workLogs: [],
     loading: true,
-    error: null,
     searchQuery: '',
     expandedSections: new Set(),
-    
-    // Timer state
-    timer: {
-        active: false,
-        mode: 'pomodoro', // 'pomodoro' or 'stopwatch'
-        secondsRemaining: 25 * 60, // for pomodoro
-        secondsElapsed: 0, // for stopwatch and total time tracking
-        intervalId: null,
-        selectedGoalId: null
-    }
-};
-
-// DOM Elements
-const els = {
-    authView: document.getElementById('auth-view'),
-    appView: document.getElementById('app-view'),
-    loadingView: document.getElementById('loading-view'),
-    loginEmailInput: document.getElementById('input-login-email'),
-    loginPasswordInput: document.getElementById('input-login-password'),
-    signUpPasswordBtn: document.getElementById('btn-signup-password'),
-    loginPasswordBtn: document.getElementById('btn-login-password'),
-    loginEmailBtn: document.getElementById('btn-login-email'),
-    loginGoogleBtn: document.getElementById('btn-login-google'),
-    logoutBtn: document.getElementById('btn-logout'),
-    sectionsContainer: document.getElementById('sections-container'),
-    toast: document.getElementById('toast'),
-    
-    // Stats
-    statProgress: document.getElementById('stat-progress'),
-    statCompleted: document.getElementById('stat-completed'),
-    statRemaining: document.getElementById('stat-remaining'),
-    statTotal: document.getElementById('stat-total'),
-    progressBar: document.getElementById('overall-progress-bar'),
-    
-    // Highlights
-    highlightsDashboard: document.getElementById('highlights-dashboard'),
-    todayTasksContainer: document.getElementById('today-tasks-container'),
-    pinnedGoalsContainer: document.getElementById('pinned-goals-container'),
-
+    // Layout: { sectionId: { width, columnPos } }
+    layout: JSON.parse(localStorage.getItem('cq-layout') || '{}'),
+    // Calendar
+    cal: { view: 'streak', selected: new Set(), visible: true },
     // Timer
-    timerWidget: document.getElementById('timer-widget'),
-    timerStatus: document.getElementById('timer-status'),
-    timerDisplay: document.getElementById('timer-display'),
-    timerSelect: document.getElementById('timer-task-select'),
-    btnTimerStart: document.getElementById('btn-timer-start'),
-    btnTimerPause: document.getElementById('btn-timer-pause'),
-    btnTimerReset: document.getElementById('btn-timer-reset'),
-    btnTimerLog: document.getElementById('btn-timer-log'),
-    btnTimerClose: document.getElementById('btn-timer-close'),
-    btnModePomodoro: document.getElementById('btn-mode-pomodoro'),
-    btnModeStopwatch: document.getElementById('btn-mode-stopwatch'),
-    btnToggleTimerWidget: document.getElementById('btn-toggle-timer-widget'),
-
-    // Actions
-    addSectionBtn: document.getElementById('btn-add-section'),
-    collapseAllBtn: document.getElementById('btn-collapse-all'),
-    expandAllBtn: document.getElementById('btn-expand-all'),
-    searchInput: document.getElementById('search-input'),
-    configNotice: document.getElementById('config-notice')
+    timer: { active: false, mode: 'pomodoro', secsRemaining: 25*60, secsElapsed: 0, intervalId: null, goalId: null },
+    // Modal
+    modal: { type: null, contextId: null, resolve: null }
 };
 
-// Initialize
+// ─── Helpers ────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+const today = () => new Date().toISOString().split('T')[0];
+const sectionColor = idx => SECTION_COLORS[idx % SECTION_COLORS.length];
+
+function fmt(s) {
+    if (!s) return '0s';
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
+    if (h >= 24) return `${Math.floor(h/24)}d ${h%24}h`;
+    if (h > 0) return `${h}h ${m}m`;
+    if (m > 0) return `${m}m`;
+    return `${s}s`;
+}
+
+function shortDate(raw) {
+    if (!raw) return '';
+    const d = new Date(raw);
+    if (Number.isNaN(d.getTime())) return raw;
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function shortTime(raw) {
+    if (!raw) return '';
+    if (/^\d{2}:\d{2}$/.test(raw)) return raw;
+    const d = new Date(raw);
+    if (Number.isNaN(d.getTime())) return raw;
+    return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+}
+
+let toastTimer;
+function toast(msg, type = 'info') {
+    const el = $('toast');
+    el.textContent = msg;
+    el.className = `cq-toast show ${type}`;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+function saveLayout() {
+    localStorage.setItem('cq-layout', JSON.stringify(state.layout));
+}
+
+// ─── Auth ────────────────────────────────────────────────────────────────────
 async function init() {
-    if (!supabase) return;
-
-    // Check auth
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    supabase.auth.onAuthStateChange(async (_event, session) => {
-        state.user = session?.user || null;
-        renderAuth();
-        if (state.user) {
-            await loadData();
-        }
-    });
-
-    state.user = session?.user || null;
-    renderAuth();
-
-    if (state.user) {
-        await loadData();
-    }
-
-    setupEventListeners();
-    setupTimerListeners();
-}
-
-// Data fetching
-async function loadData() {
-    state.loading = true;
-    renderApp();
-    
-    try {
-        const [sectionsRes, goalsRes, subRes, logsRes] = await Promise.all([
-            supabase.from('sections').select('*').order('sort_order', { ascending: true }),
-            supabase.from('tasks').select('*').order('sort_order', { ascending: true }), // mapped to goals
-            supabase.from('subtasks').select('*').order('sort_order', { ascending: true }),
-            supabase.from('work_logs').select('*')
-        ]);
-
-        if (sectionsRes.error) throw sectionsRes.error;
-        if (goalsRes.error) throw goalsRes.error;
-        if (subRes.error) throw subRes.error;
-        if (logsRes.error) throw logsRes.error;
-
-        state.sections = sectionsRes.data || [];
-        state.goals = goalsRes.data || [];
-        state.subtasks = subRes.data || [];
-        state.workLogs = logsRes.data || [];
-
-        // Check if we need to seed
-        if (state.sections.length === 0) {
-            await seedDatabase();
-        }
-
-        // Expand all by default initially
-        state.sections.forEach(s => state.expandedSections.add(s.id));
-        
-        state.loading = false;
-        renderApp();
-    } catch (err) {
-        showToast(err.message, 'error');
-        state.loading = false;
-        renderApp();
-    }
-}
-
-async function seedDatabase() {
-    showToast('Seeding initial data...', 'info');
-    try {
-        for (let i = 0; i < SEED_DATA.length; i++) {
-            const section = SEED_DATA[i];
-            
-            const { data: newSection, error: sectionErr } = await supabase.from('sections')
-                .insert({ user_id: state.user.id, title: section.title, sort_order: i })
-                .select().single();
-                
-            if (sectionErr) throw sectionErr;
-            state.sections.push(newSection);
-
-            if (section.tasks && section.tasks.length > 0) {
-                const goalsToInsert = section.tasks.map((taskTitle, tIndex) => ({
-                    user_id: state.user.id, section_id: newSection.id, title: taskTitle, sort_order: tIndex, completed: false
-                }));
-                const { data: insertedGoals, error: taskErr } = await supabase.from('tasks')
-                    .insert(goalsToInsert).select();
-                    
-                if (taskErr) throw taskErr;
-                state.goals.push(...insertedGoals);
-            }
-        }
-        showToast('Data seeded successfully!', 'success');
-    } catch (err) {
-        showToast('Seed failed: ' + err.message, 'error');
-    }
-}
-
-// Rendering
-function renderAuth() {
-    els.loadingView.classList.add('hidden');
-    if (state.user) {
-        els.authView.classList.add('hidden');
-        els.appView.classList.remove('hidden');
-    } else {
-        els.authView.classList.remove('hidden');
-        els.appView.classList.add('hidden');
-    }
-}
-
-function renderApp() {
-    if (state.loading) {
-        els.sectionsContainer.innerHTML = '<div class="lc-skeleton" style="width:100%;height:40px;margin-bottom:1rem;"></div><div class="lc-skeleton" style="width:100%;height:200px"></div>';
+    if (!supabase) {
+        $('config-notice').classList.remove('hidden');
+        showAuth();
         return;
     }
-    
-    renderStats();
-    renderHighlightsBoard();
-    updateTimerSelect();
-    
-    const filteredGoals = state.goals.filter(t => 
-        t.title.toLowerCase().includes(state.searchQuery.toLowerCase())
-    );
+    const { data: { session } } = await supabase.auth.getSession();
+    state.user = session?.user ?? null;
+    renderAuth();
+    if (state.user) await loadData();
 
-    els.sectionsContainer.innerHTML = '';
-    
-    state.sections.sort((a, b) => a.sort_order - b.sort_order).forEach(section => {
-        const sectionGoals = filteredGoals
-            .filter(t => t.section_id === section.id)
-            .sort((a, b) => a.sort_order - b.sort_order);
+    supabase.auth.onAuthStateChange(async (_ev, sess) => {
+        state.user = sess?.user ?? null;
+        renderAuth();
+        if (state.user) await loadData();
+    });
 
-        if (state.searchQuery && sectionGoals.length === 0) return;
+    bindAuth();
+    bindGlobal();
+    bindTimer();
+}
 
-        const isExpanded = state.expandedSections.has(section.id);
-        const sectionProgress = calculateSectionProgress(section.id, filteredGoals);
-        const sectionTime = state.workLogs.filter(wl => wl.section_id === section.id).reduce((sum, wl) => sum + wl.duration_seconds, 0);
+function showAuth() {
+    $('loading-view').classList.add('hidden');
+    $('auth-view').classList.remove('hidden');
+    $('app-view').classList.add('hidden');
+}
 
-        const sectionEl = document.createElement('div');
-        sectionEl.className = 'conquer-section lc';
-        sectionEl.dataset.id = section.id;
-        
-        // Heatmap gen for the section
-        const heatmapHTML = generateHeatmap(section.id);
+function renderAuth() {
+    $('loading-view').classList.add('hidden');
+    if (state.user) {
+        $('auth-view').classList.add('hidden');
+        $('app-view').classList.remove('hidden');
+    } else {
+        $('auth-view').classList.remove('hidden');
+        $('app-view').classList.add('hidden');
+    }
+}
 
-        sectionEl.innerHTML = `
-            <div class="conquer-section-header">
-                <div class="conquer-section-drag-handle">⋮⋮</div>
-                <div class="conquer-section-title-wrap">
-                    <div class="conquer-section-title" contenteditable="true" spellcheck="false">${escapeHTML(section.title)}</div>
-                    ${sectionTime > 0 ? `<div class="time-badge">⏱ ${formatCompactTime(sectionTime)}</div>` : ''}
-                    <div class="conquer-section-meta" style="margin-left:auto;">
-                        <span class="conquer-progress-text">${sectionProgress.completed}/${sectionProgress.total}</span>
-                        <div class="conquer-mini-progress">
-                            <div class="conquer-mini-progress-fill" style="width: ${sectionProgress.percent}%"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="conquer-section-actions">
-                    <button class="conquer-btn small btn-add-goal" title="Add Goal">+</button>
-                    <button class="conquer-btn small btn-delete-section" title="Delete Section">×</button>
-                    <button class="conquer-btn small btn-toggle-section">
-                        <svg class="conquer-chevron ${isExpanded ? 'expanded' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-                    </button>
-                </div>
-            </div>
-            <div class="conquer-tasks-container ${isExpanded ? '' : 'hidden'}" data-section-id="${section.id}">
-                ${heatmapHTML}
-                ${sectionGoals.length === 0 ? '<div class="conquer-empty-tasks">No goals.</div>' : ''}
-            </div>
-        `;
+function bindAuth() {
+    $('btn-login-pw').addEventListener('click', async () => {
+        const email = $('input-email').value.trim();
+        const pw = $('input-password').value;
+        if (!email || !pw) return toast('Enter email and password', 'error');
+        const { error } = await supabase.auth.signInWithPassword({ email, password: pw });
+        if (error) toast(error.message, 'error');
+    });
+    $('btn-signup-pw').addEventListener('click', async () => {
+        const email = $('input-email').value.trim();
+        const pw = $('input-password').value;
+        if (!email || !pw) return toast('Enter email and password', 'error');
+        const { error } = await supabase.auth.signUp({ email, password: pw });
+        if (error) toast(error.message, 'error');
+        else toast('Check your email to confirm!', 'success');
+    });
+    $('btn-magic-link').addEventListener('click', async () => {
+        const email = $('input-email').value.trim();
+        if (!email) return toast('Enter your email', 'error');
+        const { error } = await supabase.auth.signInWithOtp({ email });
+        if (error) toast(error.message, 'error');
+        else toast('Magic link sent!', 'success');
+    });
+    $('btn-logout').addEventListener('click', async () => {
+        await supabase.auth.signOut();
+    });
+}
 
-        if (isExpanded) {
-            const tasksContainer = sectionEl.querySelector('.conquer-tasks-container');
-            sectionGoals.forEach(goal => {
-                const goalEl = renderGoal(goal);
-                tasksContainer.appendChild(goalEl);
-            });
-            
-            new Sortable(tasksContainer, {
-                group: 'goals',
-                handle: '.conquer-task-drag-handle',
-                animation: 150,
-                ghostClass: 'sortable-ghost',
-                onEnd: handleGoalSort
-            });
+// ─── Data Loading ────────────────────────────────────────────────────────────
+async function loadData() {
+    state.loading = true;
+    renderLoading();
+    try {
+        const [s, g, st, wl] = await Promise.all([
+            supabase.from('sections').select('*').order('sort_order'),
+            supabase.from('tasks').select('*').order('sort_order'),
+            supabase.from('subtasks').select('*').order('sort_order'),
+            supabase.from('work_logs').select('*').order('created_at')
+        ]);
+        if (s.error) throw s.error;
+        if (g.error) throw g.error;
+        state.sections = s.data ?? [];
+        state.goals = g.data ?? [];
+        state.subtasks = st.data ?? [];
+        state.workLogs = wl.data ?? [];
+
+        if (state.sections.length === 0) await seedDB();
+        state.sections.forEach(sec => state.expandedSections.add(sec.id));
+    } catch (e) {
+        toast(e.message, 'error');
+    }
+    state.loading = false;
+    renderAll();
+}
+
+function renderLoading() {
+    const ws = $('sections-workspace');
+    if (ws) ws.innerHTML = '<div style="color:var(--cq-dim);padding:2rem;text-align:center">Loading…</div>';
+}
+
+async function seedDB() {
+    toast('Seeding initial data…');
+    for (let i = 0; i < SEED_DATA.length; i++) {
+        const sd = SEED_DATA[i];
+        const { data: sec, error: se } = await supabase.from('sections')
+            .insert({ user_id: state.user.id, title: sd.title, sort_order: i }).select().single();
+        if (se) continue;
+        state.sections.push(sec);
+        if (sd.tasks?.length) {
+            const goals = sd.tasks.map((t, ti) => ({ user_id: state.user.id, section_id: sec.id, title: t, sort_order: ti, completed: false }));
+            const { data: gs } = await supabase.from('tasks').insert(goals).select();
+            if (gs) state.goals.push(...gs);
         }
-
-        // Events
-        const titleEl = sectionEl.querySelector('.conquer-section-title');
-        titleEl.addEventListener('blur', (e) => updateSectionTitle(section.id, e.target.innerText));
-        titleEl.addEventListener('keydown', (e) => { if(e.key === 'Enter') { e.preventDefault(); titleEl.blur(); } });
-        sectionEl.querySelector('.btn-add-goal').addEventListener('click', (e) => { e.stopPropagation(); addGoal(section.id); });
-        sectionEl.querySelector('.btn-delete-section').addEventListener('click', (e) => { e.stopPropagation(); if(confirm('Delete section?')) deleteSection(section.id); });
-        sectionEl.querySelector('.btn-toggle-section').addEventListener('click', () => toggleSection(section.id));
-        sectionEl.querySelector('.conquer-section-title-wrap').addEventListener('dblclick', () => toggleSection(section.id));
-
-        els.sectionsContainer.appendChild(sectionEl);
-    });
-
-    new Sortable(els.sectionsContainer, {
-        handle: '.conquer-section-drag-handle',
-        animation: 150,
-        ghostClass: 'sortable-ghost',
-        onEnd: handleSectionSort
-    });
-}
-
-function renderGoal(goal) {
-    const el = document.createElement('div');
-    const isPinned = goal.is_pinned;
-    const subtasks = state.subtasks.filter(s => s.task_id === goal.id).sort((a,b) => a.sort_order - b.sort_order);
-    const deadlineTxt = goal.deadline ? new Date(goal.deadline).toLocaleDateString() : 'Set Deadline';
-    
-    el.className = 'conquer-task-wrapper';
-    el.innerHTML = `
-        <div class="conquer-task ${goal.completed ? 'completed' : ''}" data-id="${goal.id}">
-            <div class="conquer-task-drag-handle">⋮⋮</div>
-            <div class="conquer-checkbox btn-toggle-goal ${goal.completed ? 'checked' : ''}">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="${goal.completed ? '' : 'hidden'}"><path d="M20 6L9 17l-5-5"/></svg>
-            </div>
-            <div class="conquer-task-title" contenteditable="true" spellcheck="false">${escapeHTML(goal.title)}</div>
-            
-            ${goal.time_spent > 0 ? `<div class="time-badge">⏱ ${formatCompactTime(goal.time_spent)}</div>` : ''}
-            
-            <button class="conquer-btn small btn-set-deadline" title="Set Deadline">${deadlineTxt}</button>
-            <button class="btn-pin-task ${isPinned ? 'pinned' : ''}" title="Pin Goal">📌</button>
-            <button class="conquer-btn small btn-add-subtask" title="Add Subtask">↳ Add Task</button>
-            <button class="conquer-btn small btn-delete-task" title="Delete Goal">×</button>
-        </div>
-        <div class="conquer-subtasks-container" data-goal-id="${goal.id}">
-            <!-- Subtasks injected here -->
-        </div>
-    `;
-
-    const subContainer = el.querySelector('.conquer-subtasks-container');
-    subtasks.forEach(st => {
-        const subEl = document.createElement('div');
-        subEl.className = 'conquer-subtask';
-        const isStDone = st.completed || (st.is_repeatable && st.last_completed_date === getTodayStr());
-        subEl.innerHTML = `
-            <div class="conquer-checkbox small btn-toggle-subtask ${isStDone ? 'checked' : ''}">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="${isStDone ? '' : 'hidden'}"><path d="M20 6L9 17l-5-5"/></svg>
-            </div>
-            <span class="subtask-title" contenteditable="true">${escapeHTML(st.title)}</span>
-            ${st.is_repeatable ? '<span title="Daily Repeat" style="color:var(--accent); font-size:0.7em;">🔄</span>' : ''}
-            <button class="conquer-btn small btn-del-subtask" style="margin-left:auto; opacity:0; padding:1px 5px;">×</button>
-        `;
-        
-        subEl.addEventListener('mouseenter', () => subEl.querySelector('.btn-del-subtask').style.opacity = 1);
-        subEl.addEventListener('mouseleave', () => subEl.querySelector('.btn-del-subtask').style.opacity = 0);
-        
-        subEl.querySelector('.btn-toggle-subtask').addEventListener('click', () => toggleSubtask(st.id));
-        subEl.querySelector('.btn-del-subtask').addEventListener('click', () => deleteSubtask(st.id));
-        
-        const titleEl = subEl.querySelector('.subtask-title');
-        titleEl.addEventListener('blur', (e) => updateSubtaskTitle(st.id, e.target.innerText));
-        titleEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); titleEl.blur(); } });
-        
-        subContainer.appendChild(subEl);
-    });
-
-    const checkbox = el.querySelector('.btn-toggle-goal');
-    checkbox.addEventListener('click', () => toggleGoalCompletion(goal.id, !goal.completed));
-
-    const titleEl = el.querySelector('.conquer-task-title');
-    titleEl.addEventListener('blur', (e) => updateGoalTitle(goal.id, e.target.innerText));
-    titleEl.addEventListener('keydown', (e) => { if(e.key === 'Enter') { e.preventDefault(); titleEl.blur(); } });
-
-    el.querySelector('.btn-pin-task').addEventListener('click', () => togglePinContext(goal.id, !goal.is_pinned));
-    el.querySelector('.btn-delete-task').addEventListener('click', () => { if(confirm('Delete goal?')) deleteGoal(goal.id); });
-    el.querySelector('.btn-add-subtask').addEventListener('click', () => addSubtask(goal.id));
-    
-    el.querySelector('.btn-set-deadline').addEventListener('click', () => {
-        const d = prompt("Enter deadline (YYYY-MM-DD):", goal.deadline ? goal.deadline.split('T')[0] : '');
-        if(d !== null) setGoalDeadline(goal.id, d);
-    });
-
-    return el;
-}
-
-function renderHighlightsBoard() {
-    els.highlightsDashboard.classList.remove('hidden');
-    els.todayTasksContainer.innerHTML = '';
-    els.pinnedGoalsContainer.innerHTML = '';
-
-    const todayStr = getTodayStr();
-    
-    // Left side: Today's Focus (subtasks that are repeatable and not done today, or due today/earlier)
-    const todayTasks = state.subtasks.filter(st => {
-        if (st.is_repeatable) return st.last_completed_date !== todayStr;
-        if (st.due_date && st.due_date <= todayStr && !st.completed) return true;
-        // Non-repeatable, no due date, unfinished goes to pending pool. For now we just show it if user pinned the goal maybe? 
-        // Let's show all pending non-repeatable subtasks of pinned goals to keep it clean.
-        const parentGoal = state.goals.find(g => g.id === st.task_id);
-        return (!st.completed && parentGoal && parentGoal.is_pinned);
-    });
-
-    if(todayTasks.length === 0) {
-        els.todayTasksContainer.innerHTML = `<div class="conquer-highlight-col empty">All caught up for today! 🎉</div>`;
-    } else {
-        todayTasks.forEach(st => {
-            const parentGoal = state.goals.find(g => g.id === st.task_id);
-            const parentSec = state.sections.find(s => s.id === parentGoal?.section_id);
-            
-            const div = document.createElement('div');
-            div.className = 'highlight-item';
-            div.innerHTML = `
-                <div class="conquer-checkbox small btn-toggle-subtask ${st.completed ? 'checked' : ''}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="${st.completed ? '' : 'hidden'}"><path d="M20 6L9 17l-5-5"/></svg>
-                </div>
-                <div>
-                    <div>${escapeHTML(st.title)} ${st.is_repeatable ? '🔄' : ''}</div>
-                    <div style="font-size: 0.65rem; color: var(--text-dim);">${parentSec?.title} > ${parentGoal?.title}</div>
-                </div>
-            `;
-            div.querySelector('.btn-toggle-subtask').addEventListener('click', () => toggleSubtask(st.id));
-            els.todayTasksContainer.appendChild(div);
-        });
-    }
-
-    // Right Side: Pinned Goals
-    const pinnedGoals = state.goals.filter(g => g.is_pinned);
-    if(pinnedGoals.length === 0) {
-        els.pinnedGoalsContainer.innerHTML = `<div class="conquer-highlight-col empty">No pinned goals.</div>`;
-    } else {
-        pinnedGoals.forEach(g => {
-            const parentSec = state.sections.find(s => s.id === g.section_id);
-            const div = document.createElement('div');
-            div.className = 'highlight-item';
-            div.innerHTML = `
-                📌 <span>${escapeHTML(g.title)}</span>
-                <span class="highlight-meta">${parentSec?.title}</span>
-                ${g.deadline ? `<span class="highlight-meta" style="color:var(--accent)">${new Date(g.deadline).toLocaleDateString()}</span>` : ''}
-            `;
-            els.pinnedGoalsContainer.appendChild(div);
-        });
     }
 }
 
-function generateHeatmap(sectionId) {
-    const sectionLogs = state.workLogs.filter(wl => wl.section_id === sectionId);
-    
-    // Create mapping of date string to total duration
-    const logMap = {};
-    sectionLogs.forEach(wl => {
-        const dStr = wl.created_at.split('T')[0];
-        logMap[dStr] = (logMap[dStr] || 0) + wl.duration_seconds;
-    });
-
-    let cellsHTML = '';
-    const today = new Date();
-    // last 60 days
-    for (let i = 59; i >= 0; i--) {
-        const d = new Date(today);
-        d.setDate(today.getDate() - i);
-        const dStr = d.toISOString().split('T')[0];
-        
-        const secs = logMap[dStr] || 0;
-        let lvl = '';
-        if(secs > 0) lvl = 'lvl-1';
-        if(secs > 1800) lvl = 'lvl-2'; // 30 mins
-        if(secs > 3600) lvl = 'lvl-3'; // 1 hour
-
-        const title = `${dStr}: ${secs > 0 ? formatCompactTime(secs) : '0s'} spent`;
-        cellsHTML += `<div class="heatmap-cell ${lvl}" title="${title}"></div>`;
-    }
-
-    return `<div class="heatmap-container">${cellsHTML}</div>`;
+// ─── Master Render ───────────────────────────────────────────────────────────
+function renderAll() {
+    renderStats();
+    renderHighlights();
+    renderCalendar();
+    renderWorkspace();
+    updateTimerSelect();
+    updateAnalyticsVisibility();
 }
 
+function toggleAnalyticsVisibility() {
+    state.cal.visible = !state.cal.visible;
+    updateAnalyticsVisibility();
+}
+
+function updateAnalyticsVisibility() {
+    const widget = $('analytics-widget');
+    if (!widget) return;
+    widget.classList.toggle('hidden', !state.cal.visible);
+    const btn = $('btn-analytics-toggle');
+    if (btn) btn.textContent = state.cal.visible ? 'Hide analytics' : 'Show analytics';
+}
+
+// ─── Stats ───────────────────────────────────────────────────────────────────
 function renderStats() {
     const total = state.goals.length;
-    const completed = state.goals.filter(t => t.completed).length;
-    const p = total > 0 ? Math.round((completed / total) * 100) : 0;
-    
-    els.statProgress.innerText = `${p}%`;
-    els.statCompleted.innerText = completed.toString();
-    els.statRemaining.innerText = (total - completed).toString();
-    els.statTotal.innerText = total.toString();
-    els.progressBar.style.width = `${p}%`;
+    const done = state.goals.filter(g => g.completed).length;
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    $('stat-pct').textContent = pct + '%';
+    $('stat-done').textContent = done;
+    $('stat-rem').textContent = total - done;
+    $('stat-total').textContent = total;
+    $('progress-bar').style.width = pct + '%';
+
+    // Streak calculation
+    const logDates = new Set(state.workLogs.map(wl => wl.created_at?.split('T')[0]));
+    let streak = 0;
+    const d = new Date();
+    while (logDates.has(d.toISOString().split('T')[0])) {
+        streak++;
+        d.setDate(d.getDate() - 1);
+    }
+    $('stat-streak').textContent = streak + '🔥';
 }
 
-// Timer Logic
-function setupTimerListeners() {
-    els.btnModePomodoro.addEventListener('click', () => setTimerMode('pomodoro'));
-    els.btnModeStopwatch.addEventListener('click', () => setTimerMode('stopwatch'));
-    els.btnTimerStart.addEventListener('click', toggleTimer);
-    els.btnTimerPause.addEventListener('click', toggleTimer);
-    els.btnTimerReset.addEventListener('click', resetTimer);
-    els.btnTimerLog.addEventListener('click', handleLogTime);
-    els.timerSelect.addEventListener('change', (e) => state.timer.selectedGoalId = e.target.value);
-    
-    // Close button hides timer, but we let it run in bg
-    els.btnTimerClose.addEventListener('click', () => els.timerWidget.classList.remove('show'));
-    if(els.btnToggleTimerWidget) els.btnToggleTimerWidget.addEventListener('click', () => els.timerWidget.classList.toggle('show'));
-}
+// ─── Highlights ───────────────────────────────────────────────────────────────
+function renderHighlights() {
+    const todayStr = today();
 
-function updateTimerSelect() {
-    const curr = state.timer.selectedGoalId;
-    let options = '<option value="">-- Select Goal to Work On --</option>';
-    
-    state.goals.forEach(g => {
-        options += `<option value="${g.id}" ${g.id === curr ? 'selected' : ''}>${escapeHTML(g.title)}</option>`;
+    // Today's focus
+    const items = state.subtasks.filter(st => {
+        if (st.is_repeatable) return st.last_completed_date !== todayStr;
+        const pg = state.goals.find(g => g.id === st.task_id);
+        if (st.due_date && st.due_date <= todayStr && !st.completed) return true;
+        return !st.completed && pg?.is_pinned;
     });
-    els.timerSelect.innerHTML = options;
+
+    const tl = $('today-list');
+    tl.innerHTML = '';
+    if (!items.length) {
+        tl.innerHTML = '<div class="hl-empty">All caught up! 🎉</div>';
+    } else {
+        items.slice(0, 8).forEach(st => {
+            const pg = state.goals.find(g => g.id === st.task_id);
+            const ps = state.sections.find(s => s.id === pg?.section_id);
+            const isDone = st.completed || (st.is_repeatable && st.last_completed_date === todayStr);
+            const div = document.createElement('div');
+            div.className = 'today-item';
+            div.innerHTML = `
+                <div class="cq-checkbox ${isDone ? 'checked' : ''}" data-st="${st.id}" style="cursor:pointer">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3" class="${isDone ? '' : 'hidden'}"><path d="M20 6L9 17l-5-5"/></svg>
+                </div>
+                <span style="flex:1;font-size:0.83rem">${esc(st.title)}${st.is_repeatable ? ' 🔄' : ''}</span>
+                <span class="today-item-meta">${ps?.title ?? ''}</span>
+            `;
+            div.querySelector('.cq-checkbox').addEventListener('click', () => toggleSubtask(st.id));
+            tl.appendChild(div);
+        });
+    }
+
+    // Pinned goals
+    const pl = $('pinned-list');
+    pl.innerHTML = '';
+    const pinned = state.goals.filter(g => g.is_pinned);
+    if (!pinned.length) {
+        pl.innerHTML = '<div class="hl-empty">No pinned goals yet.</div>';
+    } else {
+        pinned.forEach(g => {
+            const ps = state.sections.find(s => s.id === g.section_id);
+            const daysLeft = g.deadline ? Math.ceil((new Date(g.deadline) - new Date()) / 86400000) : null;
+            const div = document.createElement('div');
+            div.className = 'pinned-item';
+            div.innerHTML = `
+                <span style="flex:1;font-size:0.83rem">📌 ${esc(g.title)}</span>
+                <span class="pinned-tag">${esc(ps?.title ?? '')}</span>
+                ${daysLeft !== null ? `<span class="pinned-deadline">${daysLeft >= 0 ? daysLeft + 'd' : 'overdue'}</span>` : ''}
+            `;
+            pl.appendChild(div);
+        });
+    }
+}
+
+// ─── Calendar / Analytics ─────────────────────────────────────────────────────
+function renderCalendar() {
+    const filterOptions = $('filter-options');
+    if (filterOptions) {
+        filterOptions.innerHTML = '';
+        const query = $('filter-search')?.value.trim().toLowerCase() || '';
+
+        const allLabel = document.createElement('label');
+        allLabel.className = 'cq-filter-option' + (state.cal.selected.size === 0 ? ' checked' : '');
+        allLabel.innerHTML = `<input type="checkbox" ${state.cal.selected.size === 0 ? 'checked' : ''} data-value="all"><span>All sections</span>`;
+        const allInput = allLabel.querySelector('input');
+        allInput?.addEventListener('change', () => {
+            state.cal.selected.clear();
+            renderCalendar();
+        });
+        filterOptions.appendChild(allLabel);
+
+        state.sections.forEach((sec) => {
+            if (query && !sec.title.toLowerCase().includes(query)) return;
+            const checked = state.cal.selected.size === 0 || state.cal.selected.has(sec.id);
+            const label = document.createElement('label');
+            label.className = 'cq-filter-option' + (checked ? ' checked' : '');
+            label.innerHTML = `<input type="checkbox" ${checked ? 'checked' : ''} data-value="${sec.id}"><span>${esc(sec.title)}</span>`;
+            const input = label.querySelector('input');
+            input?.addEventListener('change', (e) => {
+                const isChecked = e.target.checked;
+                if (state.cal.selected.size === 0) {
+                    if (!isChecked) {
+                        state.cal.selected = new Set(state.sections.map(s => s.id));
+                        state.cal.selected.delete(sec.id);
+                    }
+                } else {
+                    if (isChecked) state.cal.selected.add(sec.id);
+                    else state.cal.selected.delete(sec.id);
+                    if (state.cal.selected.size === state.sections.length) state.cal.selected.clear();
+                }
+                renderCalendar();
+            });
+            filterOptions.appendChild(label);
+        });
+    }
+
+    // Compute logs by date per selected sections
+    const activeSections = state.cal.selected.size === 0
+        ? state.sections.map(s => s.id)
+        : [...state.cal.selected];
+
+    // date -> { sectionId -> seconds }
+    const dateMap = {};
+    state.workLogs.forEach(wl => {
+        if (!activeSections.includes(wl.section_id)) return;
+        const d = wl.created_at?.split('T')[0];
+        if (!d) return;
+        dateMap[d] = dateMap[d] ?? {};
+        dateMap[d][wl.section_id] = (dateMap[d][wl.section_id] ?? 0) + wl.duration_seconds;
+    });
+
+    if (state.cal.view === 'streak') {
+        renderHeatmap(dateMap, activeSections);
+    } else {
+        renderGraph(dateMap, activeSections);
+    }
+
+    // Legend
+    const leg = $('cal-legend');
+    leg.innerHTML = '';
+    if (state.cal.selected.size > 0) {
+        [...state.cal.selected].forEach(sid => {
+            const si = state.sections.findIndex(s => s.id === sid);
+            const color = sectionColor(si);
+            const sec = state.sections[si];
+            leg.innerHTML += `<div class="cq-legend-item"><div class="cq-legend-dot" style="background:${color}"></div>${esc(sec?.title)}</div>`;
+        });
+    }
+}
+
+function renderHeatmap(dateMap, activeSections) {
+    const content = $('cal-content');
+    const wrap = document.createElement('div');
+    wrap.className = 'cq-heatmap-wrap';
+
+    // 7 rows (days), n cols (weeks) for last 16 weeks = 112 days
+    const DAYS = 112;
+    const today_ = new Date();
+    // Pad to start on Sunday
+    const startOffset = today_.getDay();// 0=Sun
+    const totalCells = DAYS + startOffset;
+
+    // Build columns of 7
+    const grid = document.createElement('div');
+    grid.className = 'cq-heatmap-grid';
+
+    // Day labels column
+    const labelsCol = document.createElement('div');
+    labelsCol.className = 'cq-hm-labels';
+    ['S','M','T','W','T','F','S'].forEach(l => {
+        const lbl = document.createElement('div');
+        lbl.className = 'cq-hm-label';
+        lbl.textContent = l;
+        labelsCol.appendChild(lbl);
+    });
+    grid.appendChild(labelsCol);
+
+    const numCols = Math.ceil(totalCells / 7);
+    for (let c = 0; c < numCols; c++) {
+        const col = document.createElement('div');
+        col.className = 'cq-hm-col';
+        for (let r = 0; r < 7; r++) {
+            const cellIdx = c * 7 + r;
+            const daysBack = totalCells - 1 - cellIdx;
+            const cell = document.createElement('div');
+            cell.className = 'cq-hm-cell';
+
+            if (daysBack < 0 || daysBack >= DAYS + startOffset) {
+                cell.style.background = 'transparent';
+            } else {
+                const d = new Date(today_);
+                d.setDate(today_.getDate() - (daysBack - startOffset));
+                const dStr = d.toISOString().split('T')[0];
+                const dayData = dateMap[dStr];
+                const total = dayData ? Object.values(dayData).reduce((a, b) => a + b, 0) : 0;
+
+                // Pick dominant section color if multi-select
+                let bgColor = 'rgba(255,255,255,0.05)';
+                if (total > 0) {
+                    if (activeSections.length === 1 || state.cal.selected.size <= 1) {
+                        const si = state.sections.findIndex(s => s.id === activeSections[0]);
+                        bgColor = sectionColor(si < 0 ? 0 : si);
+                    } else if (dayData) {
+                        // Blend or use dominant
+                        const topSec = Object.entries(dayData).sort((a,b) => b[1]-a[1])[0]?.[0];
+                        const si = state.sections.findIndex(s => s.id === topSec);
+                        bgColor = sectionColor(si < 0 ? 0 : si);
+                    }
+                    const lvl = total > 7200 ? 'lvl-4' : total > 3600 ? 'lvl-3' : total > 1800 ? 'lvl-2' : 'lvl-1';
+                    cell.classList.add(lvl);
+                    cell.style.background = bgColor;
+                }
+
+                // Tooltip
+                const tipText = total > 0
+                    ? `${dStr} — ${fmt(total)}`
+                    : dStr;
+                cell.addEventListener('mouseenter', e => showTip(e, tipText));
+                cell.addEventListener('mousemove', e => moveTip(e));
+                cell.addEventListener('mouseleave', hideTip);
+            }
+            col.appendChild(cell);
+        }
+        grid.appendChild(col);
+    }
+    wrap.appendChild(grid);
+    content.innerHTML = '';
+    content.appendChild(wrap);
+}
+
+function renderGraph(dateMap, activeSections) {
+    const content = $('cal-content');
+    const DAYS = 60;
+    const today_ = new Date();
+
+    const wrap = document.createElement('div');
+    wrap.className = 'cq-graph-wrap';
+
+    // Find max value for scaling
+    let maxVal = 1;
+    for (let i = 0; i < DAYS; i++) {
+        const d = new Date(today_);
+        d.setDate(today_.getDate() - (DAYS - 1 - i));
+        const dStr = d.toISOString().split('T')[0];
+        const dayData = dateMap[dStr];
+        if (dayData) {
+            const total = Object.values(dayData).reduce((a,b)=>a+b,0);
+            if (total > maxVal) maxVal = total;
+        }
+    }
+
+    for (let i = 0; i < DAYS; i++) {
+        const d = new Date(today_);
+        d.setDate(today_.getDate() - (DAYS - 1 - i));
+        const dStr = d.toISOString().split('T')[0];
+        const dayData = dateMap[dStr] ?? {};
+
+        const group = document.createElement('div');
+        group.className = 'cq-bar-group';
+
+        if (state.cal.selected.size > 1) {
+            // Stacked bars per section
+            activeSections.forEach(sid => {
+                const si = state.sections.findIndex(s => s.id === sid);
+                const color = sectionColor(si < 0 ? 0 : si);
+                const secs = dayData[sid] ?? 0;
+                const hPct = (secs / maxVal) * 110;
+                const bar = document.createElement('div');
+                bar.className = 'cq-bar';
+                bar.style.cssText = `background:${color};height:${Math.max(hPct,2)}px`;
+                bar.title = `${dStr}: ${fmt(secs)}`;
+                bar.addEventListener('mouseenter', e => showTip(e, `${dStr} · ${state.sections[si]?.title} · ${fmt(secs)}`));
+                bar.addEventListener('mousemove', moveTip);
+                bar.addEventListener('mouseleave', hideTip);
+                group.appendChild(bar);
+            });
+        } else {
+            const sid = activeSections[0];
+            const si = state.sections.findIndex(s => s.id === sid);
+            const color = activeSections.length ? sectionColor(si < 0 ? 0 : si) : '#f5c542';
+            const total = Object.values(dayData).reduce((a,b)=>a+b,0);
+            const hPct = (total / maxVal) * 110;
+            const bar = document.createElement('div');
+            bar.className = 'cq-bar';
+            bar.style.cssText = `background:${color};height:${Math.max(hPct,2)}px;width:12px`;
+            bar.addEventListener('mouseenter', e => showTip(e, `${dStr} · ${fmt(total)}`));
+            bar.addEventListener('mousemove', moveTip);
+            bar.addEventListener('mouseleave', hideTip);
+            group.appendChild(bar);
+        }
+        wrap.appendChild(group);
+    }
+    content.innerHTML = '';
+    content.appendChild(wrap);
+}
+
+const tip = () => $('hm-tooltip');
+function showTip(e, text) { tip().textContent = text; tip().style.display = 'block'; moveTip(e); }
+function moveTip(e) { tip().style.left = (e.clientX + 12) + 'px'; tip().style.top = (e.clientY - 28) + 'px'; }
+function hideTip() { tip().style.display = 'none'; }
+
+function bindGlobal() {
+    const searchInput = $('search-input');
+    if (searchInput) {
+        searchInput.addEventListener('input', e => {
+            state.searchQuery = e.target.value.toLowerCase();
+            renderWorkspace();
+        });
+    }
+
+    $('btn-quickadd')?.addEventListener('click', async () => {
+        const title = $('quickadd-input').value.trim();
+        if (!title) return toast('Type a quick to-do first', 'error');
+        const section = state.sections[0];
+        if (!section) return toast('Create a section first', 'error');
+        await addGoal(section.id, title);
+        $('quickadd-input').value = '';
+        renderAll();
+    });
+
+    $('btn-add-section')?.addEventListener('click', () => openModal('section'));
+    $('btn-layout')?.addEventListener('click', () => $('layout-dropdown')?.classList.toggle('open'));
+    document.addEventListener('click', e => {
+        if (!e.target.closest('.cq-layout-menu')) {
+            $('layout-dropdown')?.classList.remove('open');
+        }
+    });
+    document.querySelectorAll('.cq-layout-opt').forEach(opt => {
+        opt.addEventListener('click', () => {
+            setLayoutMode(opt.dataset.layout);
+            $('layout-dropdown')?.classList.remove('open');
+        });
+    });
+
+    $('btn-collapse-all')?.addEventListener('click', () => {
+        state.sections.forEach(sec => state.expandedSections.delete(sec.id));
+        renderWorkspace();
+    });
+    $('btn-expand-all')?.addEventListener('click', () => {
+        state.sections.forEach(sec => state.expandedSections.add(sec.id));
+        renderWorkspace();
+    });
+
+    $('btn-timer-toggle')?.addEventListener('click', () => {
+        $('timer-widget')?.classList.toggle('show');
+    });
+    $('cal-view-streak')?.addEventListener('click', () => setCalView('streak'));
+    $('cal-view-graph')?.addEventListener('click', () => setCalView('graph'));
+    $('btn-analytics-toggle')?.addEventListener('click', () => toggleAnalyticsVisibility());
+    $('filter-toggle')?.addEventListener('click', e => {
+        e.stopPropagation();
+        $('filter-dropdown-panel')?.classList.toggle('hidden');
+    });
+    $('filter-search')?.addEventListener('input', renderCalendar);
+    document.addEventListener('click', e => {
+        if (!e.target.closest('#filter-dropdown')) {
+            $('filter-dropdown-panel')?.classList.add('hidden');
+        }
+    });
+    $('modal-cancel')?.addEventListener('click', closeModal);
+    $('modal-confirm')?.addEventListener('click', handleModalConfirm);
+    $('task-modal')?.addEventListener('click', e => {
+        if (e.target === e.currentTarget) closeModal();
+    });
+    $('btn-timer-start')?.addEventListener('click', startTimer);
+    $('btn-timer-pause')?.addEventListener('click', pauseTimer);
+    $('btn-timer-reset')?.addEventListener('click', resetTimer);
+    $('btn-timer-log')?.addEventListener('click', logTimerSession);
+    $('btn-pomodoro')?.addEventListener('click', () => setTimerMode('pomodoro'));
+    $('btn-stopwatch')?.addEventListener('click', () => setTimerMode('stopwatch'));
+    $('btn-timer-close')?.addEventListener('click', () => $('timer-widget')?.classList.remove('show'));
+
+    $('timer-select')?.addEventListener('change', e => {
+        state.timer.goalId = e.target.value || null;
+        updateTimerStatus();
+    });
+}
+
+function bindTimer() {
+    setLayoutMode(state.layout.mode || 'single');
+    setCalView(state.cal.view);
+    setTimerMode(state.timer.mode);
+    updateTimerStatus();
+}
+
+function setLayoutMode(mode) {
+    if (mode === 'reset') mode = 'single';
+    if (!['single', 'two', 'three'].includes(mode)) return;
+    state.layout.mode = mode;
+    saveLayout();
+    const ws = $('sections-workspace');
+    if (!ws) return;
+    ws.classList.remove('layout-single', 'layout-two', 'layout-three');
+    ws.classList.add(`layout-${mode}`);
+}
+
+function setCalView(view) {
+    if (!['streak', 'graph'].includes(view)) return;
+    state.cal.view = view;
+    $('cal-view-streak')?.classList.toggle('active', view === 'streak');
+    $('cal-view-graph')?.classList.toggle('active', view === 'graph');
+    renderCalendar();
 }
 
 function setTimerMode(mode) {
-    if(state.timer.active) return; // Prevent change while running
+    if (!['pomodoro', 'stopwatch'].includes(mode)) return;
     state.timer.mode = mode;
-    els.btnModePomodoro.classList.toggle('active', mode === 'pomodoro');
-    els.btnModeStopwatch.classList.toggle('active', mode === 'stopwatch');
-    resetTimer();
-}
-
-function toggleTimer() {
-    if(state.timer.active) {
-        clearInterval(state.timer.intervalId);
-        state.timer.active = false;
-        els.btnTimerStart.classList.remove('hidden');
-        els.btnTimerPause.classList.add('hidden');
-        els.btnTimerLog.classList.remove('hidden');
-        els.timerStatus.innerText = "Paused";
-    } else {
-        if(!state.timer.selectedGoalId) {
-            showToast('Please select a goal first!', 'error');
-            return;
-        }
-        state.timer.active = true;
-        els.btnTimerStart.classList.add('hidden');
-        els.btnTimerPause.classList.remove('hidden');
-        els.btnTimerLog.classList.add('hidden');
-        els.timerStatus.innerText = "Running...";
-        
-        state.timer.intervalId = setInterval(() => {
-            if(state.timer.mode === 'pomodoro') {
-                if(state.timer.secondsRemaining > 0) {
-                    state.timer.secondsRemaining--;
-                    state.timer.secondsElapsed++;
-                } else {
-                    playSound();
-                    toggleTimer();
-                    els.timerStatus.innerText = "Time's up!";
-                }
-            } else {
-                state.timer.secondsElapsed++;
-            }
-            updateTimerDisplay();
-        }, 1000);
-    }
-}
-
-function resetTimer() {
-    clearInterval(state.timer.intervalId);
-    state.timer.active = false;
-    state.timer.secondsElapsed = 0;
-    state.timer.secondsRemaining = 25 * 60;
-    els.btnTimerStart.classList.remove('hidden');
-    els.btnTimerPause.classList.add('hidden');
-    els.btnTimerLog.classList.add('hidden');
-    els.timerStatus.innerText = "Ready";
+    document.getElementById('btn-pomodoro')?.classList.toggle('active', mode === 'pomodoro');
+    document.getElementById('btn-stopwatch')?.classList.toggle('active', mode === 'stopwatch');
+    state.timer.secsRemaining = mode === 'pomodoro' ? 25 * 60 : state.timer.secsRemaining;
     updateTimerDisplay();
 }
 
-function updateTimerDisplay() {
-    const s = state.timer.mode === 'pomodoro' ? state.timer.secondsRemaining : state.timer.secondsElapsed;
-    const mins = Math.floor(s / 60).toString().padStart(2, '0');
-    const secs = (s % 60).toString().padStart(2, '0');
-    els.timerDisplay.innerText = `${mins}:${secs}`;
-}
-
-async function handleLogTime() {
-    if(state.timer.secondsElapsed < 5) {
-        showToast('Too little time to log.', 'error');
+function updateTimerStatus() {
+    const goalId = state.timer.goalId;
+    const goal = state.goals.find(g => String(g.id) === String(goalId));
+    const status = $('timer-status');
+    if (!status) return;
+    if (!goal) {
+        status.textContent = 'Ready';
         return;
     }
-    const goalId = state.timer.selectedGoalId;
-    if(!goalId) return;
+    status.textContent = `Goal: ${goal.title}`;
+}
 
-    const goal = state.goals.find(g => g.id === goalId);
-    const secs = state.timer.secondsElapsed;
-    if(!goal) return;
+function updateTimerSelect() {
+    const select = $('timer-select');
+    if (!select) return;
+    const current = state.timer.goalId;
+    select.innerHTML = '<option value="">— Select Goal —</option>';
+    state.goals.forEach(goal => {
+        const option = document.createElement('option');
+        option.value = goal.id;
+        option.textContent = `${goal.title}${goal.completed ? ' ✓' : ''}`;
+        if (String(goal.id) === String(current)) option.selected = true;
+        select.appendChild(option);
+    });
+    updateTimerStatus();
+}
 
-    try {
-        // Optimistic
-        goal.time_spent += secs;
-        const wl = {
-            id: crypto.randomUUID(), user_id: state.user.id, section_id: goal.section_id, task_id: goal.id, duration_seconds: secs, created_at: new Date().toISOString()
-        };
-        state.workLogs.push(wl);
-        renderApp();
-        showToast(`Logged ${formatCompactTime(secs)}`);
+function updateTimerDisplay() {
+    const display = $('timer-display');
+    if (!display) return;
+    const mins = Math.floor(state.timer.secsRemaining / 60).toString().padStart(2, '0');
+    const secs = (state.timer.secsRemaining % 60).toString().padStart(2, '0');
+    display.textContent = `${mins}:${secs}`;
+}
 
-        // DB Calls
-        const prom1 = supabase.from('work_logs').insert(wl);
-        const prom2 = supabase.from('tasks').update({ time_spent: goal.time_spent }).eq('id', goal.id);
-        
-        await Promise.all([prom1, prom2]);
-        resetTimer();
-    } catch(err) {
-        showToast('Failed to log time', 'error');
-        await loadData();
+function startTimer() {
+    if (!state.timer.goalId) return toast('Select a goal first', 'error');
+    if (state.timer.active) return;
+    state.timer.active = true;
+    state.timer.intervalId = setInterval(() => {
+        if (state.timer.mode === 'pomodoro') {
+            if (state.timer.secsRemaining > 0) {
+                state.timer.secsRemaining -= 1;
+            } else {
+                clearInterval(state.timer.intervalId);
+                state.timer.active = false;
+                toast('Pomodoro complete!', 'success');
+            }
+        } else {
+            state.timer.secsRemaining += 1;
+        }
+        updateTimerDisplay();
+    }, 1000);
+    $('btn-timer-start')?.classList.add('hidden');
+    $('btn-timer-pause')?.classList.remove('hidden');
+    $('btn-timer-log')?.classList.remove('hidden');
+}
+
+function pauseTimer() {
+    if (!state.timer.active) return;
+    clearInterval(state.timer.intervalId);
+    state.timer.active = false;
+    $('btn-timer-start')?.classList.remove('hidden');
+    $('btn-timer-pause')?.classList.add('hidden');
+}
+
+function resetTimer() {
+    pauseTimer();
+    state.timer.secsRemaining = state.timer.mode === 'pomodoro' ? 25 * 60 : 0;
+    updateTimerDisplay();
+}
+
+async function logTimerSession() {
+    if (!state.timer.goalId) return toast('Select a goal first', 'error');
+    const goal = state.goals.find(g => String(g.id) === String(state.timer.goalId));
+    if (!goal) return toast('Invalid goal selected', 'error');
+    const secs = state.timer.mode === 'pomodoro' ? (25 * 60 - state.timer.secsRemaining) : state.timer.secsRemaining;
+    if (secs <= 0) return toast('No time recorded yet', 'error');
+    const sectionId = goal.section_id;
+    const { error } = await supabase.from('work_logs').insert({ user_id: state.user.id, section_id: sectionId, goal_id: goal.id, duration_seconds: secs, created_at: new Date().toISOString() });
+    if (error) return toast(error.message, 'error');
+    state.workLogs.push({ user_id: state.user.id, section_id: sectionId, goal_id: goal.id, duration_seconds: secs, created_at: new Date().toISOString() });
+    toast('Logged time to analytics', 'success');
+    renderAll();
+}
+
+function renderWorkspace() {
+    const ws = $('sections-workspace');
+    if (!ws) return;
+    ws.innerHTML = '';
+    const query = state.searchQuery.trim().toLowerCase();
+
+    const visibleSections = state.sections.filter(sec => {
+        if (!query) return true;
+        if (sec.title.toLowerCase().includes(query)) return true;
+        return state.goals.some(g => g.section_id === sec.id && g.title.toLowerCase().includes(query));
+    });
+
+    if (!visibleSections.length) {
+        ws.innerHTML = '<div class="cq-empty-section">No sections match your search. Try a different term or add a new section.</div>';
+        return;
     }
+
+    visibleSections.forEach((sec, idx) => {
+        const goals = state.goals.filter(g => g.section_id === sec.id && (!query || g.title.toLowerCase().includes(query)));
+        const sectionEl = document.createElement('div');
+        sectionEl.className = 'cq-section';
+        sectionEl.innerHTML = `
+            <div class="cq-sec-header">
+                <span class="cq-sec-drag-handle">☰</span>
+                <div class="cq-sec-color-dot" style="background:${sectionColor(idx)}"></div>
+                <div class="cq-sec-title">${esc(sec.title)}</div>
+                <div class="cq-sec-meta">
+                    <span class="cq-sec-progress-txt">${goals.filter(g => g.completed).length}/${goals.length}</span>
+                    <div class="cq-mini-prog"><div class="cq-mini-prog-fill" style="width:${goals.length ? Math.round((goals.filter(g => g.completed).length / goals.length) * 100) : 4}%"></div></div>
+                </div>
+                <div class="cq-sec-actions">
+                    <button class="cq-btn sm" data-action="toggle" data-section-id="${sec.id}"><svg class="cq-chevron ${state.expandedSections.has(sec.id) ? 'open' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+                    <button class="cq-btn xs" data-action="edit-section" data-section-id="${sec.id}">Edit</button>
+                    <button class="cq-btn xs danger" data-action="delete-section" data-section-id="${sec.id}">Delete</button>
+                </div>
+            </div>
+            <div class="cq-tasks-wrap" ${state.expandedSections.has(sec.id) ? '' : 'style="display:none"'}>
+                ${goals.length === 0 ? '<div class="cq-empty-section">No goals yet. Add one below.</div>' : ''}
+                <div class="cq-tasks-inner"></div>
+                <div class="cq-add-goal-row">
+                    <input type="text" placeholder="Add a goal to this section…" aria-label="Add goal">
+                    <button class="cq-btn sm primary">Add</button>
+                </div>
+            </div>
+        `;
+
+        const tasksInner = sectionEl.querySelector('.cq-tasks-inner');
+        goals.forEach(goal => {
+            const done = goal.completed;
+            const goalWrap = document.createElement('div');
+            goalWrap.className = 'cq-goal-wrap';
+            goalWrap.innerHTML = `
+                <div class="cq-goal ${done ? 'done' : ''}">
+                    <div class="cq-checkbox ${done ? 'checked' : ''}" data-action="goal-toggle" data-goal-id="${goal.id}"></div>
+                    <div class="cq-goal-title">${esc(goal.title)}</div>
+                    ${goal.deadline ? `<div class="cq-time-badge">${esc(shortDate(goal.deadline))}</div>` : ''}
+                    <div class="cq-goal-actions">
+                        <button class="cq-btn sm cq-btn-pin ${goal.is_pinned ? 'pinned' : ''}" data-action="pin" data-goal-id="${goal.id}">${goal.is_pinned ? '★' : '☆'}</button>
+                        <button class="cq-btn sm" data-action="add-subtask" data-goal-id="${goal.id}">+ subtask</button>
+                    </div>
+                </div>
+            `;
+
+            const subtasks = state.subtasks.filter(st => st.task_id === goal.id);
+            if (subtasks.length) {
+                const subList = document.createElement('div');
+                subList.className = 'cq-subtasks';
+                subtasks.forEach(st => {
+                    const isDone = st.completed || (st.is_repeatable && st.last_completed_date === today());
+                    const dueLabel = st.due_date
+                        ? `${shortDate(st.due_date)}${st.due_time ? ' ' + shortTime(st.due_time) : ''}`
+                        : st.due_time ? shortTime(st.due_time) : '';
+                    const subEl = document.createElement('div');
+                    subEl.className = 'cq-subtask';
+                    subEl.innerHTML = `
+                        <div class="cq-checkbox ${isDone ? 'checked' : ''}" data-action="subtask-toggle" data-subtask-id="${st.id}"></div>
+                        <div>${esc(st.title)}${st.is_repeatable ? ' 🔄' : ''}${dueLabel ? ` <span class="cq-time-badge">${esc(dueLabel)}</span>` : ''}</div>
+                    `;
+                    subEl.querySelector('[data-action="subtask-toggle"]')?.addEventListener('click', () => toggleSubtask(st.id));
+                    subList.appendChild(subEl);
+                });
+                goalWrap.appendChild(subList);
+            }
+
+            tasksInner.appendChild(goalWrap);
+        });
+
+        sectionEl.querySelector('[data-action="toggle"]')?.addEventListener('click', () => {
+            if (state.expandedSections.has(sec.id)) state.expandedSections.delete(sec.id);
+            else state.expandedSections.add(sec.id);
+            renderWorkspace();
+        });
+        sectionEl.querySelector('.cq-add-goal-row button')?.addEventListener('click', async () => {
+            const input = sectionEl.querySelector('.cq-add-goal-row input');
+            const value = input.value.trim();
+            if (!value) return;
+            await addGoal(sec.id, value);
+            input.value = '';
+            renderAll();
+        });
+        sectionEl.querySelectorAll('[data-action="goal-toggle"]').forEach(el => {
+            el.addEventListener('click', () => toggleGoal(el.dataset.goalId));
+        });
+        sectionEl.querySelectorAll('[data-action="pin"]').forEach(el => {
+            el.addEventListener('click', () => toggleGoalPin(el.dataset.goalId));
+        });
+        sectionEl.querySelectorAll('[data-action="add-subtask"]').forEach(el => {
+            el.addEventListener('click', () => openModal('subtask', el.dataset.goalId));
+        });
+        sectionEl.querySelector('[data-action="edit-section"]')?.addEventListener('click', () => openModal('section', sec.id));
+        sectionEl.querySelector('[data-action="delete-section"]')?.addEventListener('click', async () => {
+            if (!confirm('Delete section "' + sec.title + '" and all its goals?')) return;
+            await deleteSection(sec.id);
+            renderAll();
+        });
+
+        ws.appendChild(sectionEl);
+    });
 }
 
-function playSound() {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    osc.type = 'sine'; osc.frequency.setValueAtTime(440, ctx.currentTime);
-    osc.connect(ctx.destination);
-    osc.start(); osc.stop(ctx.currentTime + 0.5);
-}
-
-function formatCompactTime(totalSeconds) {
-    if(!totalSeconds) return '0s';
-    const hrs = Math.floor(totalSeconds / 3600);
-    const m = Math.floor((totalSeconds % 3600) / 60);
-    if(hrs >= 24) return `${Math.floor(hrs/24)}d ${hrs%24}h`;
-    if(hrs > 0) return `${hrs}h ${m}m`;
-    return `${m}m`;
-}
-function getTodayStr() {
-    return new Date().toISOString().split('T')[0];
-}
-
-// Data Actions...
-async function addGoal(sectionId) {
-    state.expandedSections.add(sectionId);
-    const title = prompt("Goal Title:");
-    if(!title) return;
-
-    const maxOrder = state.goals.filter(t => t.section_id === sectionId).reduce((max, t) => Math.max(max, t.sort_order), -1);
-    const tempGoal = {
-        id: crypto.randomUUID(), title, completed: false, is_pinned: false, time_spent: 0, section_id: sectionId, sort_order: maxOrder + 1, user_id: state.user.id
-    };
-    
-    state.goals.push(tempGoal);
-    renderApp();
-    
-    try {
-        const { data, error } = await supabase.from('tasks').insert({
-            title, section_id: sectionId, sort_order: tempGoal.sort_order, user_id: state.user.id
-        }).select().single();
-        if (error) throw error;
-        const idx = state.goals.findIndex(t => t.id === tempGoal.id);
-        if (idx !== -1) state.goals[idx] = data;
-        renderApp();
-    } catch (err) {
-        state.goals = state.goals.filter(t => t.id !== tempGoal.id);
-        renderApp();
-        showToast('Failed to add goal', 'error');
+async function addGoal(sectionId, title) {
+    const { data, error } = await supabase.from('tasks').insert({
+        user_id: state.user.id,
+        section_id: sectionId,
+        title,
+        sort_order: state.goals.filter(g => g.section_id === sectionId).length,
+        completed: false,
+        is_pinned: false
+    }).select().single();
+    if (error) {
+        toast(error.message, 'error');
+        return null;
     }
+    state.goals.push(data);
+    return data;
 }
 
-async function addSubtask(goalId) {
-    const title = prompt("Subtask Title:");
-    if(!title) return;
-    const isRep = confirm("Make it repeat daily?");
-
-    const tempST = {
-        id: crypto.randomUUID(), task_id: goalId, title, completed: false, is_repeatable: isRep, user_id: state.user.id
-    };
-    state.subtasks.push(tempST);
-    renderApp();
-
-    try {
-        const { data, error } = await supabase.from('subtasks').insert({
-            task_id: goalId, title, is_repeatable: isRep, user_id: state.user.id
-        }).select().single();
-        if(error) throw error;
-        const idx = state.subtasks.findIndex(s => s.id === tempST.id);
-        if(idx !== -1) state.subtasks[idx] = data;
-        renderApp();
-    } catch(err) {
-        state.subtasks = state.subtasks.filter(s => s.id !== tempST.id);
-        renderApp();
-        showToast('Add subtask failed', 'error');
+async function createSection(title) {
+    const { data, error } = await supabase.from('sections').insert({
+        user_id: state.user.id,
+        title,
+        sort_order: state.sections.length
+    }).select().single();
+    if (error) {
+        toast(error.message, 'error');
+        return null;
     }
+    state.sections.push(data);
+    state.expandedSections.add(data.id);
+    return data;
 }
 
-async function toggleSubtask(id) {
-    const st = state.subtasks.find(s => s.id === id);
-    if(!st) return;
-    const isNowDone = !(st.completed || (st.is_repeatable && st.last_completed_date === getTodayStr()));
-    
-    if (st.is_repeatable) {
-        st.last_completed_date = isNowDone ? getTodayStr() : null;
+async function updateSection(sectionId, title) {
+    const section = state.sections.find(sec => String(sec.id) === String(sectionId));
+    if (!section) return null;
+    const { data, error } = await supabase.from('sections').update({ title }).eq('id', section.id).select().single();
+    if (error) {
+        toast(error.message, 'error');
+        return null;
+    }
+    section.title = data.title;
+    return section;
+}
+
+async function deleteSection(sectionId) {
+    const sid = Number(sectionId);
+    const goals = state.goals.filter(g => g.section_id === sid);
+    const goalIds = goals.map(g => g.id);
+
+    if (goalIds.length) {
+        const { error: subtaskError } = await supabase.from('subtasks').delete().in('task_id', goalIds);
+        if (subtaskError) return toast(subtaskError.message, 'error');
+        state.subtasks = state.subtasks.filter(st => !goalIds.includes(st.task_id));
+
+        const { error: taskError } = await supabase.from('tasks').delete().in('id', goalIds);
+        if (taskError) return toast(taskError.message, 'error');
+        state.goals = state.goals.filter(g => g.section_id !== sid);
+    }
+
+    const { error: sectionError } = await supabase.from('sections').delete().eq('id', sid);
+    if (sectionError) return toast(sectionError.message, 'error');
+    state.sections = state.sections.filter(sec => sec.id !== sid);
+    state.expandedSections.delete(sid);
+    return true;
+}
+
+async function createSubtask(goalId, title, dueDate = null, dueTime = null, isRepeatable = false) {
+    const { data, error } = await supabase.from('subtasks').insert({
+        user_id: state.user.id,
+        task_id: goalId,
+        title,
+        due_date: dueDate,
+        due_time: dueTime,
+        is_repeatable: isRepeatable,
+        completed: false,
+        last_completed_date: null,
+        sort_order: state.subtasks.filter(st => st.task_id === goalId).length
+    }).select().single();
+    if (error) {
+        toast(error.message, 'error');
+        return null;
+    }
+    state.subtasks.push(data);
+    return data;
+}
+
+async function toggleGoal(goalId) {
+    const goal = state.goals.find(g => String(g.id) === String(goalId));
+    if (!goal) return;
+    const newCompleted = !goal.completed;
+    const { error } = await supabase.from('tasks').update({ completed: newCompleted }).eq('id', goal.id);
+    if (error) return toast(error.message, 'error');
+    goal.completed = newCompleted;
+    renderAll();
+}
+
+async function toggleGoalPin(goalId) {
+    const goal = state.goals.find(g => String(g.id) === String(goalId));
+    if (!goal) return;
+    const newPinned = !goal.is_pinned;
+    const { error } = await supabase.from('tasks').update({ is_pinned: newPinned }).eq('id', goal.id);
+    if (error) return toast(error.message, 'error');
+    goal.is_pinned = newPinned;
+    renderAll();
+}
+
+async function toggleSubtask(subtaskId) {
+    const st = state.subtasks.find(s => String(s.id) === String(subtaskId));
+    if (!st) return;
+    const todayStr = today();
+    const isRepeat = !!st.is_repeatable;
+    let update = {};
+    if (isRepeat) {
+        update.last_completed_date = st.last_completed_date === todayStr ? null : todayStr;
     } else {
-        st.completed = isNowDone;
+        update.completed = !st.completed;
     }
-    renderApp();
-    try {
-        const obj = st.is_repeatable ? { last_completed_date: st.last_completed_date } : { completed: st.completed };
-        const {error} = await supabase.from('subtasks').update(obj).eq('id', id);
-        if(error) throw error;
-    } catch(err) {
-        await loadData();
+    const { error } = await supabase.from('subtasks').update(update).eq('id', st.id);
+    if (error) return toast(error.message, 'error');
+    Object.assign(st, update);
+    renderAll();
+}
+
+function openModal(type, contextId = null) {
+    state.modal.type = type;
+    state.modal.contextId = contextId;
+    $('modal-type').value = type;
+    $('modal-context-id').value = contextId || '';
+    $('modal-task-title').value = '';
+    $('modal-task-title').placeholder = type === 'section' ? 'Section name…' : type === 'goal' ? 'Goal title…' : 'Subtask title…';
+    const isEdit = type === 'section' && contextId;
+    $('modal-title').textContent = type === 'section'
+        ? (isEdit ? 'Edit Section' : 'New Section')
+        : type === 'goal'
+            ? 'New Goal'
+            : 'New Subtask';
+    $('modal-confirm').textContent = type === 'section'
+        ? (isEdit ? 'Save ✓' : 'Add ✓')
+        : type === 'goal'
+            ? 'Add ✓'
+            : 'Add ✓';
+
+    if (type === 'section' && contextId) {
+        const section = state.sections.find(sec => String(sec.id) === String(contextId));
+        if (section) $('modal-task-title').value = section.title;
     }
+
+    const extra = $('modal-subtask-extra');
+    if (!extra) return;
+    extra.classList.toggle('hidden', type !== 'subtask');
+    $('task-modal')?.classList.add('open');
+    $('modal-task-title')?.focus();
 }
 
-async function toggleGoalCompletion(id, completed) {
-    const g = state.goals.find(t => t.id === id);
-    if (!g) return;
-    g.completed = completed;
-    renderApp();
-    try {
-        const { error } = await supabase.from('tasks').update({ completed }).eq('id', id);
-        if (error) throw error;
-    } catch (err) {
-        g.completed = !completed; renderApp(); showToast('Failed', 'error');
+function closeModal() {
+    $('task-modal')?.classList.remove('open');
+    state.modal.type = null;
+    state.modal.contextId = null;
+}
+
+async function handleModalConfirm() {
+    const type = $('modal-type').value;
+    const title = $('modal-task-title').value.trim();
+    if (!title) return toast('Please enter a title', 'error');
+
+    if (type === 'section') {
+        const sectionId = $('modal-context-id').value;
+        if (sectionId) {
+            await updateSection(sectionId, title);
+        } else {
+            await createSection(title);
+        }
+    } else if (type === 'goal') {
+        const sectionId = Number($('modal-context-id').value) || state.sections[0]?.id;
+        if (!sectionId) return toast('Select a section first', 'error');
+        await addGoal(sectionId, title);
+    } else if (type === 'subtask') {
+        const goalId = Number($('modal-context-id').value);
+        if (!goalId) return toast('Invalid goal context', 'error');
+        const dueDate = $('modal-due-date')?.value || null;
+        const dueTime = $('modal-due-time')?.value || null;
+        const isRepeatable = $('modal-is-repeatable')?.checked || false;
+        await createSubtask(goalId, title, dueDate, dueTime, isRepeatable);
     }
+
+    closeModal();
+    renderAll();
 }
 
-async function togglePinContext(id, is_pinned) {
-    const g = state.goals.find(t => t.id === id);
-    g.is_pinned = is_pinned;
-    renderApp();
-    try {
-        await supabase.from('tasks').update({ is_pinned }).eq('id', id);
-    } catch(err) { await loadData(); }
-}
 
-async function setGoalDeadline(id, deadlineStr) {
-    if(!deadlineStr) return;
-    const g = state.goals.find(t => t.id === id);
-    g.deadline = new Date(deadlineStr).toISOString();
-    renderApp();
-    try { await supabase.from('tasks').update({ deadline: g.deadline }).eq('id', id); } 
-    catch(err) { await loadData(); }
-}
-
-// ... Additional helper handlers (sorting, renaming, deleting) which mostly follow previous patterns but rename state.tasks -> state.goals...
-async function toggleSection(id) {
-    state.expandedSections.has(id) ? state.expandedSections.delete(id) : state.expandedSections.add(id);
-    renderApp();
-}
-
-async function handleSectionSort(evt) {
-    const updates = [...evt.to.children].map((el, i) => ({ id: el.dataset.id, sort_order: i }));
-    updates.forEach(u => { const s = state.sections.find(x => x.id === u.id); if(s) s.sort_order = u.sort_order; });
-    try { await supabase.from('sections').upsert(updates); } catch (err) { await loadData(); }
-}
-
-async function handleGoalSort(evt) {
-    const toSectionId = evt.to.dataset.sectionId;
-    const itemEls = [...evt.to.children].filter(el => el.classList.contains('conquer-task-wrapper'));
-    const updates = itemEls.map((el, index) => ({
-        id: el.querySelector('.conquer-task').dataset.id, section_id: toSectionId, sort_order: index
-    }));
-    updates.forEach(u => {
-        const t = state.goals.find(x => x.id === u.id);
-        if(t) { t.sort_order = u.sort_order; t.section_id = u.section_id; }
-    });
-    try { await supabase.from('tasks').upsert(updates); } catch (err) { await loadData(); }
-}
-
-async function updateSectionTitle(id, val) { 
-    try { await supabase.from('sections').update({title: val}).eq('id', id); } catch(e){} 
-}
-async function updateGoalTitle(id, val) { 
-    try { await supabase.from('tasks').update({title: val}).eq('id', id); } catch(e){} 
-}
-async function updateSubtaskTitle(id, val) { 
-    try { await supabase.from('subtasks').update({title: val}).eq('id', id); } catch(e){} 
-}
-async function deleteSection(id) { 
-    state.sections = state.sections.filter(s=>s.id!==id); renderApp(); 
-    supabase.from('sections').delete().eq('id',id); 
-}
-async function deleteGoal(id) { 
-    state.goals = state.goals.filter(g=>g.id!==id); renderApp(); 
-    supabase.from('tasks').delete().eq('id',id); 
-}
-async function deleteSubtask(id) { 
-    state.subtasks = state.subtasks.filter(s=>s.id!==id); renderApp(); 
-    supabase.from('subtasks').delete().eq('id',id); 
-}
-
-function calculateSectionProgress(sectionId, list) {
-    const st = list.filter(t => t.section_id === sectionId);
-    const total = st.length;
-    const completed = st.filter(t => t.completed).length;
-    return { total, completed, percent: total > 0 ? Math.round((completed / total) * 100) : 0 };
-}
-
-function escapeHTML(str) {
-    return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;','<': '&lt;','>': '&gt;',"'": '&#39;','"': '&quot;' }[tag]));
-}
-
-let toastTimeout;
-function showToast(msg, type='info') {
-    els.toast.textContent = msg; els.toast.className = `conquer-toast show ${type}`;
-    clearTimeout(toastTimeout); toastTimeout = setTimeout(() => { els.toast.classList.remove('show'); }, 3000);
-}
-
-function setupEventListeners() {
-    /* Auth listeners keep existing simplified boilerplate */
-    if(els.logoutBtn) els.logoutBtn.addEventListener('click', async () => {
-        await supabase.auth.signOut();
-        window.location.reload();
-    });
-    if(els.expandAllBtn) els.expandAllBtn.addEventListener('click', () => {
-        state.sections.forEach(s => state.expandedSections.add(s.id)); renderApp();
-    });
-    if(els.collapseAllBtn) els.collapseAllBtn.addEventListener('click', () => {
-        state.expandedSections.clear(); renderApp();
-    });
-    if(els.addSectionBtn) els.addSectionBtn.addEventListener('click', async () => {
-        const title = prompt('Section Name:');
-        if(!title) return;
-        const maxOrder = state.sections.reduce((max, s) => Math.max(max, s.sort_order), -1);
-        try {
-            await supabase.from('sections').insert({ title, sort_order: maxOrder + 1, user_id: state.user.id });
-            loadData();
-        } catch(e) { showToast('Fail', 'error'); }
-    });
-    if(els.searchInput) els.searchInput.addEventListener('input', (e) => {
-        state.searchQuery = e.target.value;
-        if(state.searchQuery) state.sections.forEach(s => state.expandedSections.add(s.id));
-        renderApp();
-    });
-}
-
-document.addEventListener('DOMContentLoaded', init);
+init();
