@@ -31,160 +31,78 @@
     const { useState, useEffect } = React;
 
 
-// ─── DATE CONSTANTS ────────────────────────────────────────────────────────
+// ─── DATE CONSTANTS ────────────────────────────────────────────────────────[...]
 const START_DATE = "2026-06-22";
 const END_DATE   = "2026-08-01";
 const PHASE_CUT  = "2026-07-15";
 
-// ─── CURRICULUM DATA ─────────────────────────────────────────────────────────
+// ─── CURRICULUM DATA ───────────────────────────────────────────────────────��[...]
 const DSA_SECTIONS = [
-  { id:"arrays", label:"Arrays", items:["Two Pointer — opposite ends (pair sum, container with most water)","Two Pointer — same direction / slow-fast (remove duplicates, move zeroes)","Sliding[..."]},
-  { id:"strings", label:"Strings", items:["Sliding Window on Strings — anagram check, permutation in string","Two Pointer on Strings — valid palindrome, reverse words","Hashing / Frequency Map[..."]},
-  { id:"hashing", label:"Hashing & Maps", items:["HashMap for frequency count","HashMap for index tracking (two sum, subarray sum = k)","HashMap for grouping / bucketing","Prefix Sum + HashMap —[..."]},
-  { id:"sorting", label:"Sorting", items:["Comparison-based lower bound — Ω(n log n)","Merge Sort — divide and conquer, stable sort","Quick Sort — Lomuto / Hoare partitioning, pivot strateg[..."]},
-  { id:"binsearch", label:"Binary Search", items:["Binary Search — classic sorted array","Binary Search on Answer — monotonic predicate","Lower Bound / Upper Bound — first/last occurrence","[..."]},
-  { id:"backtrack", label:"Recursion & Backtracking", items:["Subset Generation — power set","Subsets with Duplicates","Combination Sum — unbounded and bounded","Permutations — with and with[..."]},
-  { id:"linkedlist", label:"Linked List", items:["Reverse a Linked List — iterative and recursive","Detect Cycle — Floyd's Tortoise and Hare","Find Cycle Start Node","Find Middle Node — slow[..."]},
-  { id:"stack", label:"Stack", items:["Valid Parentheses / Matching Brackets","Next Greater Element — monotonic stack","Next Smaller Element","Previous Greater / Smaller Element","Largest Rectan[..."]},
-  { id:"queue", label:"Queue & Deque", items:["Sliding Window Maximum — monotonic deque","First Non-Repeating Character in Stream","BFS using Queue","Circular Queue implementation","Implement St[..."]},
-  { id:"trees", label:"Trees", items:["Inorder / Preorder / Postorder — recursive and iterative","Level Order Traversal — BFS","Zigzag Level Order Traversal","Vertical Order Traversal","Bounda[..."]},
-  { id:"heaps", label:"Heaps & Priority Queue", items:["Min-Heap and Max-Heap operations — insert, extract, heapify","K Largest / K Smallest Elements","Kth Largest in a Stream","Top K Frequent E[..."]},
-  { id:"graphs", label:"Graphs", items:["Graph Representation — adjacency list, matrix, edge list","BFS — shortest path in unweighted graph","DFS — connected components, cycle detection","Cy[..."]},
-  { id:"dp", label:"Dynamic Programming", items:["0/1 Knapsack — tabulation and memoization","Unbounded Knapsack — coin change (min coins, count ways), rod cutting","Subset Sum / Partition Equ[..."]},
-  { id:"greedy", label:"Greedy", items:["Activity Selection / Interval Scheduling","Job Sequencing with Deadlines","Minimum Platforms","Huffman Encoding","Gas Station — circular route feasibilit[..."]},
-  { id:"bitmanip", label:"Bit Manipulation", items:["Check / Set / Clear / Toggle a bit","Count set bits — Brian Kernighan's algorithm","Power of 2 check — n & (n-1) == 0","XOR properties — [...]"]},
-  { id:"math", label:"Math & Number Theory", items:["GCD and LCM — Euclidean algorithm","Extended Euclidean Algorithm","Modular Exponentiation — fast power","Modular Inverse — Fermat's littl[..."]},
-  { id:"misc", label:"Misc Patterns", items:["Meet in the Middle — knapsack on large n","Reservoir Sampling, Fisher-Yates Shuffle","Two Sum / Three Sum / Four Sum","Monotonic Stack pattern — g[..."]},
+  { id:"arrays", label:"Arrays", items:["Two Pointer — opposite ends (pair sum, container with most water)","Two Pointer — same direction / slow-fast (remove duplicates, move zeroes)","Sliding[...]"]
+  },
+  { id:"strings", label:"Strings", items:["Sliding Window on Strings — anagram check, permutation in string","Two Pointer on Strings — valid palindrome, reverse words","Hashing / Frequency Map[...]"]
+  },
+  { id:"hashing", label:"Hashing & Maps", items:["HashMap for frequency count","HashMap for index tracking (two sum, subarray sum = k)","HashMap for grouping / bucketing","Prefix Sum + HashMap —[...]"]
+  },
+  { id:"sorting", label:"Sorting", items:["Comparison-based lower bound — Ω(n log n)","Merge Sort — divide and conquer, stable sort","Quick Sort — Lomuto / Hoare partitioning, pivot strateg[...]"]
+  },
+  { id:"binsearch", label:"Binary Search", items:["Binary Search — classic sorted array","Binary Search on Answer — monotonic predicate","Lower Bound / Upper Bound — first/last occurrence","[...]"]
+  },
+  { id:"backtrack", label:"Recursion & Backtracking", items:["Subset Generation — power set","Subsets with Duplicates","Combination Sum — unbounded and bounded","Permutations — with and with[...]"]
+  },
+  { id:"linkedlist", label:"Linked List", items:["Reverse a Linked List — iterative and recursive","Detect Cycle — Floyd's Tortoise and Hare","Find Cycle Start Node","Find Middle Node — slow[...]"]
+  },
+  { id:"stack", label:"Stack", items:["Valid Parentheses / Matching Brackets","Next Greater Element — monotonic stack","Next Smaller Element","Previous Greater / Smaller Element","Largest Rectan[...]"]
+  },
+  { id:"queue", label:"Queue & Deque", items:["Sliding Window Maximum — monotonic deque","First Non-Repeating Character in Stream","BFS using Queue","Circular Queue implementation","Implement St[...]"]
+  },
+  { id:"trees", label:"Trees", items:["Inorder / Preorder / Postorder — recursive and iterative","Level Order Traversal — BFS","Zigzag Level Order Traversal","Vertical Order Traversal","Bounda[...]"]
+  },
+  { id:"heaps", label:"Heaps & Priority Queue", items:["Min-Heap and Max-Heap operations — insert, extract, heapify","K Largest / K Smallest Elements","Kth Largest in a Stream","Top K Frequent E[...]"]
+  },
+  { id:"graphs", label:"Graphs", items:["Graph Representation — adjacency list, matrix, edge list","BFS — shortest path in unweighted graph","DFS — connected components, cycle detection","Cy[...]"]
+  },
+  { id:"dp", label:"Dynamic Programming", items:["0/1 Knapsack — tabulation and memoization","Unbounded Knapsack — coin change (min coins, count ways), rod cutting","Subset Sum / Partition Equ[...]"]
+  },
+  { id:"greedy", label:"Greedy", items:["Activity Selection / Interval Scheduling","Job Sequencing with Deadlines","Minimum Platforms","Huffman Encoding","Gas Station — circular route feasibilit[...]"]
+  },
+  { id:"bitmanip", label:"Bit Manipulation", items:["Check / Set / Clear / Toggle a bit","Count set bits — Brian Kernighan's algorithm","Power of 2 check — n & (n-1) == 0","XOR properties — [...]"]
+  },
+  { id:"math", label:"Math & Number Theory", items:["GCD and LCM — Euclidean algorithm","Extended Euclidean Algorithm","Modular Exponentiation — fast power","Modular Inverse — Fermat's littl[...]"]
+  },
+  { id:"misc", label:"Misc Patterns", items:["Meet in the Middle — knapsack on large n","Reservoir Sampling, Fisher-Yates Shuffle","Two Sum / Three Sum / Four Sum","Monotonic Stack pattern — g[...]"]
+  }
 ];
 
 const CORE_SECTIONS = [
-  { id: "health", label: "Physical Health & Positive Mindset (Ongoing)", items: [
-    "Maintain workout routine & non-negotiable sleep",
-    "Positive mindset practices: journaling, meditation",
-    "Sustainable habits — avoid burnout"
-  ] },
-  { id: "oa", label: "OA Practice & Contests (Sep 10)", items: [
-    "Company OAs",
-    "Timed LeetCode",
-    "Previous OA questions"
-  ] },
-  { id: "dsa_theory", label: "DSA Theory (Aug 12)", items: [
-    "Time & Space Complexity",
-    "Collections Framework",
-    "Pattern recognition"
-  ] },
-  { id: "java", label: "Java (Aug 15)", items: [
-    "Collections",
-    "Generics",
-    "Streams",
-    "Exception Handling",
-    "Multithreading basics"
-  ] },
-  { id: "sql", label: "SQL (Aug 10)", items: [
-    "Joins",
-    "Group By",
-    "Window Functions",
-    "Indexes",
-    "Normalization"
-  ] },
-  { id: "dbms", label: "DBMS (Aug 12)", items: [
-    "ACID",
-    "Transactions",
-    "Indexing",
-    "Normalization",
-    "Query Optimization"
-  ] },
-  { id: "os", label: "Operating Systems (Aug 14)", items: [
-    "Processes vs Threads",
-    "Scheduling",
-    "Deadlocks",
-    "Memory Management",
-    "Virtual Memory"
-  ] },
-  { id: "networks", label: "Computer Networks (Aug 16)", items: [
-    "HTTP / HTTPS",
-    "TCP/IP",
-    "DNS",
-    "REST APIs",
-    "WebSockets"
-  ] },
-  { id: "oop", label: "OOP (Aug 15)", items: [
-    "SOLID",
-    "Inheritance",
-    "Polymorphism",
-    "Abstraction",
-    "Composition"
-  ] },
-  { id: "resume", label: "Resume Final Review (Aug 8)", items: [
-    "Remove anything I cannot defend",
-    "Verify every technology listed",
-    "Improve project bullet wording",
-    "Check ATS formatting",
-    "Prepare explanations for every project"
-  ] },
-  { id: "alpharook", label: "AlphaRook Interview Mastery (Aug 18)", items: [
-    "Overall architecture",
-    "WebSocket lifecycle",
-    "Room management",
-    "Move validation",
-    "Go concurrency",
-    "React frontend flow",
-    "Deployment",
-    "Every API and data flow"
-  ] },
-  { id: "accio", label: "Accio Interview Mastery (Aug 21)", items: [
-    "JWT authentication flow",
-    "PostgreSQL schema",
-    "REST APIs",
-    "Middleware",
-    "Error handling",
-    "net/http internals",
-    "React integration"
-  ] },
-  { id: "vsb_apex", label: "VSB-APEX Interview Mastery (Aug 24)", items: [
-    "Overall architecture",
-    "FastAPI request flow",
-    "PostgreSQL schema",
-    "Alembic migrations",
-    "AI Agent workflow",
-    "Authentication",
-    "Deployment",
-    "Production debugging story"
-  ] },
-  { id: "lld", label: "Low Level Design (Aug 26)", items: [
-    "SOLID",
-    "Design Patterns",
-    "Parking Lot",
-    "Splitwise",
-    "Class Diagrams"
-  ] },
-  { id: "system_design", label: "Basic System Design (Aug 30)", items: [
-    "Caching",
-    "Load Balancers",
-    "Scaling",
-    "Databases",
-    "CDN",
-    "Message Queues"
-  ] },
-  { id: "hr", label: "HR & Behavioural (Aug 27)", items: [
-    "Tell me about yourself",
-    "Leadership story",
-    "Failure story",
-    "Conflict story",
-    "Project stories",
-    "Strengths & Weaknesses"
-  ] },
-  { id: "mock", label: "Mock Interviews (Ongoing)", items: [
-    "DSA",
-    "Core CS",
-    "Project grilling",
-    "HR"
-  ] },
-  { id: "company", label: "Company Specific Prep (Ongoing)", items: [
-    "Company tagged LeetCode",
-    "Recent OA patterns",
-    "Recent interview experiences"
-  ] },
+  { id:"python", label:"Python", items:["GIL — impact on multithreading, multiprocessing for CPU-bound","Python Memory Model — reference counting, garbage collection","Mutable vs Immutable —[...]"]
+  },
+  { id:"java", label:"Java", items:["JVM Architecture — ClassLoader, JIT compiler, Heap vs Stack","Java Memory Model — heap (young/old gen), Metaspace","Garbage Collection — mark-and-sweep, [...]"]
+  },
+  { id:"js", label:"JavaScript & Node.js", items:["Event Loop — call stack, Web APIs, callback queue, microtask queue","Microtasks vs Macrotasks — Promise before setTimeout","Promises — .the[...]"]
+  },
+  { id:"fastapi", label:"FastAPI & Async Backend", items:["ASGI vs WSGI — why FastAPI uses ASGI","Uvicorn / Gunicorn — worker processes, concurrency model","FastAPI Dependency Injection — De[...]"]
+  },
+  { id:"databases", label:"Databases", items:["ACID Properties — Atomicity, Consistency, Isolation, Durability","Isolation Levels — Read Committed, Repeatable Read, Serializable","MVCC — how[...]"]
+  },
+  { id:"sysdesign", label:"System Design", items:["CAP Theorem — trade-offs with real examples","BASE vs ACID — eventual consistency","Consistent Hashing — virtual nodes, minimizing rehashin[...]"]
+  },
+  { id:"apis", label:"APIs & Protocols", items:["REST Constraints — stateless, uniform interface, HATEOAS","HTTP Methods — GET, POST, PUT, PATCH, DELETE semantics","HTTP Status Codes — 2xx, [...]"]
+  },
+  { id:"docker", label:"Docker & Infra", items:["Container vs VM — lightweight isolation, shared kernel","Dockerfile — FROM, RUN, COPY, WORKDIR, CMD, ENTRYPOINT","Docker layers — cache inval[...]"]
+  },
+  { id:"os", label:"Operating Systems", items:["Process vs Thread — memory space, context switching overhead","CPU Scheduling — FCFS, SJF, Round Robin, Priority, MLFQ","Deadlock — four condi[...]"]
+  },
+  { id:"networks", label:"Computer Networks", items:["OSI Model — 7 layers, functions and protocols at each layer","TCP vs UDP — reliable vs unreliable, use cases","TCP — 3-way handshake, fl[...]"]
+  },
+  { id:"security", label:"Security", items:["OWASP Top 10 — SQLi, XSS, CSRF, Broken Auth, IDOR","SQL Injection — parameterized queries, ORM protection","XSS — stored vs reflected, Content Se[...]"]
+  },
+  { id:"react", label:"React & Frontend", items:["Virtual DOM — diffing algorithm, reconciliation","useState, useReducer — local state management","useEffect — side effects, dependency array[...]"]
+  },
+  { id:"aiml", label:"AI/ML & RAG", items:["LLM Architecture basics — transformer, attention (conceptual)","Tokens — tokenization, context window limits, cost implications","Prompt Engineering[...]"]
+  },
+  { id:"aptitude", label:"Aptitude & Reasoning", items:["Divisibility Rules — 2,3,4,5,6,7,8,9,11","HCF and LCM — prime factorization method","Remainder Theorems — Fermat's, Euler's, Wilson's[...]"]
+  }
 ];
 
 // Flatten all items with stable IDs
@@ -205,7 +123,7 @@ function buildCurriculum() {
 
 const CURRICULUM = buildCurriculum();
 
-// ─── DAILY HABITS ─────────────────────────────────────────────────────────
+// ─── DAILY HABITS ────────────────────────────────────────────────────────��[...]
 // auto: true = derived from study checklist, not manually toggled
 const DAILY_HABITS = [
   { id: "lc1",   label: "LC Easy",             detail: "1 easy — solve + explain the pattern",           auto: "dsa" },
@@ -224,7 +142,7 @@ const WEEKLY_HABITS = [
   { id: "w_sun", day: 0, dayName: "Sun", label: "Weekly Review",      detail: "Wrong patterns list + adjust next week's focus" },
 ];
 
-// ─── DATE HELPERS ─────────────────────────────────────────────────────────
+// ─── DATE HELPERS ────────────────────────────────────────────────────────�[...]
 function toDate(s) { return new Date(s + "T00:00:00"); }
 function toStr(d) {
   const y = d.getFullYear();
@@ -310,7 +228,7 @@ async function saveRevisions(r) {
   lsSet("revisions", r);
 }
 
-// ─── COLOR HELPERS ─────────────────────────────────────────────────────────
+// ─── COLOR HELPERS ────────────────────────────────────────────────────────[...]
 function cellColor(pct, isFuture) {
   if (isFuture) return "#0f0f0f";
   if (pct === 0) return "#161616";
@@ -323,7 +241,7 @@ function cellBorder(pct, isToday) {
   return "1px solid #1e1e1e";
 }
 
-// ─── COUNTDOWN CLOCK ───────────────────────────────────────────────────────
+// ─── COUNTDOWN CLOCK ───────────────────────────────────────────────────────�[...]
 function CountdownClock({ endDate }) {
   const [timeLeft, setTimeLeft] = useState(null);
 
@@ -356,4 +274,4 @@ function CountdownClock({ endDate }) {
   const dash = arc - (arc * timeLeft.pct / 100);
 
   return (
-    <div style={{ background: "rgba(20, 20, 20, 0.4)", backdropFilter: "blur(10px)", border: `1px solid ${urgent ? "rgba(248, 113, 113, 0.2)" : "rgba(167, 139, 250, 0.1)"}`, borderRadius: 16, pad...
+    <div style={{ background: "rgba(20, 20, 20, 0.4)", backdropFilter: "blur(10px)", border: `1px solid ${urgent ? "rgba(248, 113, 113, 0.2)" : "rgba(167, 139, 250, 0.1)"}`, borderRadius: 16, pad... }}>
