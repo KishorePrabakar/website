@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/resume",
+      "destination": "/api/resume"
+    },
+    {
       "source": "/neo/(.*)",
       "destination": "/neo/index.html"
     },
@@ -13,8 +17,18 @@
       "destination": "/conquer.html"
     },
     {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/update/jobs",
+      "schedule": "0 */4 * * *"
     }
   ]
 }
