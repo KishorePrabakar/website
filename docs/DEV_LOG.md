@@ -603,10 +603,10 @@ try {
 - Vercel deployment ready (vercel.json configured)
 
 **API Endpoints Available:**
-- GET/POST /api/jobs - Job search and hot jobs detection
-- GET /api/skills - Skills gap analysis and learning paths
-- GET/POST/PATCH/DELETE /api/applications - Application tracking
-- GET /api/update/jobs - Cron job endpoint for auto-update
+- GET/POST /radar/jobs - Job search and hot jobs detection
+- GET /radar/skills - Skills gap analysis and learning paths
+- GET/POST/PATCH/DELETE /radar/applications - Application tracking
+- GET /radar/update/jobs - Cron job endpoint for auto-update
 - GET /api/resume - Resume link extraction
 
 **Database Schema Needed (Supabase):**

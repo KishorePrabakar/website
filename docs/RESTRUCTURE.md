@@ -46,11 +46,11 @@ docs/
 
 ## 🔄 API Route Changes
 
-All radar API routes are now under `/api/radar/`:
-- `/api/jobs` → `/api/radar/jobs`
-- `/api/skills` → `/api/radar/skills`
-- `/api/applications` → `/api/radar/applications`
-- `/api/update/jobs` → `/api/radar/update/jobs`
+All radar API routes are now directly under `/radar/` (no /api prefix):
+- `/api/jobs` → `/radar/jobs`
+- `/api/skills` → `/radar/skills`
+- `/api/applications` → `/radar/applications`
+- `/api/update/jobs` → `/radar/update/jobs`
 
 ## 🎯 Dashboard Access
 

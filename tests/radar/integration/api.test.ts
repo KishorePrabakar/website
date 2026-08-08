@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 
 describe('API Routes', () => {
-  describe('/api/radar/jobs', () => {
+  describe('/radar/jobs', () => {
     it('should return jobs with correct structure', async () => {
       // Placeholder test - will be implemented when API route is ready
       const mockJobs = Array.from({ length: 20 }, (_, i) => ({
@@ -38,7 +38,7 @@ describe('API Routes', () => {
     })
   })
 
-  describe('/api/radar/skills', () => {
+  describe('/radar/skills', () => {
     it('should analyze user skills and return gaps', async () => {
       const mockRequest = {
         skills: ['javascript', 'react'],
