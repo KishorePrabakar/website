@@ -27,7 +27,7 @@
   ],
   "crons": [
     {
-      "path": "/api/update/jobs",
+      "path": "/api/radar/update/jobs",
       "schedule": "0 */4 * * *"
     }
   ]

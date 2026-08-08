@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { jobScraper } from '@/lib/scrapers/jobspy'
-import { skillsGapAnalyzer } from '@/lib/analyzers/skillsGap'
+import { getJobScraper } from '@/lib/radar/scrapers/jobspy'
+import { getSkillsGapAnalyzer } from '@/lib/radar/analyzers/skillsGap'
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // Fetch market jobs for analysis
+    const jobScraper = getJobScraper()
     const jobs = await jobScraper.scrapeAllSources({
       searchTerm: 'software engineer',
       location: 'remote',
@@ -31,6 +32,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Analyze skills gap
+    const skillsGapAnalyzer = getSkillsGapAnalyzer()
     const skillGaps = skillsGapAnalyzer.analyzeUserSkills(userSkills, jobs)
 
     // Generate learning paths

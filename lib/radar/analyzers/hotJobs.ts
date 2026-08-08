@@ -163,4 +163,4 @@ export class HotJobsDetector {
   }
 }
 
-export const hotJobsDetector = new HotJobsDetector()
+export const getHotJobsDetector = () => new HotJobsDetector()

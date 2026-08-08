@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { autoUpdateService } from '@/lib/services/autoUpdate'
+import { getAutoUpdateService } from '@/lib/radar/services/autoUpdate'
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
     console.log('Cron job triggered: Updating jobs')
 
     // Perform the update
+    const autoUpdateService = getAutoUpdateService()
     const result = await autoUpdateService.performUpdate()
 
     return NextResponse.json({

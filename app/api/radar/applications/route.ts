@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { applicationTracker } from '@/lib/services/application'
+import { getApplicationTracker } from '@/lib/radar/services/application'
 
 export async function GET(request: NextRequest) {
   try {
-    const applications = applicationTracker.getAllApplications()
-    const stats = applicationTracker.getStats()
+    const applicationTracker = getApplicationTracker()
+    const applications = await applicationTracker.getAllApplications()
+    const stats = await applicationTracker.getStats()
 
     return NextResponse.json({
       applications,
@@ -31,7 +32,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const application = applicationTracker.saveApplication(jobId, { title: jobTitle, company })
+    const applicationTracker = getApplicationTracker()
+    const application = await applicationTracker.saveApplication(jobId, { title: jobTitle, company })
 
     return NextResponse.json({
       success: true,
@@ -58,7 +60,8 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
-    const application = applicationTracker.updateApplicationStatus(applicationId, status, notes)
+    const applicationTracker = getApplicationTracker()
+    const application = await applicationTracker.updateApplicationStatus(applicationId, status, notes)
 
     if (!application) {
       return NextResponse.json(
@@ -92,7 +95,8 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    const deleted = applicationTracker.deleteApplication(applicationId)
+    const applicationTracker = getApplicationTracker()
+    const deleted = await applicationTracker.deleteApplication(applicationId)
 
     if (!deleted) {
       return NextResponse.json(

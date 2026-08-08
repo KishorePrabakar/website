@@ -1,5 +1,6 @@
 // Job scraping service using jobspy-js
-// Note: jobspy-js uses CommonJS, so we'll use require
+// Note: jobspy-js uses CommonJS and has native dependencies
+// This should only be used in server-side API routes
 
 export interface ScrapedJob {
   id: string
@@ -219,4 +220,6 @@ export class JobScraper {
   }
 }
 
-export const jobScraper = new JobScraper()
+// Only export the class, don't instantiate at module level
+// This avoids build issues with native dependencies
+export const getJobScraper = () => new JobScraper()

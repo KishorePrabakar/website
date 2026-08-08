@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Job Radar Dashboard', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/dashboard')
+    await page.goto('/radar')
   })
 
   test('should display dashboard with hot jobs section', async ({ page }) => {

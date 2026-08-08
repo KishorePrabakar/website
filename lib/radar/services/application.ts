@@ -172,4 +172,4 @@ export class ApplicationTracker {
   }
 }
 
-export const applicationTracker = new ApplicationTracker()
+export const getApplicationTracker = () => new ApplicationTracker()

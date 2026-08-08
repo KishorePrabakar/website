@@ -242,4 +242,4 @@ export class SkillsGapAnalyzer {
   }
 }
 
-export const skillsGapAnalyzer = new SkillsGapAnalyzer()
+export const getSkillsGapAnalyzer = () => new SkillsGapAnalyzer()

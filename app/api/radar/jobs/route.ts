@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { jobScraper } from '@/lib/scrapers/jobspy'
-import { hotJobsDetector } from '@/lib/analyzers/hotJobs'
+import { getJobScraper } from '@/lib/radar/scrapers/jobspy'
+import { getHotJobsDetector } from '@/lib/radar/analyzers/hotJobs'
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // Scrape jobs from multiple sources
+    const jobScraper = getJobScraper()
     const jobs = await jobScraper.scrapeAllSources({
       searchTerm,
       location,
@@ -23,6 +24,7 @@ export async function GET(request: NextRequest) {
 
     // If hot jobs requested, apply hot jobs detection
     if (hotJobsOnly) {
+      const hotJobsDetector = getHotJobsDetector()
       const hotJobs = await hotJobsDetector.detectHotJobs(jobs)
       processedJobs = hotJobs
     } else {

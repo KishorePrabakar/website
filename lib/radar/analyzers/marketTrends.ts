@@ -78,7 +78,7 @@ export class MarketTrendsEngine {
         current.count++
         current.companies.add(job.company)
 
-        if (job.salary) {
+        if (job.salary && job.salary.min && job.salary.max) {
           current.salaries.push((job.salary.min + job.salary.max) / 2)
         }
 
@@ -125,7 +125,7 @@ export class MarketTrendsEngine {
     }>()
 
     for (const job of jobs) {
-      if (job.salary) {
+      if (job.salary && job.salary.min && job.salary.max) {
         const avgSalary = (job.salary.min + job.salary.max) / 2
         const key = this.getSalaryPeriodKey(job.salary.period || 'yearly')
 
@@ -173,13 +173,13 @@ export class MarketTrendsEngine {
       const role = this.normalizeRole(job.title)
       const current = roleData.get(role) || {
         count: 0,
-        salaries: [],
+        salaries: [] as number[],
         skills: new Map(),
       }
 
       current.count++
 
-      if (job.salary) {
+      if (job.salary && job.salary.min && job.salary.max) {
         current.salaries.push((job.salary.min + job.salary.max) / 2)
       }
 
@@ -314,4 +314,4 @@ export class MarketTrendsEngine {
   }
 }
 
-export const marketTrendsEngine = new MarketTrendsEngine()
+export const getMarketTrendsEngine = () => new MarketTrendsEngine()

@@ -1,7 +1,7 @@
-import { jobScraper } from '../scrapers/jobspy'
-import { hotJobsDetector } from '../analyzers/hotJobs'
-import { skillsGapAnalyzer } from '../analyzers/skillsGap'
-import { marketTrendsEngine } from '../analyzers/marketTrends'
+import { getJobScraper } from '../scrapers/jobspy'
+import { getHotJobsDetector } from '../analyzers/hotJobs'
+import { getSkillsGapAnalyzer } from '../analyzers/skillsGap'
+import { getMarketTrendsEngine } from '../analyzers/marketTrends'
 
 export interface UpdateResult {
   success: boolean
@@ -39,6 +39,7 @@ export class AutoUpdateService {
       console.log('Starting auto-update at:', new Date().toISOString())
 
       // Step 1: Scrape new jobs
+      const jobScraper = getJobScraper()
       const jobs = await jobScraper.scrapeAllSources({
         searchTerm: 'software engineer',
         location: 'remote',
@@ -47,13 +48,16 @@ export class AutoUpdateService {
       })
 
       // Step 2: Detect hot jobs
+      const hotJobsDetector = getHotJobsDetector()
       const hotJobs = await hotJobsDetector.detectHotJobs(jobs)
 
       // Step 3: Update skills analysis
       // In a real implementation, this would update database
+      const skillsGapAnalyzer = getSkillsGapAnalyzer()
       await skillsGapAnalyzer.analyzeUserSkills([], jobs)
 
       // Step 4: Update market trends
+      const marketTrendsEngine = getMarketTrendsEngine()
       await marketTrendsEngine.analyzeMarketTrends(jobs)
 
       // Step 5: Store historical data
@@ -153,4 +157,4 @@ export class AutoUpdateService {
   }
 }
 
-export const autoUpdateService = new AutoUpdateService()
+export const getAutoUpdateService = () => new AutoUpdateService()

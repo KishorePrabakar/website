@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { calculateMatchScore, calculateJobVelocity, identifyEmergingSkills } from '@/lib/analyzers/scoring'
+import { calculateMatchScore, calculateJobVelocity, identifyEmergingSkills } from '@/lib/radar/analyzers/scoring'
 
 describe('JobScoringEngine', () => {
   const mockUserProfile = {

@@ -248,4 +248,4 @@ ${userProfile.name}
   }
 }
 
-export const emailService = new EmailService()
+export const getEmailService = () => new EmailService()
