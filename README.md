@@ -16,7 +16,9 @@ assets/
 pages/                # secondary static pages: blog, projects, progress, conquer
 blogs/                # individual blog posts (+ images)
 neo/                  # standalone NEO pages
-vercel.json           # redirects, rewrites (clean URLs + legacy paths)
+api/resume.js         # serverless function behind /resume
+vercel.json           # rewrites (clean URLs + legacy paths), function config
+scripts/dev-server.js # local server that mimics the Vercel routing
 
 app/                  # Next.js App Router: Job Radar dashboard + /radar API routes
 components/           # React components (ui/, radar/)
@@ -32,7 +34,7 @@ docs/                 # plans, dev log, notes
 | URL | Serves |
 | --- | --- |
 | `/` | `index.html` |
-| `/resume` | 307 redirect to the resume PDF (single source of truth: `redirects` in `vercel.json`) |
+| `/resume` | serverless function `api/resume.js`: reads the Resume button's `href` out of `index.html` and 302s to it (`/resume?format=json` returns `{ label, resumeUrl }`) |
 | `/blog`, `/projects`, `/progress`, `/conquer` | matching page in `pages/` |
 | `/blogs/*.html` | blog posts |
 | `/neo/*` | `neo/index.html` |
@@ -41,8 +43,18 @@ Legacy `.html` URLs (`/blog.html`, `/projects.html`, `/progess.html`, `/conquer.
 root asset paths (`/style.css`, `/script.js`, `/favicon.ico`, ...) are still rewritten to their new
 locations, so existing links keep working.
 
-To change the resume link, edit the `redirects` entry in `vercel.json` — the Resume button on the
-site points at `/resume`.
+To change the resume link, edit the `<a id="resume-link">` href in `index.html` — `/resume` follows
+it automatically, nothing else to update.
+
+## Local development
+
+```bash
+node scripts/dev-server.js 3000   # serves the repo the way Vercel does
+```
+
+It applies `vercel.json`'s redirects/rewrites in Vercel's order (filesystem first, then rewrites) and
+runs `api/*.js` as functions, so `/resume`, the clean URLs, and the legacy paths all behave locally
+as they do in production.
 
 ## Job Radar (Next.js)
 

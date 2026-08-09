@@ -2,15 +2,11 @@
   "framework": null,
   "buildCommand": "",
   "installCommand": "",
-  "outputDirectory": ".",
-  "redirects": [
-    {
-      "source": "/resume",
-      "destination": "https://drive.google.com/file/d/1uOd9g1bS5XDUERKC6GNcK35k8zPWn9mZ/view?usp=sharing",
-      "permanent": false
-    }
-  ],
+  "functions": {
+    "api/resume.js": { "includeFiles": "index.html" }
+  },
   "rewrites": [
+    { "source": "/resume", "destination": "/api/resume" },
     { "source": "/blog", "destination": "/pages/blog.html" },
     { "source": "/blog.html", "destination": "/pages/blog.html" },
     { "source": "/projects", "destination": "/pages/projects.html" },
