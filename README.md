@@ -1,73 +1,58 @@
-# React + TypeScript + Vite
+# kishorepr.vercel.app
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Personal website of Kishore Prabakar, plus the **Job Radar** app (Next.js) that lives in the same repo.
 
-Currently, two official plugins are available:
+The site deployed on Vercel is the **static site** at the repo root (plain HTML/CSS/JS). Routing is
+driven entirely by `vercel.json`.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Structure
 
-## React Compiler
+```
+index.html            # homepage (entry point of the static site)
+assets/
+  css/style.css       # shared stylesheet for every static page
+  js/                 # script.js (site), conquer.js + conquer-data.js (conquer tracker)
+  icons/              # favicons, touch icons, site.webmanifest
+pages/                # secondary static pages: blog, projects, progress, conquer
+blogs/                # individual blog posts (+ images)
+neo/                  # standalone NEO pages
+vercel.json           # redirects, rewrites (clean URLs + legacy paths), cron
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+app/                  # Next.js App Router: Job Radar dashboard + /radar API routes
+components/           # React components (ui/, radar/)
+lib/radar/            # Job Radar business logic: analyzers, scrapers, services, db schema
+tests/radar/          # unit / integration / e2e tests
+supabase/migration.sql
+scripts/              # one-off helper scripts
+docs/                 # plans, dev log, notes
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## URLs
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+| URL | Serves |
+| --- | --- |
+| `/` | `index.html` |
+| `/resume` | 307 redirect to the resume PDF (single source of truth: `redirects` in `vercel.json`) |
+| `/blog`, `/projects`, `/progress`, `/conquer` | matching page in `pages/` |
+| `/blogs/*.html` | blog posts |
+| `/neo/*` | `neo/index.html` |
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Legacy `.html` URLs (`/blog.html`, `/projects.html`, `/progess.html`, `/conquer.html`) and the old
+root asset paths (`/style.css`, `/script.js`, `/favicon.ico`, ...) are still rewritten to their new
+locations, so existing links keep working.
+
+To change the resume link, edit the `redirects` entry in `vercel.json` — the Resume button on the
+site points at `/resume`.
+
+## Job Radar (Next.js)
+
+Not currently part of the Vercel deployment (the project deploys the static site); run it locally:
+
+```bash
+npm install
+cp .env.example .env.local   # fill in Supabase / Groq / Resend keys
+npm run dev                  # http://localhost:3000/radar
+npm run test:unit
 ```
+
+See `docs/` for the implementation plan and dev log.
