@@ -1,30 +1,33 @@
 {
+  "framework": null,
+  "buildCommand": "",
+  "installCommand": "",
+  "functions": {
+    "api/resume.js": { "includeFiles": "index.html" }
+  },
   "rewrites": [
-    {
-      "source": "/resume",
-      "destination": "/api/resume"
-    },
-    {
-      "source": "/neo/(.*)",
-      "destination": "/neo/index.html"
-    },
-    {
-      "source": "/conquer",
-      "destination": "/conquer.html"
-    },
-    {
-      "source": "/conquer/(.*)",
-      "destination": "/conquer.html"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ],
-  "crons": [
-    {
-      "path": "/radar/update/jobs",
-      "schedule": "0 */4 * * *"
-    }
+    { "source": "/resume", "destination": "/api/resume" },
+    { "source": "/blog", "destination": "/pages/blog.html" },
+    { "source": "/blog.html", "destination": "/pages/blog.html" },
+    { "source": "/projects", "destination": "/pages/projects.html" },
+    { "source": "/projects.html", "destination": "/pages/projects.html" },
+    { "source": "/progress", "destination": "/pages/progress.html" },
+    { "source": "/progess.html", "destination": "/pages/progress.html" },
+    { "source": "/conquer", "destination": "/pages/conquer.html" },
+    { "source": "/conquer/(.*)", "destination": "/pages/conquer.html" },
+    { "source": "/conquer.html", "destination": "/pages/conquer.html" },
+    { "source": "/neo/(.*)", "destination": "/neo/index.html" },
+    { "source": "/style.css", "destination": "/assets/css/style.css" },
+    { "source": "/script.js", "destination": "/assets/js/script.js" },
+    { "source": "/conquer.js", "destination": "/assets/js/conquer.js" },
+    { "source": "/conquer-data.js", "destination": "/assets/js/conquer-data.js" },
+    { "source": "/favicon.ico", "destination": "/assets/icons/favicon.ico" },
+    { "source": "/favicon-16x16.png", "destination": "/assets/icons/favicon-16x16.png" },
+    { "source": "/favicon-32x32.png", "destination": "/assets/icons/favicon-32x32.png" },
+    { "source": "/apple-touch-icon.png", "destination": "/assets/icons/apple-touch-icon.png" },
+    { "source": "/android-chrome-192x192.png", "destination": "/assets/icons/android-chrome-192x192.png" },
+    { "source": "/android-chrome-512x512.png", "destination": "/assets/icons/android-chrome-512x512.png" },
+    { "source": "/site.webmanifest", "destination": "/assets/icons/site.webmanifest" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

@@ -14,7 +14,7 @@ export default function Home() {
                 Job Radar
               </button>
             </Link>
-            <Link href="/projects.html">
+            <Link href="/projects">
               <button className="bg-white/10 hover:bg-white/20 text-white font-bold py-3 px-6 rounded-lg transition">
                 Projects
               </button>
