@@ -16,7 +16,7 @@ assets/
 pages/                # secondary static pages: blog, projects, progress, conquer
 blogs/                # individual blog posts (+ images)
 neo/                  # standalone NEO pages
-vercel.json           # redirects, rewrites (clean URLs + legacy paths), cron
+vercel.json           # redirects, rewrites (clean URLs + legacy paths)
 
 app/                  # Next.js App Router: Job Radar dashboard + /radar API routes
 components/           # React components (ui/, radar/)
@@ -56,3 +56,7 @@ npm run test:unit
 ```
 
 See `docs/` for the implementation plan and dev log.
+
+The `crons` entry that pointed at `/radar/update/jobs` was removed from `vercel.json`: that route
+isn't part of the static deployment, and the sub-daily schedule broke every Vercel build on the
+Hobby plan. Re-add it (daily at most, on Hobby) when the Next.js app is actually deployed.

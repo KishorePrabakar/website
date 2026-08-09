@@ -29,11 +29,5 @@
     { "source": "/android-chrome-512x512.png", "destination": "/assets/icons/android-chrome-512x512.png" },
     { "source": "/site.webmanifest", "destination": "/assets/icons/site.webmanifest" },
     { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "crons": [
-    {
-      "path": "/radar/update/jobs",
-      "schedule": "0 6 * * *"
-    }
   ]
 }
