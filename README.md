@@ -46,7 +46,11 @@ site points at `/resume`.
 
 ## Job Radar (Next.js)
 
-Not currently part of the Vercel deployment (the project deploys the static site); run it locally:
+Not part of the Vercel deployment. `vercel.json` pins the deployment to a static build of the repo
+root (`"framework": null`, empty build command); otherwise Vercel auto-detects Next.js and the build
+fails at `Collecting page data` because the radar routes construct their Supabase client at module
+load with no env vars set — which is why deployments have been failing and the live site was stuck on
+an old build. Run the radar app locally instead:
 
 ```bash
 npm install
