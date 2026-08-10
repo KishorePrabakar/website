@@ -602,7 +602,11 @@
         setSyncStatus('syncing');
         const { data, error } = await sb.from('neo_tasks').select('*').order('tier').order('category').order('sort_order');
         if (error) {
-          toast(error.message, 'error');
+          if (error.code === 'PGRST205' || (error.message && error.message.includes('public.neo_tasks'))) {
+            toast("Table 'neo_tasks' missing. Run SQL migration in Supabase Dashboard.", 'error');
+          } else {
+            toast(error.message, 'error');
+          }
           setSyncStatus('error');
         } else {
           setTasks(data || []);
