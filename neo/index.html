@@ -3,184 +3,237 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>NEO — DOA Sprint</title>
-  <meta name="description" content="DSA OA Sprint tracker with spaced repetition." />
+  <title>NEO — DSA OA Sprint Tracker</title>
+  <meta name="description" content="DSA OA Sprint tracker with spaced repetition and daily planning." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #050505;
-      --surface: #111114;
-      --surface2: #1a1a1f;
-      --surface3: #222228;
-      --border: rgba(255,255,255,0.07);
-      --border-hover: rgba(255,255,255,0.16);
-      --text: #e8e8f0;
-      --dim: rgba(232,232,240,0.45);
-      --light: rgba(232,232,240,0.25);
+      --bg: #07070a;
+      --surface: #121217;
+      --surface2: #191922;
+      --surface3: #222230;
+      --border: rgba(255,255,255,0.08);
+      --border-hover: rgba(255,255,255,0.18);
+      --text: #ececf5;
+      --dim: rgba(236,236,245,0.48);
+      --light: rgba(236,236,245,0.25);
       --accent: #a78bfa;
       --accent-hover: #c4b5fd;
+      --accent-glow: rgba(167,139,250,0.25);
       --danger: #f87171;
-      --success: #6ee7b7;
+      --danger-bg: rgba(248,113,113,0.1);
+      --success: #34d399;
+      --success-bg: rgba(52,211,153,0.12);
       --warning: #fbbf24;
-      --t1: #6ee7b7;
+      --warning-bg: rgba(251,191,36,0.12);
+      --t1: #34d399;
       --t2: #fbbf24;
       --t3: #94a3b8;
     }
     html, body {
       background: var(--bg); color: var(--text);
-      font-family: 'Inter', system-ui, sans-serif;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
       -webkit-font-smoothing: antialiased; line-height: 1.5; min-height: 100vh;
     }
     button { font-family: inherit; }
-    ::selection { background: rgba(167,139,250,0.2); color: var(--accent); }
+    ::selection { background: rgba(167,139,250,0.25); color: var(--accent); }
     .hidden { display: none !important; }
 
-    /* Auth */
+    /* Keyframes */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(248,113,113,0.4); }
+      50% { box-shadow: 0 0 0 6px rgba(248,113,113,0); }
+    }
+
+    /* Tab transitions */
+    .tab-view { animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1); }
+
+    /* Auth View */
     #auth-view { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:2rem; }
-    .auth-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:2.5rem; width:100%; max-width:400px; }
-    .auth-card h1 { font-size:1.75rem; margin-bottom:.25rem; color:var(--accent); }
+    .auth-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:2.5rem; width:100%; max-width:400px; box-shadow: 0 16px 40px rgba(0,0,0,0.4); }
+    .auth-card h1 { font-size:1.75rem; margin-bottom:.25rem; color:var(--accent); letter-spacing:-0.5px; }
     .auth-card p { color:var(--dim); margin-bottom:2rem; font-size:.9rem; }
-    .auth-input { width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:.7rem 1rem; border-radius:8px; font-family:inherit; font-size:.9rem; margin-bottom:.75rem; }
+    .auth-input { width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:.75rem 1rem; border-radius:8px; font-family:inherit; font-size:.9rem; margin-bottom:.75rem; transition:border-color .15s; }
     .auth-input:focus { outline:none; border-color:var(--accent); }
-    .auth-btn { width:100%; background:var(--accent); color:#fff; border:none; padding:.75rem; border-radius:8px; font-weight:700; font-size:.95rem; cursor:pointer; margin-bottom:.5rem; transition:opacity .2s; }
-    .auth-btn:hover { opacity:.88; }
+    .auth-btn { width:100%; background:var(--accent); color:#fff; border:none; padding:.75rem; border-radius:8px; font-weight:700; font-size:.95rem; cursor:pointer; margin-bottom:.5rem; transition:all .2s; }
+    .auth-btn:hover { opacity:.92; transform:translateY(-1px); }
     .auth-btn.secondary { background:transparent; color:var(--accent); border:1px solid var(--accent); }
 
     /* Loading */
     #loading-view { display:flex; align-items:center; justify-content:center; min-height:100vh; flex-direction:column; gap:1rem; color:var(--dim); }
-    .spinner { width:32px; height:32px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; }
+    .spinner { width:36px; height:36px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; }
     @keyframes spin { to { transform:rotate(360deg); } }
 
-    /* App */
-    #app-view { max-width:860px; margin:0 auto; padding:1.5rem 1.25rem 5rem; }
+    /* Main Container */
+    #app-view { max-width:880px; margin:0 auto; padding:1.5rem 1.25rem 5rem; }
     .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid var(--border); }
-    .topbar h1 { font-size:1.4rem; font-weight:700; letter-spacing:-.5px; }
+    .topbar-brand { display:flex; align-items:center; gap:.75rem; }
+    .topbar h1 { font-size:1.45rem; font-weight:800; letter-spacing:-.5px; }
     .topbar h1 span { color:var(--accent); }
+    .topbar-sub { font-size:.75rem; color:var(--dim); font-weight:500; }
     .topbar-actions { display:flex; gap:.75rem; align-items:center; }
     .home-link { color:var(--dim); font-size:.85rem; text-decoration:none; transition:color .2s; }
     .home-link:hover { color:var(--accent); }
 
-    .btn { background:var(--surface); border:1px solid var(--border); color:var(--text); padding:.45rem .85rem; border-radius:7px; cursor:pointer; font-family:inherit; font-size:.85rem; transition:all .15s; display:inline-flex; align-items:center; gap:.35rem; white-space:nowrap; }
+    /* Sync Indicator */
+    .sync-badge { display:inline-flex; align-items:center; gap:.35rem; font-size:.72rem; font-weight:600; padding:.25rem .55rem; border-radius:12px; background:var(--surface2); border:1px solid var(--border); color:var(--dim); }
+    .sync-dot { width:7px; height:7px; border-radius:50%; background:var(--success); }
+    .sync-badge.syncing .sync-dot { background:var(--warning); animation:spin .8s linear infinite; }
+    .sync-badge.error .sync-dot { background:var(--danger); }
+
+    .btn { background:var(--surface); border:1px solid var(--border); color:var(--text); padding:.45rem .85rem; border-radius:8px; cursor:pointer; font-family:inherit; font-size:.85rem; transition:all .15s; display:inline-flex; align-items:center; gap:.35rem; white-space:nowrap; }
     .btn:hover { border-color:var(--accent); color:var(--accent); }
     .btn.primary { background:var(--accent); color:#fff; border-color:var(--accent); font-weight:600; }
-    .btn.primary:hover { opacity:.88; color:#fff; }
-    .btn.sm { padding:.25rem .55rem; font-size:.78rem; }
-    .btn.danger { color:var(--danger); border-color:rgba(248,113,113,.25); background:rgba(248,113,113,.08); }
+    .btn.primary:hover { opacity:.92; color:#fff; box-shadow:0 4px 12px var(--accent-glow); }
+    .btn.sm { padding:.3rem .65rem; font-size:.78rem; }
+    .btn.danger { color:var(--danger); border-color:rgba(248,113,113,.3); background:var(--danger-bg); }
     .btn.danger:hover { border-color:var(--danger); color:var(--danger); }
     .btn:disabled { opacity:.4; cursor:not-allowed; }
 
     /* Tabs */
     .tabs { display:flex; gap:.5rem; margin-bottom:1.25rem; }
-    .tab { background:transparent; border:1px solid var(--border); color:var(--dim); padding:.5rem 1.1rem; border-radius:8px; cursor:pointer; font-family:inherit; font-size:.88rem; font-weight:600; transition:all .15s; position:relative; }
+    .tab { background:transparent; border:1px solid var(--border); color:var(--dim); padding:.55rem 1.15rem; border-radius:99px; cursor:pointer; font-family:inherit; font-size:.88rem; font-weight:600; transition:all .15s; position:relative; display:inline-flex; align-items:center; }
     .tab:hover { color:var(--text); border-color:var(--border-hover); }
-    .tab.active { background:var(--surface2); color:var(--accent); border-color:var(--accent); }
-    .tab-badge { display:inline-flex; align-items:center; justify-content:center; min-width:18px; height:18px; padding:0 5px; border-radius:9px; font-size:.65rem; font-weight:700; margin-left:.4rem; background:rgba(255,255,255,.08); color:var(--dim); }
-    .tab-badge.alert { background:var(--danger); color:#fff; }
+    .tab.active { background:var(--surface2); color:var(--accent); border-color:var(--accent); box-shadow:0 2px 10px rgba(0,0,0,0.3); }
+    .tab-badge { display:inline-flex; align-items:center; justify-content:center; min-width:18px; height:18px; padding:0 6px; border-radius:9px; font-size:.65rem; font-weight:700; margin-left:.45rem; background:rgba(255,255,255,.08); color:var(--dim); transition:all .15s; }
+    .tab.active .tab-badge { background:rgba(167,139,250,.2); color:var(--accent); }
+    .tab-badge.alert { background:var(--danger); color:#fff; animation:pulseGlow 2s infinite; }
 
-    /* Stats bar */
-    .stats-bar { display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; }
-    .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:.75rem 1rem; flex:1; min-width:120px; }
-    .stat-card .label { font-size:.65rem; color:var(--dim); text-transform:uppercase; letter-spacing:.05em; margin-bottom:.2rem; }
-    .stat-card .value { font-size:1.3rem; font-weight:700; }
+    /* Stats Bar */
+    .stats-bar { display:flex; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap; }
+    .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:.8rem 1.1rem; flex:1; min-width:130px; }
+    .stat-card .label { font-size:.68rem; color:var(--dim); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.2rem; font-weight:600; }
+    .stat-card .value { font-size:1.35rem; font-weight:800; letter-spacing:-0.5px; }
     .stat-card .value.accent { color:var(--accent); }
     .stat-card .value.success { color:var(--success); }
     .stat-card .value.danger { color:var(--danger); }
 
-    /* Lock banner */
-    .lock-banner { background:rgba(248,113,113,.08); border:1px solid rgba(248,113,113,.3); border-radius:10px; padding:.85rem 1rem; margin-bottom:1.25rem; display:flex; align-items:center; gap:.6rem; font-size:.85rem; color:var(--danger); }
+    /* Progress Bar */
+    .progress-bar { height:5px; background:rgba(255,255,255,.05); border-radius:3px; overflow:hidden; margin-bottom:1.5rem; }
+    .progress-fill { height:100%; background:linear-gradient(90deg, var(--accent), var(--success)); border-radius:3px; transition:width .4s cubic-bezier(.4,0,.2,1); }
+
+    /* Lock Banner */
+    .lock-banner { background:rgba(248,113,113,.08); border:1px solid rgba(248,113,113,.35); border-radius:12px; padding:1rem 1.2rem; margin-bottom:1.25rem; display:flex; align-items:center; justify-content:space-between; gap:.8rem; font-size:.88rem; color:var(--danger); backdrop-filter:blur(8px); }
+    .lock-banner-content { display:flex; align-items:center; gap:.75rem; flex:1; }
     .lock-banner svg { flex-shrink:0; }
 
-    /* Section */
+    /* Section Header & Items */
     .section { margin-bottom:1rem; }
-    .section-header { display:flex; align-items:center; gap:.5rem; padding:.6rem .85rem; background:var(--surface); border:1px solid var(--border); border-radius:8px; cursor:pointer; transition:border-color .15s; user-select:none; }
-    .section-header:hover { border-color:var(--border-hover); }
-    .section-header .chevron { transition:transform .2s; color:var(--dim); flex-shrink:0; }
+    .section-header { display:flex; align-items:center; gap:.6rem; padding:.75rem 1rem; background:var(--surface); border:1px solid var(--border); border-radius:10px; cursor:pointer; transition:all .15s; user-select:none; }
+    .section-header:hover { border-color:var(--border-hover); background:var(--surface2); }
+    .section-header .chevron { transition:transform .2s ease; color:var(--dim); flex-shrink:0; }
     .section.collapsed .chevron { transform:rotate(-90deg); }
-    .section-title { flex:1; font-size:.88rem; font-weight:600; }
-    .section-count { font-size:.75rem; color:var(--dim); }
-    .tier-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-    .tier-1 { background:var(--t1); }
-    .tier-2 { background:var(--t2); }
+    .section-title { flex:1; font-size:.9rem; font-weight:600; }
+    .section-count { font-size:.78rem; color:var(--dim); font-weight:600; background:rgba(255,255,255,.05); padding:.15rem .45rem; border-radius:6px; }
+    .tier-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+    .tier-1 { background:var(--t1); box-shadow:0 0 8px rgba(52,211,153,0.3); }
+    .tier-2 { background:var(--t2); box-shadow:0 0 8px rgba(251,191,36,0.3); }
     .tier-3 { background:var(--t3); }
 
-    .section-items { padding:.4rem 0 0 1.5rem; }
+    .section-items { padding:.5rem 0 0 1.25rem; display:flex; flex-direction:column; gap:.35rem; }
     .section.collapsed .section-items { display:none; }
 
-    /* Task item */
-    .task-item { display:flex; align-items:center; gap:.6rem; padding:.5rem .6rem; border-radius:6px; transition:background .15s; }
-    .task-item:hover { background:var(--surface); }
-    .task-item.locked { opacity:.45; }
+    /* Task Item */
+    .task-item { display:flex; align-items:center; gap:.65rem; padding:.55rem .75rem; border-radius:8px; transition:background .15s; border:1px solid transparent; }
+    .task-item:hover { background:var(--surface); border-color:var(--border); }
+    .task-item.locked { opacity:.5; }
     .task-item.done .task-title { text-decoration:line-through; color:var(--dim); }
 
-    .checkbox { width:18px; height:18px; border:1.5px solid rgba(255,255,255,.2); border-radius:5px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; transition:all .15s; }
-    .checkbox:hover { border-color:var(--accent); }
-    .checkbox.checked { background:var(--accent); border-color:var(--accent); }
-    .checkbox svg { width:11px; height:11px; stroke:#fff; }
-    .checkbox.locked-cb { cursor:not-allowed; opacity:.3; }
+    .checkbox { width:20px; height:20px; border:1.5px solid rgba(255,255,255,.22); border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; transition:all .15s; }
+    .checkbox:hover { border-color:var(--accent); background:rgba(167,139,250,0.1); }
+    .checkbox.checked { background:var(--accent); border-color:var(--accent); box-shadow:0 0 8px var(--accent-glow); }
+    .checkbox svg { width:12px; height:12px; stroke:#fff; }
+    .checkbox.locked-cb { cursor:not-allowed; opacity:.35; border-color:rgba(248,113,113,0.4); }
 
-    .task-body { flex:1; display:flex; align-items:center; gap:.5rem; min-width:0; }
-    .task-title { font-size:.85rem; word-break:break-word; }
-    .sr-badge { font-size:.6rem; font-weight:700; padding:.1rem .35rem; border-radius:4px; text-transform:uppercase; letter-spacing:.03em; flex-shrink:0; }
-    .sr-1 { background:rgba(167,139,250,.15); color:var(--accent); }
-    .sr-2 { background:rgba(110,231,183,.12); color:var(--success); }
-    .sr-3 { background:rgba(251,191,36,.12); color:var(--warning); }
-    .sr-4 { background:rgba(34,197,94,.15); color:#22c55e; }
-    .sr-due { background:rgba(248,113,113,.15); color:var(--danger); animation:pulse 1.5s ease-in-out infinite; }
-    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.6; } }
+    .task-body { flex:1; display:flex; align-items:center; justify-content:space-between; gap:.75rem; min-width:0; }
+    .task-title { font-size:.88rem; word-break:break-word; font-weight:500; }
 
-    /* Today view */
-    .today-hero { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.5rem; margin-bottom:1.25rem; }
-    .today-day { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin-bottom:.4rem; }
-    .today-title { font-size:1.25rem; font-weight:700; margin-bottom:.5rem; }
-    .today-goal { font-size:.85rem; color:var(--dim); }
-    .today-count { display:inline-flex; align-items:center; gap:.3rem; font-size:.78rem; color:var(--accent); background:rgba(167,139,250,.1); padding:.25rem .6rem; border-radius:6px; margin-top:.75rem; }
-    .today-list { margin-bottom:1rem; }
-    .today-item { display:flex; align-items:center; gap:.6rem; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:.6rem .85rem; margin-bottom:.4rem; transition:border-color .15s; }
-    .today-item:hover { border-color:var(--border-hover); }
-    .today-item.done { opacity:.5; }
-    .today-item.done .today-item-title { text-decoration:line-through; }
-    .today-item-num { width:24px; height:24px; border-radius:6px; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:.72rem; font-weight:700; color:var(--dim); flex-shrink:0; }
+    /* SR 3-Dot Node Indicator */
+    .sr-nodes-wrapper { display:flex; align-items:center; gap:.5rem; flex-shrink:0; }
+    .sr-nodes { display:flex; align-items:center; gap:5px; }
+    .sr-node { width:9px; height:9px; border-radius:50%; border:1.5px solid rgba(255,255,255,0.2); background:transparent; transition:all .2s; }
+    .sr-node.done { background:var(--success); border-color:var(--success); box-shadow:0 0 6px rgba(52,211,153,0.4); }
+    .sr-node.active { background:var(--warning); border-color:var(--warning); box-shadow:0 0 6px rgba(251,191,36,0.4); }
+    .sr-node.due { background:var(--danger); border-color:var(--danger); animation:pulseGlow 1.5s infinite; }
+    .sr-chip { font-size:.65rem; font-weight:700; padding:.15rem .4rem; border-radius:5px; text-transform:uppercase; letter-spacing:.04em; }
+    .sr-chip.due { background:var(--danger-bg); color:var(--danger); border:1px solid rgba(248,113,113,0.3); }
+    .sr-chip.stage { background:var(--surface2); color:var(--accent); border:1px solid var(--border); }
+    .sr-chip.mastered { background:var(--success-bg); color:var(--success); border:1px solid rgba(52,211,153,0.3); }
+
+    /* Today View Styling */
+    .today-hero { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.5rem; margin-bottom:1.25rem; box-shadow:0 8px 24px rgba(0,0,0,0.2); }
+    .today-header-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:.6rem; flex-wrap:wrap; gap:.5rem; }
+    .today-day { font-size:.75rem; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); }
+    
+    /* Day selector pills */
+    .day-selector { display:flex; gap:4px; background:var(--surface2); padding:3px; border-radius:8px; border:1px solid var(--border); }
+    .day-pill { border:none; background:transparent; color:var(--dim); font-size:.72rem; font-weight:700; padding:.2rem .5rem; border-radius:5px; cursor:pointer; transition:all .15s; }
+    .day-pill:hover { color:var(--text); }
+    .day-pill.active { background:var(--accent); color:#fff; }
+
+    .today-title { font-size:1.3rem; font-weight:800; margin-bottom:.35rem; letter-spacing:-0.3px; }
+    .today-goal { font-size:.88rem; color:var(--dim); }
+    .today-count { display:inline-flex; align-items:center; gap:.4rem; font-size:.78rem; font-weight:600; color:var(--accent); background:rgba(167,139,250,.12); padding:.3rem .75rem; border-radius:8px; margin-top:.85rem; border:1px solid rgba(167,139,250,.2); }
+
+    .today-list { display:flex; flex-direction:column; gap:.45rem; margin-bottom:1.25rem; }
+    .today-item { display:flex; align-items:center; gap:.75rem; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:.75rem 1rem; transition:all .15s; }
+    .today-item:hover { border-color:var(--border-hover); background:var(--surface2); }
+    .today-item.done { opacity:.55; background:rgba(255,255,255,0.02); }
+    .today-item.done .today-item-title { text-decoration:line-through; color:var(--dim); }
+    .today-item-num { width:26px; height:26px; border-radius:7px; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:.75rem; font-weight:800; color:var(--dim); flex-shrink:0; border:1px solid var(--border); }
     .today-item-body { flex:1; min-width:0; }
-    .today-item-title { font-size:.85rem; }
-    .today-item-cat { font-size:.7rem; color:var(--dim); margin-top:.1rem; }
-    .today-item .checkbox { width:20px; height:20px; }
-    .today-empty { text-align:center; color:var(--success); font-size:.9rem; padding:2rem 1rem; border:1px dashed rgba(110,231,183,.2); border-radius:10px; margin-top:1rem; }
-    .today-hard-section { margin-top:1.25rem; }
-    .today-hard-label { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--warning); margin-bottom:.5rem; }
+    .today-item-title { font-size:.9rem; font-weight:600; }
+    .today-item-cat { font-size:.72rem; color:var(--dim); margin-top:.1rem; }
+    .today-empty-card { text-align:center; color:var(--success); font-size:.92rem; padding:2.5rem 1.5rem; background:var(--success-bg); border:1px solid rgba(52,211,153,.3); border-radius:14px; margin-top:1rem; display:flex; flex-direction:column; align-items:center; gap:.75rem; }
+    .today-empty-card h3 { font-size:1.1rem; color:var(--success); font-weight:700; }
 
-    /* SR view */
-    .sr-group { margin-bottom:1.5rem; }
-    .sr-group-title { font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--dim); margin-bottom:.5rem; padding-left:.25rem; }
-    .sr-item { display:flex; align-items:center; gap:.6rem; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:.6rem .85rem; margin-bottom:.4rem; transition:border-color .15s; }
-    .sr-item:hover { border-color:var(--border-hover); }
-    .sr-item.overdue { border-color:rgba(248,113,113,.3); background:rgba(248,113,113,.04); }
+    .today-hard-section { margin-top:1.5rem; }
+    .today-hard-label { font-size:.75rem; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:var(--warning); margin-bottom:.65rem; display:flex; align-items:center; gap:.4rem; }
+
+    /* Checklist Filters */
+    .checklist-controls { display:flex; gap:.75rem; margin-bottom:1.25rem; flex-wrap:wrap; }
+    .checklist-search { flex:1; min-width:200px; background:var(--surface); border:1px solid var(--border); color:var(--text); padding:.6rem 1rem; border-radius:9px; font-family:inherit; font-size:.88rem; transition:border-color .15s; }
+    .checklist-search:focus { outline:none; border-color:var(--accent); }
+    .tier-filters { display:flex; gap:.4rem; flex-wrap:wrap; }
+    .filter-pill { background:var(--surface); border:1px solid var(--border); color:var(--dim); padding:.45rem .8rem; border-radius:8px; font-size:.78rem; font-weight:600; cursor:pointer; transition:all .15s; }
+    .filter-pill:hover { color:var(--text); border-color:var(--border-hover); }
+    .filter-pill.active { background:var(--surface2); color:var(--accent); border-color:var(--accent); }
+
+    /* SR View */
+    .sr-group { margin-bottom:1.75rem; }
+    .sr-group-title { font-size:.82rem; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:var(--dim); margin-bottom:.6rem; padding-left:.25rem; display:flex; align-items:center; gap:.4rem; }
+    .sr-item { display:flex; align-items:center; justify-content:space-between; gap:.8rem; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:.75rem 1rem; margin-bottom:.45rem; transition:all .15s; }
+    .sr-item:hover { border-color:var(--border-hover); background:var(--surface2); }
+    .sr-item.overdue { border-color:rgba(248,113,113,.4); background:var(--danger-bg); }
     .sr-item-info { flex:1; min-width:0; }
-    .sr-item-title { font-size:.85rem; word-break:break-word; }
-    .sr-item-meta { font-size:.72rem; color:var(--dim); margin-top:.15rem; }
-    .sr-stages { display:flex; gap:.25rem; }
-    .sr-stage-dot { width:8px; height:8px; border-radius:50%; border:1.5px solid rgba(255,255,255,.15); }
-    .sr-stage-dot.done { background:var(--accent); border-color:var(--accent); }
+    .sr-item-title { font-size:.9rem; font-weight:600; word-break:break-word; }
+    .sr-item-meta { font-size:.75rem; color:var(--dim); margin-top:.15rem; }
 
     /* Toast */
-    .toast { position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%) translateY(200%); background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:.6rem 1.25rem; border-radius:99px; font-size:.85rem; z-index:9000; transition:transform .3s cubic-bezier(.175,.885,.32,1.275); box-shadow:0 8px 32px rgba(0,0,0,.5); white-space:nowrap; }
+    .toast { position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%) translateY(200%); background:var(--surface3); border:1px solid var(--border); color:var(--text); padding:.7rem 1.4rem; border-radius:99px; font-size:.88rem; font-weight:500; z-index:9000; transition:transform .3s cubic-bezier(.175,.885,.32,1.275); box-shadow:0 12px 36px rgba(0,0,0,.6); white-space:nowrap; }
     .toast.show { transform:translateX(-50%) translateY(0); }
-    .toast.error { border-color:var(--danger); color:var(--danger); }
-    .toast.success { border-color:var(--success); color:var(--success); }
+    .toast.error { border-color:var(--danger); color:var(--danger); background:rgba(30,15,15,0.95); }
+    .toast.success { border-color:var(--success); color:var(--success); background:rgba(15,30,22,0.95); }
 
-    /* Empty */
-    .empty-state { text-align:center; color:var(--light); font-size:.85rem; padding:3rem 1rem; border:1px dashed var(--border); border-radius:12px; }
-
-    /* Progress bar */
-    .progress-bar { height:4px; background:rgba(255,255,255,.04); border-radius:2px; overflow:hidden; margin-bottom:1.5rem; }
-    .progress-fill { height:100%; background:var(--accent); border-radius:2px; transition:width .4s cubic-bezier(.4,0,.2,1); }
+    /* Empty State */
+    .empty-state { text-align:center; color:var(--dim); font-size:.9rem; padding:3.5rem 1.5rem; border:1px dashed var(--border); border-radius:14px; background:rgba(255,255,255,0.01); }
 
     /* Responsive */
-    @media (max-width:520px) {
+    @media (max-width:560px) {
+      #app-view { padding:1rem .75rem 4rem; }
       .stats-bar { gap:.5rem; }
-      .stat-card { min-width:100px; padding:.6rem .7rem; }
-      .stat-card .value { font-size:1.1rem; }
+      .stat-card { min-width:90px; padding:.6rem .75rem; }
+      .stat-card .value { font-size:1.15rem; }
+      .checklist-controls { flex-direction:column; }
+      .today-header-row { flex-direction:column; align-items:flex-start; }
+      .lock-banner { flex-direction:column; align-items:flex-start; }
     }
   </style>
 </head>
@@ -189,7 +242,7 @@
   <div id="auth-view" class="hidden">
     <div class="auth-card">
       <h1>NEO</h1>
-      <p>Sign in to access your DSA sprint tracker.</p>
+      <p>Sign in to access your DSA OA Sprint Tracker.</p>
       <input type="email" id="auth-email" class="auth-input" placeholder="Email">
       <input type="password" id="auth-password" class="auth-input" placeholder="Password">
       <button id="btn-signin" class="auth-btn">Sign In</button>
@@ -199,16 +252,22 @@
 
   <div id="loading-view">
     <div class="spinner"></div>
-    <span>Loading…</span>
+    <span>Loading DSA Sprint Tracker…</span>
   </div>
 
   <div id="app-view" class="hidden">
     <div class="topbar">
-      <div>
-        <h1>NE<span>O</span></h1>
-        <div style="font-size:.72rem;color:var(--dim);margin-top:.1rem;">DSA OA Sprint</div>
+      <div class="topbar-brand">
+        <div>
+          <h1>NE<span>O</span></h1>
+          <div class="topbar-sub">DSA OA Sprint Tracker</div>
+        </div>
       </div>
       <div class="topbar-actions">
+        <div id="sync-badge" class="sync-badge">
+          <span class="sync-dot"></span>
+          <span id="sync-text">Synced</span>
+        </div>
         <a href="/" class="home-link">Home</a>
         <button id="btn-logout" class="btn sm">Sign Out</button>
       </div>
@@ -225,27 +284,35 @@
       <button class="tab" id="tab-sr">Spaced Repetition <span class="tab-badge" id="badge-sr"></span></button>
     </div>
 
-    <div id="view-today"></div>
-    <div id="view-checklist" class="hidden"></div>
-    <div id="view-sr" class="hidden"></div>
+    <div id="view-today" class="tab-view"></div>
+    <div id="view-checklist" class="tab-view hidden"></div>
+    <div id="view-sr" class="tab-view hidden"></div>
   </div>
 
   <div class="toast" id="toast"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
   <script type="text/babel">
     const { useState, useEffect, useRef, useCallback } = React;
 
-    // ── Supabase (same project as conquer) ──
+    // ── Supabase Robust Lazy Setup ──
     const SUPABASE_URL = 'https://kbmimkfdhblyrdskdcxc.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_fBTnwIh34wJb61_aXNzk6Q_sv5oZkoG';
-    let supabase = null;
-    if (window.supabase) {
-      try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
-      catch (e) { console.warn('Supabase init failed', e); }
+    let supabaseClient = null;
+
+    function getSupabase() {
+      if (supabaseClient) return supabaseClient;
+      if (window.supabase && typeof window.supabase.createClient === 'function') {
+        try {
+          supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+          return supabaseClient;
+        } catch (e) {
+          console.warn('Supabase createClient error:', e);
+        }
+      }
+      return null;
     }
 
     const $ = id => document.getElementById(id);
@@ -256,7 +323,19 @@
       clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
     }
 
-    // ── DSA Guide Data (from the README) ──
+    function setSyncStatus(state) {
+      const sb = $('sync-badge'), st = $('sync-text');
+      if (!sb || !st) return;
+      if (state === 'syncing') {
+        sb.className = 'sync-badge syncing'; st.textContent = 'Syncing...';
+      } else if (state === 'error') {
+        sb.className = 'sync-badge error'; st.textContent = 'Sync Error';
+      } else {
+        sb.className = 'sync-badge'; st.textContent = 'Synced';
+      }
+    }
+
+    // ── DSA Guide Data (~180 problems) ──
     const GUIDE = [
       { tier:1, category:"Arrays & Hashing", items:[
         "Two sum","Two sum II (sorted)","Best time to buy and sell stock I","Best time to buy and sell stock II",
@@ -375,19 +454,14 @@
       ]},
     ];
 
-    // Flatten for seeding
     const ALL_PROBLEMS = [];
     GUIDE.forEach(sec => sec.items.forEach((item, i) => {
       ALL_PROBLEMS.push({ title:item, tier:sec.tier, category:sec.category, sort_order:i });
     }));
 
-    // ── SR config ──
-    const SR_INTERVALS = { 1:1, 2:3, 3:7 }; // days: stage→next stage
-    const SR_STAGE_LABELS = { 0:"Not started", 1:"Done — Rev 1 due", 2:"Rev 1 done — Rev 2 due", 3:"Rev 2 done — Rev 3 due", 4:"Complete" };
-    const SR_STAGE_SHORT = { 0:"—", 1:"R1", 2:"R2", 3:"R3", 4:"Done" };
+    const SR_INTERVALS = { 1:1, 2:3, 3:7 };
+    const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-    // ── Weekly study plan ──
-    // JS getDay(): 0=Sun, 1=Mon, … 6=Sat
     const WEEKLY_PLAN = {
       1: { label:"Monday",    title:"Tier 1 Core — Arrays, Strings, Sliding Window, Two Pointers, Linked Lists", categories:["Arrays & Hashing","String Manipulation","Sliding Window","Two Pointers","Linked Lists"], count:5, goal:"Pattern drilling, speed building" },
       2: { label:"Tuesday",   title:"Tier 1 Core — Arrays, Strings, Sliding Window, Two Pointers, Linked Lists", categories:["Arrays & Hashing","String Manipulation","Sliding Window","Two Pointers","Linked Lists"], count:5, goal:"Pattern drilling, speed building" },
@@ -397,6 +471,7 @@
       6: { label:"Saturday",  title:"Graphs + DFS/BFS", categories:["Graphs"], count:5, goal:"Learn connectivity patterns" },
       0: { label:"Sunday",    title:"DP or Mixed Review + Famous Hards", categories:["Dynamic Programming","Heaps / Priority Queues","Backtracking","Trie","Greedy","Intervals","Matrix Problems"], count:4, goal:"Consolidate learnings, tackle something harder", includeHards:true },
     };
+
     const FAMOUS_HARDS = [
       "Median of two sorted arrays (famous hard)",
       "Binary tree maximum path sum",
@@ -408,23 +483,6 @@
       "Minimum height trees",
       "Serialize and deserialize tree",
     ];
-
-    function getTodayPlan() {
-      const day = new Date().getDay();
-      return WEEKLY_PLAN[day];
-    }
-
-    function getTodaySuggestions(allTasks) {
-      const plan = getTodayPlan();
-      if (!plan) return { plan:null, problems:[], hards:[] };
-      const pool = allTasks.filter(t => plan.categories.includes(t.category) && !t.completed && t.sr_stage === 0);
-      const problems = pool.slice(0, plan.count);
-      let hards = [];
-      if (plan.includeHards) {
-        hards = allTasks.filter(t => FAMOUS_HARDS.includes(t.title) && !t.completed && t.sr_stage === 0).slice(0, 2);
-      }
-      return { plan, problems, hards };
-    }
 
     function todayStr() { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
     function addDays(dateStr, days) {
@@ -442,26 +500,85 @@
       return task.sr_stage >= 1 && task.sr_stage < 4 && task.sr_next_date && daysUntil(task.sr_next_date) <= 0;
     }
 
-    // ── App ──
+    function getTodaySuggestions(allTasks, dayIndex = new Date().getDay()) {
+      const plan = WEEKLY_PLAN[dayIndex];
+      if (!plan) return { plan:null, problems:[], hards:[] };
+      
+      const currentToday = todayStr();
+      const pool = allTasks.filter(t => 
+        plan.categories.includes(t.category) && 
+        ((!t.completed && t.sr_stage === 0) || (t.completed && t.sr_first_done === currentToday))
+      );
+      const problems = pool.slice(0, plan.count);
+      
+      const problemIds = new Set(problems.map(p => p.id));
+      const problemTitles = new Set(problems.map(p => p.title));
+      
+      let hards = [];
+      if (plan.includeHards) {
+        hards = allTasks.filter(t => 
+          FAMOUS_HARDS.includes(t.title) &&
+          !problemIds.has(t.id) &&
+          !problemTitles.has(t.title) &&
+          ((!t.completed && t.sr_stage === 0) || (t.completed && t.sr_first_done === currentToday))
+        ).slice(0, 2);
+      }
+      return { plan, problems, hards };
+    }
+
+    function renderSRNodes(task) {
+      if (!task || task.sr_stage === 0) return '';
+      const stage = task.sr_stage;
+      const overdue = isOverdue(task);
+      if (stage === 4) {
+        return `<div class="sr-nodes-wrapper"><span class="sr-chip mastered">Mastered</span></div>`;
+      }
+      const dots = [1, 2, 3].map(s => {
+        let cls = 'sr-node';
+        if (s < stage) cls += ' done';
+        else if (s === stage) cls += overdue ? ' due' : ' active';
+        return `<div class="${cls}" title="Stage ${s} (${s===1?'1-day':s===2?'3-day':'7-day'})"></div>`;
+      }).join('');
+
+      let chip = '';
+      if (overdue) {
+        chip = `<span class="sr-chip due">DUE NOW</span>`;
+      } else {
+        const d = daysUntil(task.sr_next_date);
+        chip = `<span class="sr-chip stage">R${stage} · ${d !== null ? (d > 0 ? d + 'd' : 'due') : ''}</span>`;
+      }
+      return `<div class="sr-nodes-wrapper"><div class="sr-nodes">${dots}</div>${chip}</div>`;
+    }
+
+    // ── Main React App ──
     function App() {
       const [user, setUser] = useState(null);
       const [tasks, setTasks] = useState([]);
       const [loading, setLoading] = useState(true);
       const [activeTab, setActiveTab] = useState('today');
+      const [selectedDay, setSelectedDay] = useState(new Date().getDay());
+      const [searchQuery, setSearchQuery] = useState('');
+      const [selectedTier, setSelectedTier] = useState('all');
       const [collapsed, setCollapsed] = useState(new Set());
       const [seeding, setSeeding] = useState(false);
 
-      // Load session
+      // Load Session with robust Supabase initialization check
       useEffect(() => {
-        if (!supabase) { showAuth(); return; }
+        const sb = getSupabase();
+        if (!sb) { showAuth(); setLoading(false); return; }
         let mounted = true;
-        supabase.auth.getSession().then(({ data: { session } }) => {
+
+        sb.auth.getSession().then(({ data: { session } }) => {
           if (!mounted) return;
           setUser(session?.user ?? null);
           if (session?.user) loadTasks();
           else { showAuth(); setLoading(false); }
+        }).catch((err) => {
+          console.warn('Get session error:', err);
+          if (mounted) { showAuth(); setLoading(false); }
         });
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_ev, sess) => {
+
+        const { data: { subscription } } = sb.auth.onAuthStateChange((_ev, sess) => {
           (async () => {
             if (!mounted) return;
             setUser(sess?.user ?? null);
@@ -473,11 +590,23 @@
       }, []);
 
       async function loadTasks() {
+        const sb = getSupabase();
+        if (!sb) {
+          toast('Supabase connection unavailable.', 'error');
+          setSyncStatus('error');
+          showAuth();
+          setLoading(false);
+          return;
+        }
         setLoading(true);
-        const { data, error } = await supabase.from('neo_tasks').select('*').order('tier').order('category').order('sort_order');
-        if (error) { toast(error.message, 'error'); }
-        else {
+        setSyncStatus('syncing');
+        const { data, error } = await sb.from('neo_tasks').select('*').order('tier').order('category').order('sort_order');
+        if (error) {
+          toast(error.message, 'error');
+          setSyncStatus('error');
+        } else {
           setTasks(data || []);
+          setSyncStatus('synced');
           if ((data || []).length === 0) await seedDB();
         }
         setLoading(false);
@@ -485,117 +614,142 @@
       }
 
       async function seedDB() {
-        if (seeding) return;
+        const sb = getSupabase();
+        if (!sb || seeding) return;
         setSeeding(true);
-        toast('Seeding DSA guide…');
-        const rows = ALL_PROBLEMS.map((p, i) => ({
+        toast('Seeding DSA Guide problems…');
+        setSyncStatus('syncing');
+        const rows = ALL_PROBLEMS.map((p) => ({
           title: p.title, tier: p.tier, category: p.category,
-          sort_order: p.sort_order, completed: false, sr_stage: 0,
-          priority: 0
+          sort_order: p.sort_order, completed: false, sr_stage: 0
         }));
-        const { data, error } = await supabase.from('neo_tasks').insert(rows).select();
-        if (error) toast(error.message, 'error');
-        else { setTasks(data); toast('DSA guide loaded!', 'success'); }
+        const { data, error } = await sb.from('neo_tasks').insert(rows).select();
+        if (error) {
+          toast(error.message, 'error');
+          setSyncStatus('error');
+        } else {
+          setTasks(data);
+          toast('DSA Guide loaded (~180 problems)!', 'success');
+          setSyncStatus('synced');
+        }
         setSeeding(false);
       }
 
       function showAuth() { $('loading-view').classList.add('hidden'); $('app-view').classList.add('hidden'); $('auth-view').classList.remove('hidden'); }
       function showApp() { $('loading-view').classList.add('hidden'); $('auth-view').classList.add('hidden'); $('app-view').classList.remove('hidden'); }
 
-      // Auth handlers
+      // Auth Listeners
       useEffect(() => {
         $('btn-signin')?.addEventListener('click', async () => {
           const email = $('auth-email').value.trim(), pw = $('auth-password').value;
           if (!email || !pw) return toast('Enter email and password', 'error');
-          const { error } = await supabase.auth.signInWithPassword({ email, password: pw });
-          if (error) toast(error.message, 'error');
+          const sb = getSupabase();
+          if (!sb) return toast('Supabase connection unavailable. Please check connection.', 'error');
+          setSyncStatus('syncing');
+          const { error } = await sb.auth.signInWithPassword({ email, password: pw });
+          if (error) { toast(error.message, 'error'); setSyncStatus('error'); }
         });
         $('btn-signup')?.addEventListener('click', async () => {
           const email = $('auth-email').value.trim(), pw = $('auth-password').value;
           if (!email || !pw) return toast('Enter email and password', 'error');
-          const { error } = await supabase.auth.signUp({ email, password: pw });
-          if (error) toast(error.message, 'error');
-          else toast('Account created!', 'success');
+          const sb = getSupabase();
+          if (!sb) return toast('Supabase connection unavailable. Please check connection.', 'error');
+          setSyncStatus('syncing');
+          const { error } = await sb.auth.signUp({ email, password: pw });
+          if (error) { toast(error.message, 'error'); setSyncStatus('error'); }
+          else toast('Account created! Please sign in.', 'success');
         });
-        $('btn-logout')?.addEventListener('click', async () => { await supabase.auth.signOut(); });
+        $('btn-logout')?.addEventListener('click', async () => {
+          const sb = getSupabase();
+          if (sb) await sb.auth.signOut();
+        });
       }, []);
 
-      // Tab switching
+      // Tab Switchers
+      const switchTab = (tabName) => {
+        setActiveTab(tabName);
+        ['today', 'checklist', 'sr'].forEach(t => {
+          const btn = $(`tab-${t}`), view = $(`view-${t}`);
+          if (t === tabName) {
+            btn?.classList.add('active');
+            view?.classList.remove('hidden');
+          } else {
+            btn?.classList.remove('active');
+            view?.classList.add('hidden');
+          }
+        });
+      };
+
       useEffect(() => {
-        $('tab-today')?.addEventListener('click', () => {
-          setActiveTab('today');
-          $('tab-today').classList.add('active');
-          $('tab-checklist').classList.remove('active');
-          $('tab-sr').classList.remove('active');
-          $('view-today').classList.remove('hidden');
-          $('view-checklist').classList.add('hidden');
-          $('view-sr').classList.add('hidden');
-        });
-        $('tab-checklist')?.addEventListener('click', () => {
-          setActiveTab('checklist');
-          $('tab-checklist').classList.add('active');
-          $('tab-today').classList.remove('active');
-          $('tab-sr').classList.remove('active');
-          $('view-checklist').classList.remove('hidden');
-          $('view-today').classList.add('hidden');
-          $('view-sr').classList.add('hidden');
-        });
-        $('tab-sr')?.addEventListener('click', () => {
-          setActiveTab('sr');
-          $('tab-sr').classList.add('active');
-          $('tab-checklist').classList.remove('active');
-          $('tab-today').classList.remove('active');
-          $('view-sr').classList.remove('hidden');
-          $('view-checklist').classList.add('hidden');
-          $('view-today').classList.add('hidden');
-        });
+        $('tab-today')?.addEventListener('click', () => switchTab('today'));
+        $('tab-checklist')?.addEventListener('click', () => switchTab('checklist'));
+        $('tab-sr')?.addEventListener('click', () => switchTab('sr'));
       }, []);
 
-      // ── Mark problem done (first time) → enters SR ──
+      // ── Actions ──
       async function markDone(task) {
-        if (task.sr_stage > 0) return; // already in SR
+        if (task.sr_stage > 0) return;
+        const sb = getSupabase();
+        if (!sb) return toast('Supabase connection unavailable.', 'error');
         const today = todayStr();
-        const { error } = await supabase.from('neo_tasks').update({
-          completed: true, sr_stage: 1, sr_first_done: today, sr_next_date: addDays(today, SR_INTERVALS[1])
+        const nextDate = addDays(today, SR_INTERVALS[1]);
+        setSyncStatus('syncing');
+        const { error } = await sb.from('neo_tasks').update({
+          completed: true, sr_stage: 1, sr_first_done: today, sr_next_date: nextDate
         }).eq('id', task.id);
-        if (error) { toast(error.message, 'error'); }
-        else {
-          setTasks(prev => prev.map(t => t.id === task.id ? { ...t, completed:true, sr_stage:1, sr_first_done:today, sr_next_date:addDays(today, SR_INTERVALS[1]) } : t));
-          toast('Added to spaced repetition!', 'success');
+
+        if (error) {
+          toast(error.message, 'error');
+          setSyncStatus('error');
+        } else {
+          setTasks(prev => prev.map(t => t.id === task.id ? { ...t, completed:true, sr_stage:1, sr_first_done:today, sr_next_date:nextDate } : t));
+          toast('Completed! Scheduled for 1-day revision.', 'success');
+          setSyncStatus('synced');
         }
       }
 
-      // ── Complete a revision ──
       async function doRevision(task) {
         if (!isOverdue(task)) return;
+        const sb = getSupabase();
+        if (!sb) return toast('Supabase connection unavailable.', 'error');
         const nextStage = task.sr_stage + 1;
         const today = todayStr();
         const updates = { sr_stage: nextStage };
         if (nextStage < 4) {
           updates.sr_next_date = addDays(today, SR_INTERVALS[nextStage]);
         } else {
-          updates.sr_next_date = null; // all done
+          updates.sr_next_date = null;
         }
-        const { error } = await supabase.from('neo_tasks').update(updates).eq('id', task.id);
-        if (error) { toast(error.message, 'error'); }
-        else {
+        setSyncStatus('syncing');
+        const { error } = await sb.from('neo_tasks').update(updates).eq('id', task.id);
+        if (error) {
+          toast(error.message, 'error');
+          setSyncStatus('error');
+        } else {
           setTasks(prev => prev.map(t => t.id === task.id ? { ...t, ...updates } : t));
-          toast(nextStage === 4 ? 'Spaced repetition complete!' : `Revision ${nextStage} done!`, 'success');
+          toast(nextStage === 4 ? '🎉 Spaced Repetition Complete! Mastered.' : `Revision ${nextStage} completed!`, 'success');
+          setSyncStatus('synced');
         }
       }
 
-      // ── Unmark (reset SR) ──
       async function unmarkDone(task) {
-        const { error } = await supabase.from('neo_tasks').update({
+        const sb = getSupabase();
+        if (!sb) return toast('Supabase connection unavailable.', 'error');
+        setSyncStatus('syncing');
+        const { error } = await sb.from('neo_tasks').update({
           completed: false, sr_stage: 0, sr_next_date: null, sr_first_done: null
         }).eq('id', task.id);
-        if (error) { toast(error.message, 'error'); }
-        else {
+
+        if (error) {
+          toast(error.message, 'error');
+          setSyncStatus('error');
+        } else {
           setTasks(prev => prev.map(t => t.id === task.id ? { ...t, completed:false, sr_stage:0, sr_next_date:null, sr_first_done:null } : t));
+          setSyncStatus('synced');
         }
       }
 
-      // ── Derived data ──
+      // Derived States
       const overdueTasks = tasks.filter(isOverdue);
       const hasOverdue = overdueTasks.length > 0;
       const totalTasks = tasks.length;
@@ -603,7 +757,7 @@
       const srComplete = tasks.filter(t => t.sr_stage === 4).length;
       const srPending = tasks.filter(t => t.sr_stage >= 1 && t.sr_stage < 4).length;
 
-      // ── Render stats ──
+      // Render Header Stats & Badges & Lock Banner
       useEffect(() => {
         const sb = $('stats-bar');
         if (!sb) return;
@@ -611,65 +765,100 @@
         sb.innerHTML = `
           <div class="stat-card"><div class="label">Problems Done</div><div class="value accent">${completedTasks} / ${totalTasks}</div></div>
           <div class="stat-card"><div class="label">In Progress (SR)</div><div class="value">${srPending}</div></div>
-          <div class="stat-card"><div class="label">SR Complete</div><div class="value success">${srComplete}</div></div>
+          <div class="stat-card"><div class="label">Mastered</div><div class="value success">${srComplete}</div></div>
           <div class="stat-card"><div class="label">Overdue</div><div class="value ${hasOverdue ? 'danger' : ''}">${overdueTasks.length}</div></div>
         `;
         $('progress-fill').style.width = pct + '%';
 
-        // Badges
         const cb = $('badge-checklist');
-        cb.textContent = totalTasks > 0 ? `${completedTasks}/${totalTasks}` : '';
+        if (cb) cb.textContent = totalTasks > 0 ? `${completedTasks}/${totalTasks}` : '';
         const sb2 = $('badge-sr');
-        sb2.textContent = srPending > 0 ? srPending : '';
-        sb2.className = 'tab-badge' + (hasOverdue ? ' alert' : '');
+        if (sb2) {
+          sb2.textContent = srPending > 0 ? srPending : '';
+          sb2.className = 'tab-badge' + (hasOverdue ? ' alert' : '');
+        }
         const tb = $('badge-today');
         if (tb) {
-          const { problems, hards } = getTodaySuggestions(tasks);
-          const remaining = problems.length + hards.length;
+          const { problems, hards } = getTodaySuggestions(tasks, selectedDay);
+          const remaining = [...problems, ...hards].filter(t => !t.completed).length;
           tb.textContent = remaining > 0 ? remaining : '';
           tb.className = 'tab-badge' + (hasOverdue ? ' alert' : '');
         }
 
-        // Lock banner
         const lc = $('lock-banner-container');
         if (hasOverdue) {
           lc.innerHTML = `
             <div class="lock-banner">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              <span><strong>${overdueTasks.length} revision${overdueTasks.length > 1 ? 's' : ''} overdue.</strong> Complete them in the Spaced Repetition tab before marking new problems as done.</span>
+              <div class="lock-banner-content">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <div>
+                  <strong>🔒 ${overdueTasks.length} revision${overdueTasks.length > 1 ? 's' : ''} overdue!</strong>
+                  <div style="font-size:.78rem;opacity:.9;margin-top:.15rem;">Complete overdue revisions in the Spaced Repetition tab before unlocking new practice.</div>
+                </div>
+              </div>
+              <button id="btn-unlock-sr" class="btn danger sm">Resolve Revisions &rarr;</button>
             </div>`;
+          $('btn-unlock-sr')?.addEventListener('click', () => switchTab('sr'));
         } else {
           lc.innerHTML = '';
         }
-      }, [tasks, completedTasks, totalTasks, srPending, srComplete, overdueTasks.length, hasOverdue]);
+      }, [tasks, completedTasks, totalTasks, srPending, srComplete, overdueTasks.length, hasOverdue, selectedDay]);
 
-      // ── Render Today view ──
+      // Render Today View
       useEffect(() => {
         const container = $('view-today');
         if (!container) return;
-        if (loading) { container.innerHTML = '<div class="empty-state">Loading…</div>'; return; }
+        if (loading) { container.innerHTML = '<div class="empty-state">Loading plan…</div>'; return; }
         if (tasks.length === 0) { container.innerHTML = '<div class="empty-state">No problems loaded.</div>'; return; }
 
-        const { plan, problems, hards } = getTodaySuggestions(tasks);
-        if (!plan) { container.innerHTML = '<div class="empty-state">No plan for today.</div>'; return; }
+        const { plan, problems, hards } = getTodaySuggestions(tasks, selectedDay);
+        if (!plan) { container.innerHTML = '<div class="empty-state">No plan available.</div>'; return; }
 
         const allToday = [...problems, ...hards];
         const doneCount = allToday.filter(t => t.completed).length;
+        const isTodayActual = selectedDay === new Date().getDay();
+
+        let dayPills = WEEKDAYS.map((w, idx) => 
+          `<button class="day-pill ${idx === selectedDay ? 'active' : ''}" data-select-day="${idx}">${w}</button>`
+        ).join('');
 
         let html = `
           <div class="today-hero">
-            <div class="today-day">${plan.label} · Today's Plan</div>
+            <div class="today-header-row">
+              <div class="today-day">${plan.label} · ${isTodayActual ? "Today's Plan" : "Schedule Preview"}</div>
+              <div class="day-selector">${dayPills}</div>
+            </div>
             <div class="today-title">${plan.title}</div>
             <div class="today-goal">Goal: ${plan.goal}</div>
             <div class="today-count">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-              ${plan.count} problems${plan.includeHards ? ' + 1-2 famous hards' : ''} · ${doneCount}/${allToday.length} done
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              ${plan.count} problems${plan.includeHards ? ' + 1-2 famous hards' : ''} · ${doneCount}/${allToday.length} completed
             </div>
           </div>
         `;
 
         if (allToday.length === 0) {
-          html += '<div class="today-empty">All caught up for today! You\'ve completed everything in this plan.</div>';
+          html += '<div class="today-empty-card"><h3>🎉 All caught up!</h3><div>All problems in this daily category set have been completed.</div></div>';
+        } else if (doneCount === allToday.length && allToday.length > 0) {
+          html += `
+            <div class="today-empty-card">
+              <h3>🎉 Great Job! All Today's Problems Completed</h3>
+              <div>You've locked in today's study plan. Check your Spaced Repetition tab for due revisions.</div>
+              <div style="display:flex;gap:.5rem;margin-top:.5rem;">
+                <button class="btn primary sm" id="today-to-sr">Review SR Tasks &rarr;</button>
+                <button class="btn sm" id="today-to-checklist">View Full Checklist</button>
+              </div>
+            </div>
+            <div style="margin-top:1.5rem;font-size:.78rem;font-weight:700;color:var(--dim);text-transform:uppercase;">Completed Today:</div>
+            <div class="today-list">
+          `;
+          problems.forEach((t, i) => { html += renderTodayItem(t, i + 1); });
+          html += `</div>`;
+          if (hards.length > 0) {
+            html += `<div class="today-hard-section"><div class="today-hard-label">Famous Hards</div><div class="today-list">`;
+            hards.forEach((t, i) => { html += renderTodayItem(t, problems.length + i + 1); });
+            html += `</div></div>`;
+          }
         } else {
           html += '<div class="today-list">';
           problems.forEach((task, i) => {
@@ -677,7 +866,7 @@
           });
           html += '</div>';
           if (hards.length > 0) {
-            html += '<div class="today-hard-section"><div class="today-hard-label">Famous Hards</div><div class="today-list">';
+            html += '<div class="today-hard-section"><div class="today-hard-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Famous Hards</div><div class="today-list">';
             hards.forEach((task, i) => {
               html += renderTodayItem(task, problems.length + i + 1);
             });
@@ -687,7 +876,13 @@
 
         container.innerHTML = html;
 
-        // Bind checkboxes in today view
+        container.querySelectorAll('[data-select-day]').forEach(btn => {
+          btn.addEventListener('click', () => setSelectedDay(Number(btn.dataset.selectDay)));
+        });
+
+        $('today-to-sr')?.addEventListener('click', () => switchTab('sr'));
+        $('today-to-checklist')?.addEventListener('click', () => switchTab('checklist'));
+
         container.querySelectorAll('[data-today-cb]').forEach(el => {
           el.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -697,91 +892,117 @@
             if (task.completed) {
               unmarkDone(task);
             } else {
-              if (hasOverdue) { toast('Complete overdue revisions first!', 'error'); return; }
+              if (hasOverdue) { toast('🔒 Complete overdue revisions first!', 'error'); return; }
               markDone(task);
             }
           });
         });
-      }, [tasks, loading, hasOverdue]);
+      }, [tasks, loading, hasOverdue, selectedDay]);
 
       function renderTodayItem(task, num) {
         const isDone = task.completed;
         const isLocked = hasOverdue && !isDone;
         return `<div class="today-item ${isDone ? 'done' : ''}">
           <div class="today-item-num">${num}</div>
-          <div class="checkbox ${isDone ? 'checked' : ''} ${isLocked ? 'locked-cb' : ''}" data-today-cb="${task.id}">
+          <div class="checkbox ${isDone ? 'checked' : ''} ${isLocked ? 'locked-cb' : ''}" data-today-cb="${task.id}" title="${isLocked ? 'Locked until overdue SR tasks are completed' : ''}">
             ${isDone ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>' : ''}
           </div>
           <div class="today-item-body">
             <div class="today-item-title">${task.title}</div>
             <div class="today-item-cat">${task.category}</div>
           </div>
+          ${renderSRNodes(task)}
         </div>`;
       }
 
-      // ── Render checklist ──
+      // Render Checklist View
       useEffect(() => {
         const container = $('view-checklist');
         if (!container) return;
-        if (loading) { container.innerHTML = '<div class="empty-state">Loading…</div>'; return; }
+        if (loading) { container.innerHTML = '<div class="empty-state">Loading checklist…</div>'; return; }
         if (tasks.length === 0) { container.innerHTML = '<div class="empty-state">No problems loaded.</div>'; return; }
 
-        // Group by tier → category
-        const byTier = { 1:[], 2:[], 3:[] };
-        GUIDE.forEach(sec => {
-          const secTasks = tasks.filter(t => t.category === sec.category && t.tier === sec.tier);
-          if (secTasks.length > 0) byTier[sec.tier].push({ ...sec, tasks: secTasks });
-        });
+        let html = `
+          <div class="checklist-controls">
+            <input type="text" id="checklist-search" class="checklist-search" placeholder="Search 180+ problems or categories..." value="${searchQuery}" />
+            <div class="tier-filters">
+              <button class="filter-pill ${selectedTier === 'all' ? 'active' : ''}" data-tier="all">All</button>
+              <button class="filter-pill ${selectedTier === '1' ? 'active' : ''}" data-tier="1">Tier 1 Essential</button>
+              <button class="filter-pill ${selectedTier === '2' ? 'active' : ''}" data-tier="2">Tier 2 Important</button>
+              <button class="filter-pill ${selectedTier === '3' ? 'active' : ''}" data-tier="3">Tier 3 Bonus</button>
+            </div>
+          </div>
+        `;
 
+        const query = searchQuery.toLowerCase().trim();
+        const filterTiers = selectedTier === 'all' ? [1, 2, 3] : [Number(selectedTier)];
         const tierLabels = { 1:"TIER 1 — Essential (MUST DO)", 2:"TIER 2 — Important (SHOULD DO)", 3:"TIER 3 — Bonus (NICE TO HAVE)" };
 
-        let html = '';
-        [1,2,3].forEach(tier => {
-          if (byTier[tier].length === 0) return;
-          html += `<div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--t${tier});margin:1.5rem 0 .75rem .25rem;">${tierLabels[tier]}</div>`;
-          byTier[tier].forEach(sec => {
-            const secDone = sec.tasks.filter(t => t.completed).length;
-            const secTotal = sec.tasks.length;
+        let matchCount = 0;
+
+        filterTiers.forEach(tier => {
+          const tierGuide = GUIDE.filter(g => g.tier === tier);
+          let tierHtml = '';
+
+          tierGuide.forEach(sec => {
+            let secTasks = tasks.filter(t => t.category === sec.category && t.tier === sec.tier);
+            if (query) {
+              secTasks = secTasks.filter(t => t.title.toLowerCase().includes(query) || t.category.toLowerCase().includes(query));
+            }
+            if (secTasks.length === 0) return;
+
+            matchCount += secTasks.length;
+            const secDone = secTasks.filter(t => t.completed).length;
+            const secTotal = secTasks.length;
             const secKey = `${sec.tier}-${sec.category}`;
             const isCollapsed = collapsed.has(secKey);
-            html += `<div class="section ${isCollapsed ? 'collapsed' : ''}" data-sec="${secKey}">
+
+            tierHtml += `<div class="section ${isCollapsed ? 'collapsed' : ''}" data-sec="${secKey}">
               <div class="section-header" data-toggle="${secKey}">
-                <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg>
                 <div class="tier-dot tier-${sec.tier}"></div>
                 <span class="section-title">${sec.category}</span>
                 <span class="section-count">${secDone}/${secTotal}</span>
               </div>
               <div class="section-items">`;
-            sec.tasks.forEach(task => {
+
+            secTasks.forEach(task => {
               const isDone = task.completed;
               const isLocked = hasOverdue && !isDone && task.sr_stage === 0;
-              let srBadge = '';
-              if (task.sr_stage > 0) {
-                if (isOverdue(task)) {
-                  srBadge = `<span class="sr-badge sr-due">DUE NOW</span>`;
-                } else if (task.sr_stage === 4) {
-                  srBadge = `<span class="sr-badge sr-4">Done</span>`;
-                } else {
-                  const d = daysUntil(task.sr_next_date);
-                  srBadge = `<span class="sr-badge sr-${task.sr_stage}">${SR_STAGE_SHORT[task.sr_stage]} · ${d !== null ? (d > 0 ? d + 'd' : 'due') : ''}</span>`;
-                }
-              }
-              html += `<div class="task-item ${isDone ? 'done' : ''} ${isLocked ? 'locked' : ''}" data-task-id="${task.id}">
-                <div class="checkbox ${isDone ? 'checked' : ''} ${isLocked ? 'locked-cb' : ''}" data-cb="${task.id}">
+
+              tierHtml += `<div class="task-item ${isDone ? 'done' : ''} ${isLocked ? 'locked' : ''}" data-task-id="${task.id}">
+                <div class="checkbox ${isDone ? 'checked' : ''} ${isLocked ? 'locked-cb' : ''}" data-cb="${task.id}" title="${isLocked ? 'Locked until overdue SR tasks are completed' : ''}">
                   ${isDone ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>' : ''}
                 </div>
                 <div class="task-body">
                   <span class="task-title">${task.title}</span>
-                  ${srBadge}
+                  ${renderSRNodes(task)}
                 </div>
               </div>`;
             });
-            html += `</div></div>`;
+            tierHtml += `</div></div>`;
           });
+
+          if (tierHtml) {
+            html += `<div style="font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--t${tier});margin:1.5rem 0 .75rem .25rem;">${tierLabels[tier]}</div>` + tierHtml;
+          }
         });
+
+        if (matchCount === 0) {
+          html += '<div class="empty-state">No matching problems found. Try clearing your search filter.</div>';
+        }
+
         container.innerHTML = html;
 
-        // Bind section toggles
+        const searchInput = $('checklist-search');
+        if (searchInput) {
+          searchInput.addEventListener('input', (e) => setSearchQuery(e.target.value));
+        }
+
+        container.querySelectorAll('[data-tier]').forEach(btn => {
+          btn.addEventListener('click', () => setSelectedTier(btn.dataset.tier));
+        });
+
         container.querySelectorAll('[data-toggle]').forEach(el => {
           el.addEventListener('click', () => {
             const key = el.dataset.toggle;
@@ -793,7 +1014,6 @@
           });
         });
 
-        // Bind checkboxes
         container.querySelectorAll('[data-cb]').forEach(el => {
           el.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -803,57 +1023,53 @@
             if (task.completed) {
               unmarkDone(task);
             } else {
-              if (hasOverdue) {
-                toast('Complete overdue revisions first!', 'error');
-                return;
-              }
+              if (hasOverdue) { toast('🔒 Complete overdue revisions first!', 'error'); return; }
               markDone(task);
             }
           });
         });
-      }, [tasks, loading, collapsed, hasOverdue]);
+      }, [tasks, loading, collapsed, hasOverdue, searchQuery, selectedTier]);
 
-      // ── Render SR view ──
+      // Render SR View
       useEffect(() => {
         const container = $('view-sr');
         if (!container) return;
-        if (loading) { container.innerHTML = '<div class="empty-state">Loading…</div>'; return; }
+        if (loading) { container.innerHTML = '<div class="empty-state">Loading spaced repetition...</div>'; return; }
 
         const srTasks = tasks.filter(t => t.sr_stage >= 1 && t.sr_stage < 4);
-        if (srTasks.length === 0) {
-          container.innerHTML = '<div class="empty-state">No active spaced repetitions. Mark problems as done in the Checklist to start.</div>';
+        const complete = tasks.filter(t => t.sr_stage === 4);
+
+        if (srTasks.length === 0 && complete.length === 0) {
+          container.innerHTML = '<div class="empty-state">No active spaced repetitions. Mark problems as completed in the Checklist to start SR tracking.</div>';
           return;
         }
 
         const overdue = srTasks.filter(isOverdue).sort((a,b) => daysUntil(a.sr_next_date) - daysUntil(b.sr_next_date));
         const upcoming = srTasks.filter(t => !isOverdue(t)).sort((a,b) => daysUntil(a.sr_next_date) - daysUntil(b.sr_next_date));
-        const complete = tasks.filter(t => t.sr_stage === 4);
 
         let html = '';
 
         if (overdue.length > 0) {
-          html += `<div class="sr-group"><div class="sr-group-title" style="color:var(--danger)">Overdue — Complete these first</div>`;
-          overdue.forEach(t => {
-            html += renderSRItem(t, true);
-          });
+          html += `<div class="sr-group"><div class="sr-group-title" style="color:var(--danger)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Overdue Revisions (${overdue.length}) — Action Required</div>`;
+          overdue.forEach(t => { html += renderSRItem(t, true); });
           html += `</div>`;
         }
 
         if (upcoming.length > 0) {
-          html += `<div class="sr-group"><div class="sr-group-title">Upcoming Revisions</div>`;
-          upcoming.forEach(t => {
-            html += renderSRItem(t, false);
-          });
+          html += `<div class="sr-group"><div class="sr-group-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Upcoming Revisions (${upcoming.length})</div>`;
+          upcoming.forEach(t => { html += renderSRItem(t, false); });
           html += `</div>`;
         }
 
         if (complete.length > 0) {
-          html += `<div class="sr-group"><div class="sr-group-title" style="color:var(--success)">Completed All Revisions (${complete.length})</div>`;
-          complete.slice(0, 20).forEach(t => {
-            html += `<div class="sr-item" style="opacity:.6">
-              <div class="sr-item-info"><div class="sr-item-title">${t.title}</div>
-              <div class="sr-item-meta">${t.category}</div></div>
-              <div class="sr-stages">${[1,2,3,4].map(s => `<div class="sr-stage-dot ${s <= t.sr_stage ? 'done' : ''}"></div>`).join('')}</div>
+          html += `<div class="sr-group"><div class="sr-group-title" style="color:var(--success)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Mastered Problems (${complete.length})</div>`;
+          complete.slice(0, 25).forEach(t => {
+            html += `<div class="sr-item" style="opacity:.65">
+              <div class="sr-item-info">
+                <div class="sr-item-title">${t.title}</div>
+                <div class="sr-item-meta">${t.category} · Completed all 3 revisions</div>
+              </div>
+              ${renderSRNodes(t)}
             </div>`;
           });
           html += `</div>`;
@@ -861,7 +1077,6 @@
 
         container.innerHTML = html;
 
-        // Bind revision buttons
         container.querySelectorAll('[data-rev]').forEach(el => {
           el.addEventListener('click', () => {
             const id = el.dataset.rev;
@@ -874,21 +1089,20 @@
       function renderSRItem(t, overdue) {
         const d = daysUntil(t.sr_next_date);
         const dayLabel = d <= 0 ? 'Due now' : `Due in ${d} day${d !== 1 ? 's' : ''}`;
-        const stages = [1,2,3].map(s => `<div class="sr-stage-dot ${s <= t.sr_stage ? 'done' : ''}"></div>`).join('');
         return `<div class="sr-item ${overdue ? 'overdue' : ''}">
           <div class="sr-item-info">
             <div class="sr-item-title">${t.title}</div>
             <div class="sr-item-meta">${t.category} · ${dayLabel}</div>
           </div>
-          <div class="sr-stages" title="Revision stages">${stages}</div>
-          ${overdue ? `<button class="btn primary sm" data-rev="${t.id}">Mark Revised</button>` : ''}
+          ${renderSRNodes(t)}
+          ${overdue ? `<button class="btn primary sm" data-rev="${t.id}" style="margin-left:.5rem;">Mark Revised</button>` : ''}
         </div>`;
       }
 
       return null;
     }
 
-    // Mount
+    // Mount React App
     const root = document.createElement('div');
     document.body.appendChild(root);
     root.id = 'neo-root';
