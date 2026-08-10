@@ -130,6 +130,26 @@
     .sr-due { background:rgba(248,113,113,.15); color:var(--danger); animation:pulse 1.5s ease-in-out infinite; }
     @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.6; } }
 
+    /* Today view */
+    .today-hero { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.5rem; margin-bottom:1.25rem; }
+    .today-day { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin-bottom:.4rem; }
+    .today-title { font-size:1.25rem; font-weight:700; margin-bottom:.5rem; }
+    .today-goal { font-size:.85rem; color:var(--dim); }
+    .today-count { display:inline-flex; align-items:center; gap:.3rem; font-size:.78rem; color:var(--accent); background:rgba(167,139,250,.1); padding:.25rem .6rem; border-radius:6px; margin-top:.75rem; }
+    .today-list { margin-bottom:1rem; }
+    .today-item { display:flex; align-items:center; gap:.6rem; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:.6rem .85rem; margin-bottom:.4rem; transition:border-color .15s; }
+    .today-item:hover { border-color:var(--border-hover); }
+    .today-item.done { opacity:.5; }
+    .today-item.done .today-item-title { text-decoration:line-through; }
+    .today-item-num { width:24px; height:24px; border-radius:6px; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:.72rem; font-weight:700; color:var(--dim); flex-shrink:0; }
+    .today-item-body { flex:1; min-width:0; }
+    .today-item-title { font-size:.85rem; }
+    .today-item-cat { font-size:.7rem; color:var(--dim); margin-top:.1rem; }
+    .today-item .checkbox { width:20px; height:20px; }
+    .today-empty { text-align:center; color:var(--success); font-size:.9rem; padding:2rem 1rem; border:1px dashed rgba(110,231,183,.2); border-radius:10px; margin-top:1rem; }
+    .today-hard-section { margin-top:1.25rem; }
+    .today-hard-label { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--warning); margin-bottom:.5rem; }
+
     /* SR view */
     .sr-group { margin-bottom:1.5rem; }
     .sr-group-title { font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--dim); margin-bottom:.5rem; padding-left:.25rem; }
@@ -200,11 +220,13 @@
     <div id="lock-banner-container"></div>
 
     <div class="tabs">
-      <button class="tab active" id="tab-checklist">Checklist <span class="tab-badge" id="badge-checklist"></span></button>
+      <button class="tab active" id="tab-today">Today <span class="tab-badge" id="badge-today"></span></button>
+      <button class="tab" id="tab-checklist">Checklist <span class="tab-badge" id="badge-checklist"></span></button>
       <button class="tab" id="tab-sr">Spaced Repetition <span class="tab-badge" id="badge-sr"></span></button>
     </div>
 
-    <div id="view-checklist"></div>
+    <div id="view-today"></div>
+    <div id="view-checklist" class="hidden"></div>
     <div id="view-sr" class="hidden"></div>
   </div>
 
@@ -364,6 +386,46 @@
     const SR_STAGE_LABELS = { 0:"Not started", 1:"Done — Rev 1 due", 2:"Rev 1 done — Rev 2 due", 3:"Rev 2 done — Rev 3 due", 4:"Complete" };
     const SR_STAGE_SHORT = { 0:"—", 1:"R1", 2:"R2", 3:"R3", 4:"Done" };
 
+    // ── Weekly study plan ──
+    // JS getDay(): 0=Sun, 1=Mon, … 6=Sat
+    const WEEKLY_PLAN = {
+      1: { label:"Monday",    title:"Tier 1 Core — Arrays, Strings, Sliding Window, Two Pointers, Linked Lists", categories:["Arrays & Hashing","String Manipulation","Sliding Window","Two Pointers","Linked Lists"], count:5, goal:"Pattern drilling, speed building" },
+      2: { label:"Tuesday",   title:"Tier 1 Core — Arrays, Strings, Sliding Window, Two Pointers, Linked Lists", categories:["Arrays & Hashing","String Manipulation","Sliding Window","Two Pointers","Linked Lists"], count:5, goal:"Pattern drilling, speed building" },
+      3: { label:"Wednesday", title:"Tier 1 Core — Arrays, Strings, Sliding Window, Two Pointers, Linked Lists", categories:["Arrays & Hashing","String Manipulation","Sliding Window","Two Pointers","Linked Lists"], count:5, goal:"Pattern drilling, speed building" },
+      4: { label:"Thursday",  title:"Tier 1 Depth — Stacks, Binary Search, Trees, BSTs", categories:["Stacks & Queues","Binary Search","Trees","Binary Search Trees"], count:5, goal:"Slightly harder variants, optimization practice" },
+      5: { label:"Friday",    title:"Tier 1 Depth — Stacks, Binary Search, Trees, BSTs", categories:["Stacks & Queues","Binary Search","Trees","Binary Search Trees"], count:4, goal:"Slightly harder variants, optimization practice" },
+      6: { label:"Saturday",  title:"Graphs + DFS/BFS", categories:["Graphs"], count:5, goal:"Learn connectivity patterns" },
+      0: { label:"Sunday",    title:"DP or Mixed Review + Famous Hards", categories:["Dynamic Programming","Heaps / Priority Queues","Backtracking","Trie","Greedy","Intervals","Matrix Problems"], count:4, goal:"Consolidate learnings, tackle something harder", includeHards:true },
+    };
+    const FAMOUS_HARDS = [
+      "Median of two sorted arrays (famous hard)",
+      "Binary tree maximum path sum",
+      "Wildcard matching (famous hard)",
+      "Regular expression matching (famous hard)",
+      "Burst balloons (famous hard)",
+      "Reconstruct itinerary (Eulerian path)",
+      "Alien dictionary",
+      "Minimum height trees",
+      "Serialize and deserialize tree",
+    ];
+
+    function getTodayPlan() {
+      const day = new Date().getDay();
+      return WEEKLY_PLAN[day];
+    }
+
+    function getTodaySuggestions(allTasks) {
+      const plan = getTodayPlan();
+      if (!plan) return { plan:null, problems:[], hards:[] };
+      const pool = allTasks.filter(t => plan.categories.includes(t.category) && !t.completed && t.sr_stage === 0);
+      const problems = pool.slice(0, plan.count);
+      let hards = [];
+      if (plan.includeHards) {
+        hards = allTasks.filter(t => FAMOUS_HARDS.includes(t.title) && !t.completed && t.sr_stage === 0).slice(0, 2);
+      }
+      return { plan, problems, hards };
+    }
+
     function todayStr() { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
     function addDays(dateStr, days) {
       const d = new Date(dateStr + 'T00:00:00');
@@ -385,7 +447,7 @@
       const [user, setUser] = useState(null);
       const [tasks, setTasks] = useState([]);
       const [loading, setLoading] = useState(true);
-      const [activeTab, setActiveTab] = useState('checklist');
+      const [activeTab, setActiveTab] = useState('today');
       const [collapsed, setCollapsed] = useState(new Set());
       const [seeding, setSeeding] = useState(false);
 
@@ -460,19 +522,32 @@
 
       // Tab switching
       useEffect(() => {
+        $('tab-today')?.addEventListener('click', () => {
+          setActiveTab('today');
+          $('tab-today').classList.add('active');
+          $('tab-checklist').classList.remove('active');
+          $('tab-sr').classList.remove('active');
+          $('view-today').classList.remove('hidden');
+          $('view-checklist').classList.add('hidden');
+          $('view-sr').classList.add('hidden');
+        });
         $('tab-checklist')?.addEventListener('click', () => {
           setActiveTab('checklist');
           $('tab-checklist').classList.add('active');
+          $('tab-today').classList.remove('active');
           $('tab-sr').classList.remove('active');
           $('view-checklist').classList.remove('hidden');
+          $('view-today').classList.add('hidden');
           $('view-sr').classList.add('hidden');
         });
         $('tab-sr')?.addEventListener('click', () => {
           setActiveTab('sr');
           $('tab-sr').classList.add('active');
           $('tab-checklist').classList.remove('active');
+          $('tab-today').classList.remove('active');
           $('view-sr').classList.remove('hidden');
           $('view-checklist').classList.add('hidden');
+          $('view-today').classList.add('hidden');
         });
       }, []);
 
@@ -547,6 +622,13 @@
         const sb2 = $('badge-sr');
         sb2.textContent = srPending > 0 ? srPending : '';
         sb2.className = 'tab-badge' + (hasOverdue ? ' alert' : '');
+        const tb = $('badge-today');
+        if (tb) {
+          const { problems, hards } = getTodaySuggestions(tasks);
+          const remaining = problems.length + hards.length;
+          tb.textContent = remaining > 0 ? remaining : '';
+          tb.className = 'tab-badge' + (hasOverdue ? ' alert' : '');
+        }
 
         // Lock banner
         const lc = $('lock-banner-container');
@@ -560,6 +642,82 @@
           lc.innerHTML = '';
         }
       }, [tasks, completedTasks, totalTasks, srPending, srComplete, overdueTasks.length, hasOverdue]);
+
+      // ── Render Today view ──
+      useEffect(() => {
+        const container = $('view-today');
+        if (!container) return;
+        if (loading) { container.innerHTML = '<div class="empty-state">Loading…</div>'; return; }
+        if (tasks.length === 0) { container.innerHTML = '<div class="empty-state">No problems loaded.</div>'; return; }
+
+        const { plan, problems, hards } = getTodaySuggestions(tasks);
+        if (!plan) { container.innerHTML = '<div class="empty-state">No plan for today.</div>'; return; }
+
+        const allToday = [...problems, ...hards];
+        const doneCount = allToday.filter(t => t.completed).length;
+
+        let html = `
+          <div class="today-hero">
+            <div class="today-day">${plan.label} · Today's Plan</div>
+            <div class="today-title">${plan.title}</div>
+            <div class="today-goal">Goal: ${plan.goal}</div>
+            <div class="today-count">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              ${plan.count} problems${plan.includeHards ? ' + 1-2 famous hards' : ''} · ${doneCount}/${allToday.length} done
+            </div>
+          </div>
+        `;
+
+        if (allToday.length === 0) {
+          html += '<div class="today-empty">All caught up for today! You\'ve completed everything in this plan.</div>';
+        } else {
+          html += '<div class="today-list">';
+          problems.forEach((task, i) => {
+            html += renderTodayItem(task, i + 1);
+          });
+          html += '</div>';
+          if (hards.length > 0) {
+            html += '<div class="today-hard-section"><div class="today-hard-label">Famous Hards</div><div class="today-list">';
+            hards.forEach((task, i) => {
+              html += renderTodayItem(task, problems.length + i + 1);
+            });
+            html += '</div></div>';
+          }
+        }
+
+        container.innerHTML = html;
+
+        // Bind checkboxes in today view
+        container.querySelectorAll('[data-today-cb]').forEach(el => {
+          el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const id = el.dataset.todayCb;
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+            if (task.completed) {
+              unmarkDone(task);
+            } else {
+              if (hasOverdue) { toast('Complete overdue revisions first!', 'error'); return; }
+              markDone(task);
+            }
+          });
+        });
+      }, [tasks, loading, hasOverdue]);
+
+      function renderTodayItem(task, num) {
+        const isDone = task.completed;
+        const isLocked = hasOverdue && !isDone;
+        return `<div class="today-item ${isDone ? 'done' : ''}">
+          <div class="today-item-num">${num}</div>
+          <div class="checkbox ${isDone ? 'checked' : ''} ${isLocked ? 'locked-cb' : ''}" data-today-cb="${task.id}">
+            ${isDone ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>' : ''}
+          </div>
+          <div class="today-item-body">
+            <div class="today-item-title">${task.title}</div>
+            <div class="today-item-cat">${task.category}</div>
+          </div>
+        </div>`;
+      }
 
       // ── Render checklist ──
       useEffect(() => {
