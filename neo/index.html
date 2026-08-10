@@ -3,275 +3,738 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>NEO — Kishore Prabakar</title>
-  <meta name="description" content="Kishore Prabakar's placement prep tracker" />
+  <title>NEO — DOA Sprint</title>
+  <meta name="description" content="DSA OA Sprint tracker with spaced repetition." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { 
-      background: #050505; 
-      color: #fafafa; 
-      font-family: 'Inter', system-ui, sans-serif; 
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      line-height: 1.5;
+    :root {
+      --bg: #050505;
+      --surface: #111114;
+      --surface2: #1a1a1f;
+      --surface3: #222228;
+      --border: rgba(255,255,255,0.07);
+      --border-hover: rgba(255,255,255,0.16);
+      --text: #e8e8f0;
+      --dim: rgba(232,232,240,0.45);
+      --light: rgba(232,232,240,0.25);
+      --accent: #a78bfa;
+      --accent-hover: #c4b5fd;
+      --danger: #f87171;
+      --success: #6ee7b7;
+      --warning: #fbbf24;
+      --t1: #6ee7b7;
+      --t2: #fbbf24;
+      --t3: #94a3b8;
     }
-    #root { min-height: 100vh; }
+    html, body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased; line-height: 1.5; min-height: 100vh;
+    }
     button { font-family: inherit; }
-    ::selection { background: rgba(167, 139, 250, 0.2); color: #a78bfa; }
+    ::selection { background: rgba(167,139,250,0.2); color: var(--accent); }
+    .hidden { display: none !important; }
+
+    /* Auth */
+    #auth-view { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:2rem; }
+    .auth-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:2.5rem; width:100%; max-width:400px; }
+    .auth-card h1 { font-size:1.75rem; margin-bottom:.25rem; color:var(--accent); }
+    .auth-card p { color:var(--dim); margin-bottom:2rem; font-size:.9rem; }
+    .auth-input { width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:.7rem 1rem; border-radius:8px; font-family:inherit; font-size:.9rem; margin-bottom:.75rem; }
+    .auth-input:focus { outline:none; border-color:var(--accent); }
+    .auth-btn { width:100%; background:var(--accent); color:#fff; border:none; padding:.75rem; border-radius:8px; font-weight:700; font-size:.95rem; cursor:pointer; margin-bottom:.5rem; transition:opacity .2s; }
+    .auth-btn:hover { opacity:.88; }
+    .auth-btn.secondary { background:transparent; color:var(--accent); border:1px solid var(--accent); }
+
+    /* Loading */
+    #loading-view { display:flex; align-items:center; justify-content:center; min-height:100vh; flex-direction:column; gap:1rem; color:var(--dim); }
+    .spinner { width:32px; height:32px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* App */
+    #app-view { max-width:860px; margin:0 auto; padding:1.5rem 1.25rem 5rem; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid var(--border); }
+    .topbar h1 { font-size:1.4rem; font-weight:700; letter-spacing:-.5px; }
+    .topbar h1 span { color:var(--accent); }
+    .topbar-actions { display:flex; gap:.75rem; align-items:center; }
+    .home-link { color:var(--dim); font-size:.85rem; text-decoration:none; transition:color .2s; }
+    .home-link:hover { color:var(--accent); }
+
+    .btn { background:var(--surface); border:1px solid var(--border); color:var(--text); padding:.45rem .85rem; border-radius:7px; cursor:pointer; font-family:inherit; font-size:.85rem; transition:all .15s; display:inline-flex; align-items:center; gap:.35rem; white-space:nowrap; }
+    .btn:hover { border-color:var(--accent); color:var(--accent); }
+    .btn.primary { background:var(--accent); color:#fff; border-color:var(--accent); font-weight:600; }
+    .btn.primary:hover { opacity:.88; color:#fff; }
+    .btn.sm { padding:.25rem .55rem; font-size:.78rem; }
+    .btn.danger { color:var(--danger); border-color:rgba(248,113,113,.25); background:rgba(248,113,113,.08); }
+    .btn.danger:hover { border-color:var(--danger); color:var(--danger); }
+    .btn:disabled { opacity:.4; cursor:not-allowed; }
+
+    /* Tabs */
+    .tabs { display:flex; gap:.5rem; margin-bottom:1.25rem; }
+    .tab { background:transparent; border:1px solid var(--border); color:var(--dim); padding:.5rem 1.1rem; border-radius:8px; cursor:pointer; font-family:inherit; font-size:.88rem; font-weight:600; transition:all .15s; position:relative; }
+    .tab:hover { color:var(--text); border-color:var(--border-hover); }
+    .tab.active { background:var(--surface2); color:var(--accent); border-color:var(--accent); }
+    .tab-badge { display:inline-flex; align-items:center; justify-content:center; min-width:18px; height:18px; padding:0 5px; border-radius:9px; font-size:.65rem; font-weight:700; margin-left:.4rem; background:rgba(255,255,255,.08); color:var(--dim); }
+    .tab-badge.alert { background:var(--danger); color:#fff; }
+
+    /* Stats bar */
+    .stats-bar { display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; }
+    .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:.75rem 1rem; flex:1; min-width:120px; }
+    .stat-card .label { font-size:.65rem; color:var(--dim); text-transform:uppercase; letter-spacing:.05em; margin-bottom:.2rem; }
+    .stat-card .value { font-size:1.3rem; font-weight:700; }
+    .stat-card .value.accent { color:var(--accent); }
+    .stat-card .value.success { color:var(--success); }
+    .stat-card .value.danger { color:var(--danger); }
+
+    /* Lock banner */
+    .lock-banner { background:rgba(248,113,113,.08); border:1px solid rgba(248,113,113,.3); border-radius:10px; padding:.85rem 1rem; margin-bottom:1.25rem; display:flex; align-items:center; gap:.6rem; font-size:.85rem; color:var(--danger); }
+    .lock-banner svg { flex-shrink:0; }
+
+    /* Section */
+    .section { margin-bottom:1rem; }
+    .section-header { display:flex; align-items:center; gap:.5rem; padding:.6rem .85rem; background:var(--surface); border:1px solid var(--border); border-radius:8px; cursor:pointer; transition:border-color .15s; user-select:none; }
+    .section-header:hover { border-color:var(--border-hover); }
+    .section-header .chevron { transition:transform .2s; color:var(--dim); flex-shrink:0; }
+    .section.collapsed .chevron { transform:rotate(-90deg); }
+    .section-title { flex:1; font-size:.88rem; font-weight:600; }
+    .section-count { font-size:.75rem; color:var(--dim); }
+    .tier-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .tier-1 { background:var(--t1); }
+    .tier-2 { background:var(--t2); }
+    .tier-3 { background:var(--t3); }
+
+    .section-items { padding:.4rem 0 0 1.5rem; }
+    .section.collapsed .section-items { display:none; }
+
+    /* Task item */
+    .task-item { display:flex; align-items:center; gap:.6rem; padding:.5rem .6rem; border-radius:6px; transition:background .15s; }
+    .task-item:hover { background:var(--surface); }
+    .task-item.locked { opacity:.45; }
+    .task-item.done .task-title { text-decoration:line-through; color:var(--dim); }
+
+    .checkbox { width:18px; height:18px; border:1.5px solid rgba(255,255,255,.2); border-radius:5px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; transition:all .15s; }
+    .checkbox:hover { border-color:var(--accent); }
+    .checkbox.checked { background:var(--accent); border-color:var(--accent); }
+    .checkbox svg { width:11px; height:11px; stroke:#fff; }
+    .checkbox.locked-cb { cursor:not-allowed; opacity:.3; }
+
+    .task-body { flex:1; display:flex; align-items:center; gap:.5rem; min-width:0; }
+    .task-title { font-size:.85rem; word-break:break-word; }
+    .sr-badge { font-size:.6rem; font-weight:700; padding:.1rem .35rem; border-radius:4px; text-transform:uppercase; letter-spacing:.03em; flex-shrink:0; }
+    .sr-1 { background:rgba(167,139,250,.15); color:var(--accent); }
+    .sr-2 { background:rgba(110,231,183,.12); color:var(--success); }
+    .sr-3 { background:rgba(251,191,36,.12); color:var(--warning); }
+    .sr-4 { background:rgba(34,197,94,.15); color:#22c55e; }
+    .sr-due { background:rgba(248,113,113,.15); color:var(--danger); animation:pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.6; } }
+
+    /* SR view */
+    .sr-group { margin-bottom:1.5rem; }
+    .sr-group-title { font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--dim); margin-bottom:.5rem; padding-left:.25rem; }
+    .sr-item { display:flex; align-items:center; gap:.6rem; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:.6rem .85rem; margin-bottom:.4rem; transition:border-color .15s; }
+    .sr-item:hover { border-color:var(--border-hover); }
+    .sr-item.overdue { border-color:rgba(248,113,113,.3); background:rgba(248,113,113,.04); }
+    .sr-item-info { flex:1; min-width:0; }
+    .sr-item-title { font-size:.85rem; word-break:break-word; }
+    .sr-item-meta { font-size:.72rem; color:var(--dim); margin-top:.15rem; }
+    .sr-stages { display:flex; gap:.25rem; }
+    .sr-stage-dot { width:8px; height:8px; border-radius:50%; border:1.5px solid rgba(255,255,255,.15); }
+    .sr-stage-dot.done { background:var(--accent); border-color:var(--accent); }
+
+    /* Toast */
+    .toast { position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%) translateY(200%); background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:.6rem 1.25rem; border-radius:99px; font-size:.85rem; z-index:9000; transition:transform .3s cubic-bezier(.175,.885,.32,1.275); box-shadow:0 8px 32px rgba(0,0,0,.5); white-space:nowrap; }
+    .toast.show { transform:translateX(-50%) translateY(0); }
+    .toast.error { border-color:var(--danger); color:var(--danger); }
+    .toast.success { border-color:var(--success); color:var(--success); }
+
+    /* Empty */
+    .empty-state { text-align:center; color:var(--light); font-size:.85rem; padding:3rem 1rem; border:1px dashed var(--border); border-radius:12px; }
+
+    /* Progress bar */
+    .progress-bar { height:4px; background:rgba(255,255,255,.04); border-radius:2px; overflow:hidden; margin-bottom:1.5rem; }
+    .progress-fill { height:100%; background:var(--accent); border-radius:2px; transition:width .4s cubic-bezier(.4,0,.2,1); }
+
+    /* Responsive */
+    @media (max-width:520px) {
+      .stats-bar { gap:.5rem; }
+      .stat-card { min-width:100px; padding:.6rem .7rem; }
+      .stat-card .value { font-size:1.1rem; }
+    }
   </style>
 </head>
 <body>
-  <div id="root"></div>
+
+  <div id="auth-view" class="hidden">
+    <div class="auth-card">
+      <h1>NEO</h1>
+      <p>Sign in to access your DSA sprint tracker.</p>
+      <input type="email" id="auth-email" class="auth-input" placeholder="Email">
+      <input type="password" id="auth-password" class="auth-input" placeholder="Password">
+      <button id="btn-signin" class="auth-btn">Sign In</button>
+      <button id="btn-signup" class="auth-btn secondary">Create Account</button>
+    </div>
+  </div>
+
+  <div id="loading-view">
+    <div class="spinner"></div>
+    <span>Loading…</span>
+  </div>
+
+  <div id="app-view" class="hidden">
+    <div class="topbar">
+      <div>
+        <h1>NE<span>O</span></h1>
+        <div style="font-size:.72rem;color:var(--dim);margin-top:.1rem;">DSA OA Sprint</div>
+      </div>
+      <div class="topbar-actions">
+        <a href="/" class="home-link">Home</a>
+        <button id="btn-logout" class="btn sm">Sign Out</button>
+      </div>
+    </div>
+
+    <div class="stats-bar" id="stats-bar"></div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+
+    <div id="lock-banner-container"></div>
+
+    <div class="tabs">
+      <button class="tab active" id="tab-checklist">Checklist <span class="tab-badge" id="badge-checklist"></span></button>
+      <button class="tab" id="tab-sr">Spaced Repetition <span class="tab-badge" id="badge-sr"></span></button>
+    </div>
+
+    <div id="view-checklist"></div>
+    <div id="view-sr" class="hidden"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
   <script type="text/babel">
-    const { useState, useEffect } = React;
+    const { useState, useEffect, useRef, useCallback } = React;
 
-
-// ─── DATE CONSTANTS ────────────────────────────────────────────────────────[...]
-const START_DATE = "2026-06-22";
-const END_DATE   = "2026-08-01";
-const PHASE_CUT  = "2026-07-15";
-
-// ─── CURRICULUM DATA ───────────────────────────────────────────────────────��[...]
-const DSA_SECTIONS = [
-  { id:"arrays", label:"Arrays", items:["Two Pointer — opposite ends (pair sum, container with most water)","Two Pointer — same direction / slow-fast (remove duplicates, move zeroes)","Sliding[...]"]
-  },
-  { id:"strings", label:"Strings", items:["Sliding Window on Strings — anagram check, permutation in string","Two Pointer on Strings — valid palindrome, reverse words","Hashing / Frequency Map[...]"]
-  },
-  { id:"hashing", label:"Hashing & Maps", items:["HashMap for frequency count","HashMap for index tracking (two sum, subarray sum = k)","HashMap for grouping / bucketing","Prefix Sum + HashMap —[...]"]
-  },
-  { id:"sorting", label:"Sorting", items:["Comparison-based lower bound — Ω(n log n)","Merge Sort — divide and conquer, stable sort","Quick Sort — Lomuto / Hoare partitioning, pivot strateg[...]"]
-  },
-  { id:"binsearch", label:"Binary Search", items:["Binary Search — classic sorted array","Binary Search on Answer — monotonic predicate","Lower Bound / Upper Bound — first/last occurrence","[...]"]
-  },
-  { id:"backtrack", label:"Recursion & Backtracking", items:["Subset Generation — power set","Subsets with Duplicates","Combination Sum — unbounded and bounded","Permutations — with and with[...]"]
-  },
-  { id:"linkedlist", label:"Linked List", items:["Reverse a Linked List — iterative and recursive","Detect Cycle — Floyd's Tortoise and Hare","Find Cycle Start Node","Find Middle Node — slow[...]"]
-  },
-  { id:"stack", label:"Stack", items:["Valid Parentheses / Matching Brackets","Next Greater Element — monotonic stack","Next Smaller Element","Previous Greater / Smaller Element","Largest Rectan[...]"]
-  },
-  { id:"queue", label:"Queue & Deque", items:["Sliding Window Maximum — monotonic deque","First Non-Repeating Character in Stream","BFS using Queue","Circular Queue implementation","Implement St[...]"]
-  },
-  { id:"trees", label:"Trees", items:["Inorder / Preorder / Postorder — recursive and iterative","Level Order Traversal — BFS","Zigzag Level Order Traversal","Vertical Order Traversal","Bounda[...]"]
-  },
-  { id:"heaps", label:"Heaps & Priority Queue", items:["Min-Heap and Max-Heap operations — insert, extract, heapify","K Largest / K Smallest Elements","Kth Largest in a Stream","Top K Frequent E[...]"]
-  },
-  { id:"graphs", label:"Graphs", items:["Graph Representation — adjacency list, matrix, edge list","BFS — shortest path in unweighted graph","DFS — connected components, cycle detection","Cy[...]"]
-  },
-  { id:"dp", label:"Dynamic Programming", items:["0/1 Knapsack — tabulation and memoization","Unbounded Knapsack — coin change (min coins, count ways), rod cutting","Subset Sum / Partition Equ[...]"]
-  },
-  { id:"greedy", label:"Greedy", items:["Activity Selection / Interval Scheduling","Job Sequencing with Deadlines","Minimum Platforms","Huffman Encoding","Gas Station — circular route feasibilit[...]"]
-  },
-  { id:"bitmanip", label:"Bit Manipulation", items:["Check / Set / Clear / Toggle a bit","Count set bits — Brian Kernighan's algorithm","Power of 2 check — n & (n-1) == 0","XOR properties — [...]"]
-  },
-  { id:"math", label:"Math & Number Theory", items:["GCD and LCM — Euclidean algorithm","Extended Euclidean Algorithm","Modular Exponentiation — fast power","Modular Inverse — Fermat's littl[...]"]
-  },
-  { id:"misc", label:"Misc Patterns", items:["Meet in the Middle — knapsack on large n","Reservoir Sampling, Fisher-Yates Shuffle","Two Sum / Three Sum / Four Sum","Monotonic Stack pattern — g[...]"]
-  }
-];
-
-const CORE_SECTIONS = [
-  { id:"python", label:"Python", items:["GIL — impact on multithreading, multiprocessing for CPU-bound","Python Memory Model — reference counting, garbage collection","Mutable vs Immutable —[...]"]
-  },
-  { id:"java", label:"Java", items:["JVM Architecture — ClassLoader, JIT compiler, Heap vs Stack","Java Memory Model — heap (young/old gen), Metaspace","Garbage Collection — mark-and-sweep, [...]"]
-  },
-  { id:"js", label:"JavaScript & Node.js", items:["Event Loop — call stack, Web APIs, callback queue, microtask queue","Microtasks vs Macrotasks — Promise before setTimeout","Promises — .the[...]"]
-  },
-  { id:"fastapi", label:"FastAPI & Async Backend", items:["ASGI vs WSGI — why FastAPI uses ASGI","Uvicorn / Gunicorn — worker processes, concurrency model","FastAPI Dependency Injection — De[...]"]
-  },
-  { id:"databases", label:"Databases", items:["ACID Properties — Atomicity, Consistency, Isolation, Durability","Isolation Levels — Read Committed, Repeatable Read, Serializable","MVCC — how[...]"]
-  },
-  { id:"sysdesign", label:"System Design", items:["CAP Theorem — trade-offs with real examples","BASE vs ACID — eventual consistency","Consistent Hashing — virtual nodes, minimizing rehashin[...]"]
-  },
-  { id:"apis", label:"APIs & Protocols", items:["REST Constraints — stateless, uniform interface, HATEOAS","HTTP Methods — GET, POST, PUT, PATCH, DELETE semantics","HTTP Status Codes — 2xx, [...]"]
-  },
-  { id:"docker", label:"Docker & Infra", items:["Container vs VM — lightweight isolation, shared kernel","Dockerfile — FROM, RUN, COPY, WORKDIR, CMD, ENTRYPOINT","Docker layers — cache inval[...]"]
-  },
-  { id:"os", label:"Operating Systems", items:["Process vs Thread — memory space, context switching overhead","CPU Scheduling — FCFS, SJF, Round Robin, Priority, MLFQ","Deadlock — four condi[...]"]
-  },
-  { id:"networks", label:"Computer Networks", items:["OSI Model — 7 layers, functions and protocols at each layer","TCP vs UDP — reliable vs unreliable, use cases","TCP — 3-way handshake, fl[...]"]
-  },
-  { id:"security", label:"Security", items:["OWASP Top 10 — SQLi, XSS, CSRF, Broken Auth, IDOR","SQL Injection — parameterized queries, ORM protection","XSS — stored vs reflected, Content Se[...]"]
-  },
-  { id:"react", label:"React & Frontend", items:["Virtual DOM — diffing algorithm, reconciliation","useState, useReducer — local state management","useEffect — side effects, dependency array[...]"]
-  },
-  { id:"aiml", label:"AI/ML & RAG", items:["LLM Architecture basics — transformer, attention (conceptual)","Tokens — tokenization, context window limits, cost implications","Prompt Engineering[...]"]
-  },
-  { id:"aptitude", label:"Aptitude & Reasoning", items:["Divisibility Rules — 2,3,4,5,6,7,8,9,11","HCF and LCM — prime factorization method","Remainder Theorems — Fermat's, Euler's, Wilson's[...]"]
-  }
-];
-
-// Flatten all items with stable IDs
-function buildCurriculum() {
-  const all = [];
-  DSA_SECTIONS.forEach(sec => {
-    sec.items.forEach((item, i) => {
-      all.push({ id: `dsa_${sec.id}_${i}`, type: "dsa", sectionId: sec.id, sectionLabel: sec.label, item });
-    });
-  });
-  CORE_SECTIONS.forEach(sec => {
-    sec.items.forEach((item, i) => {
-      all.push({ id: `core_${sec.id}_${i}`, type: "core", sectionId: sec.id, sectionLabel: sec.label, item });
-    });
-  });
-  return all;
-}
-
-const CURRICULUM = buildCurriculum();
-
-// ─── DAILY HABITS ────────────────────────────────────────────────────────��[...]
-// auto: true = derived from study checklist, not manually toggled
-const DAILY_HABITS = [
-  { id: "lc1",   label: "LC Easy",             detail: "1 easy — solve + explain the pattern",           auto: "dsa" },
-  { id: "lc2",   label: "LC Medium",            detail: "1 medium — timed, under 25 min",                auto: "dsa" },
-  { id: "lc3",   label: "LC Medium/Hard",       detail: "1 harder medium or hard",                       auto: "dsa" },
-  { id: "cs",    label: "Core Subject",         detail: "1 section from the concepts md — recall it",    auto: "core" },
-  { id: "proj",  label: "Project Articulation", detail: "Explain one decision from Webhook/RAG/APEX out loud" },
-  { id: "sd",    label: "System Design 30m",    detail: "Read DDIA / Gaurav Sen OR draw a design from scratch" },
-  { id: "sleep", label: "Sleep + Workout",      detail: "Non-negotiable" },
-];
-
-const WEEKLY_HABITS = [
-  { id: "w_mon", day: 1, dayName: "Mon", label: "DSA Mock",           detail: "2 timed problems (45 min) + explain solutions" },
-  { id: "w_wed", day: 3, dayName: "Wed", label: "Deep Core Subject",  detail: "1.5 hr deep dive — OS/Networks/DB/Java, rotate" },
-  { id: "w_fri", day: 5, dayName: "Fri", label: "System Design Mock", detail: "Design one system end-to-end, write it out" },
-  { id: "w_sun", day: 0, dayName: "Sun", label: "Weekly Review",      detail: "Wrong patterns list + adjust next week's focus" },
-];
-
-// ─── DATE HELPERS ────────────────────────────────────────────────────────�[...]
-function toDate(s) { return new Date(s + "T00:00:00"); }
-function toStr(d) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-}
-function today() { return toStr(new Date()); }
-function daysLeft() { return Math.max(0, Math.ceil((toDate(END_DATE) - new Date()) / 86400000)); }
-
-function allDates() {
-  const out = [];
-  for (let d = new Date(toDate(START_DATE)); d <= toDate(END_DATE); d.setDate(d.getDate() + 1))
-    out.push(toStr(d));
-  return out;
-}
-
-const DATES = allDates();
-
-function dayIndex(dateStr) {
-  return DATES.indexOf(dateStr);
-}
-
-// Items assigned to a day — deterministic by index
-function itemsForDay(dateStr) {
-  const idx = dayIndex(dateStr);
-  if (idx < 0) return [];
-  return CURRICULUM.filter((_, i) => i % DATES.length === idx);
-}
-
-function habitsForDate(dateStr) {
-  const dow = toDate(dateStr).getDay();
-  return { daily: DAILY_HABITS, weekly: WEEKLY_HABITS.filter(h => h.day === dow) };
-}
-
-function totalHabitsForDate(dateStr) {
-  const { daily, weekly } = habitsForDate(dateStr);
-  return daily.length + weekly.length;
-}
-
-function completedHabits(dateStr, checked) {
-  const { daily, weekly } = habitsForDate(dateStr);
-  return [...daily, ...weekly].filter(h => checked[h.id]).length;
-}
-
-function habitPct(dateStr, checked) {
-  const t = totalHabitsForDate(dateStr);
-  return t ? Math.round((completedHabits(dateStr, checked) / t) * 100) : 0;
-}
-
-function isFullDay(dateStr, checked) { return habitPct(dateStr, checked) === 100; }
-
-// ─── STORAGE (localStorage) ───────────────────────────────────────────────────
-function lsGet(key) {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch { return null; }
-}
-function lsSet(key, val) {
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
-}
-
-async function loadDay(d) {
-  return lsGet("day:" + d) || { checked: {} };
-}
-async function saveDay(d, data) {
-  lsSet("day:" + d, data);
-}
-async function loadStudied() {
-  return lsGet("studied_items") || {};
-}
-async function saveStudied(s) {
-  lsSet("studied_items", s);
-}
-async function loadMeta() {
-  return lsGet("placement_meta") || { streak: 0, bestStreak: 0 };
-}
-async function saveMeta(m) {
-  lsSet("placement_meta", m);
-}
-async function loadRevisions() {
-  return lsGet("revisions") || {};
-}
-async function saveRevisions(r) {
-  lsSet("revisions", r);
-}
-
-// ─── COLOR HELPERS ────────────────────────────────────────────────────────[...]
-function cellColor(pct, isFuture) {
-  if (isFuture) return "#0f0f0f";
-  if (pct === 0) return "#161616";
-  if (pct < 50)  return "#2d1a0a";
-  if (pct < 100) return "#1a2d1a";
-  return "#14532d";
-}
-function cellBorder(pct, isToday) {
-  if (isToday) return "1.5px solid #a78bfa";
-  return "1px solid #1e1e1e";
-}
-
-// ─── COUNTDOWN CLOCK ───────────────────────────────────────────────────────�[...]
-function CountdownClock({ endDate }) {
-  const [timeLeft, setTimeLeft] = useState(null);
-
-  useEffect(() => {
-    function calc() {
-      const now = new Date();
-      const end = new Date(endDate + "T23:59:59");
-      const diff = end - now;
-      if (diff <= 0) return setTimeLeft({ d:0, h:0, m:0, s:0, pct:100 });
-      const totalSecs = (end - new Date(START_DATE + "T00:00:00")) / 1000;
-      const remainSecs = diff / 1000;
-      const pct = Math.round(((totalSecs - remainSecs) / totalSecs) * 100);
-      setTimeLeft({
-        d: Math.floor(diff / 86400000),
-        h: Math.floor((diff % 86400000) / 3600000),
-        m: Math.floor((diff % 3600000) / 60000),
-        s: Math.floor((diff % 60000) / 1000),
-        pct,
-      });
+    // ── Supabase (same project as conquer) ──
+    const SUPABASE_URL = 'https://kbmimkfdhblyrdskdcxc.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_fBTnwIh34wJb61_aXNzk6Q_sv5oZkoG';
+    let supabase = null;
+    if (window.supabase) {
+      try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
+      catch (e) { console.warn('Supabase init failed', e); }
     }
-    calc();
-    const t = setInterval(calc, 1000);
-    return () => clearInterval(t);
-  }, [endDate]);
 
-  if (!timeLeft) return null;
-  const urgent = timeLeft.d <= 10;
-  const accent = urgent ? "#f87171" : "#a78bfa";
-  const arc = 2 * Math.PI * 40;
-  const dash = arc - (arc * timeLeft.pct / 100);
+    const $ = id => document.getElementById(id);
 
-  return (
-    <div style={{ background: "rgba(20, 20, 20, 0.4)", backdropFilter: "blur(10px)", border: `1px solid ${urgent ? "rgba(248, 113, 113, 0.2)" : "rgba(167, 139, 250, 0.1)"}`, borderRadius: 16, pad... }}>
+    let toastTimer;
+    function toast(msg, type='info') {
+      const el = $('toast'); el.textContent = msg; el.className = `toast show ${type}`;
+      clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+    }
+
+    // ── DSA Guide Data (from the README) ──
+    const GUIDE = [
+      { tier:1, category:"Arrays & Hashing", items:[
+        "Two sum","Two sum II (sorted)","Best time to buy and sell stock I","Best time to buy and sell stock II",
+        "Best time to buy and sell stock III","Best time to buy and sell stock IV","Buy and sell with cooldown",
+        "Buy and sell with transaction fee","Majority element","Boyer-Moore voting",
+        "Product of array except self","Contains duplicate I","Contains duplicate II",
+        "Valid anagram","Group anagrams","Longest consecutive sequence",
+        "Subarray sum equals K","Maximum subarray (Kadane's)","Trapping rain water"
+      ]},
+      { tier:1, category:"Sliding Window", items:[
+        "Longest substring without repeating characters","Longest repeating character replacement",
+        "Minimum window substring","Permutation in string","Sliding window maximum",
+        "Longest substring with at most K distinct characters","Fruit into baskets (K distinct)",
+        "Minimum size subarray sum","Max consecutive ones III"
+      ]},
+      { tier:1, category:"Two Pointers", items:[
+        "Reverse string / linked list","Palindrome string / valid phrase (alphanumeric only)",
+        "Container with most water","3Sum","3Sum closest","Remove duplicates from sorted array",
+        "Merge sorted array","Trapping rain water (two-pointer)"
+      ]},
+      { tier:1, category:"Linked Lists", items:[
+        "Reverse linked list (iterative + recursive)","Merge two sorted lists","Merge K sorted lists (heap vs D&C)",
+        "Remove Nth node from end","Reorder list","Palindrome linked list",
+        "Cycle detection (Floyd's cycle)","LRU cache","Add two numbers","Rotate list",
+        "Swap nodes in pairs","Copy list with random pointer"
+      ]},
+      { tier:1, category:"Stacks & Queues", items:[
+        "Valid parentheses","Min stack","Next greater element I","Next greater element II",
+        "Largest rectangle in histogram","Daily temperatures","Evaluate reverse Polish notation",
+        "Decode string","Implement queue using stacks","Sliding window maximum (monotonic deque)"
+      ]},
+      { tier:1, category:"Binary Search", items:[
+        "Standard binary search","Search in rotated sorted array I","Search in rotated sorted array II",
+        "Find first and last position of element","Search in unknown-size array (infinite sorted)",
+        "Peak element","Koko eating bananas","Time-based key-value store",
+        "Median of two sorted arrays (famous hard)"
+      ]},
+      { tier:1, category:"Trees", items:[
+        "Inorder traversal (recursive + iterative)","Preorder traversal (recursive + iterative)",
+        "Postorder traversal (recursive + iterative)","Level order traversal","Right side view",
+        "Path sum","Path sum II","Binary tree maximum path sum","Lowest common ancestor",
+        "LCA with parent pointers","Validate BST","Kth smallest element in BST",
+        "Closest value in BST","Build tree from preorder + inorder","Flatten binary tree to linked list",
+        "Serialize and deserialize tree","Symmetric tree","Same tree","Subtree of another"
+      ]},
+      { tier:1, category:"Binary Search Trees", items:[
+        "Validate BST","Kth smallest element in BST","Lowest common ancestor in BST",
+        "Inorder successor in BST","Insert into BST","Delete from BST","BST iterator"
+      ]},
+      { tier:1, category:"Graphs", items:[
+        "Island count (DFS/BFS)","Island perimeter","Surrounded regions","Walls and gates",
+        "Number of connected components","Graph valid tree","Course schedule I","Course schedule II",
+        "Alien dictionary","Sequence reconstruction","Word ladder (BFS shortest path)",
+        "Redundant connection","Accounts merge (Union-Find)","Graph bipartiteness",
+        "Detect cycle (directed)","Detect cycle (undirected)","Is graph bipartite",
+        "Reconstruct itinerary (Eulerian path)","Minimum height trees"
+      ]},
+      { tier:1, category:"Dynamic Programming", items:[
+        "Climbing stairs","House robber I","House robber II","House robber III",
+        "Coin change I","Coin change II (combinations vs permutations)",
+        "Longest increasing subsequence","Word break I","Word break II",
+        "Jump game I","Jump game II","Decode ways",
+        "Unique paths I","Unique paths II (with obstacles)","Longest common subsequence",
+        "Edit distance","Regular expression matching (famous hard)","Wildcard matching (famous hard)",
+        "Distinct subsequences","Interleaving string","0/1 knapsack","Unbounded knapsack",
+        "Partition equal subset sum","Target sum","Maximal square","Dungeon game",
+        "Cherry pickup II","Maximum product subarray","Burst balloons (famous hard)"
+      ]},
+      { tier:1, category:"Heaps / Priority Queues", items:[
+        "Kth largest element in array","Kth largest in stream","Merge K sorted lists (heap approach)",
+        "Top K frequent elements","Find median from data stream (two heaps)",
+        "Rearrange string k distance apart","Reorganize string"
+      ]},
+      { tier:2, category:"String Manipulation", items:[
+        "Reverse string","Reverse words","Valid palindrome","Valid palindrome II",
+        "Longest palindromic substring","Palindrome partitioning","Manacher's algorithm (advanced)",
+        "Zigzag conversion","Multiply strings","Integer to roman","Roman to integer","Atoi conversion"
+      ]},
+      { tier:2, category:"Intervals", items:[
+        "Merge intervals","Insert interval","Non-overlapping intervals",
+        "Meeting rooms I","Meeting rooms II","Interval scheduling maximization (greedy)"
+      ]},
+      { tier:2, category:"Matrix Problems", items:[
+        "Rotate matrix","Set matrix zeroes","Spiral matrix I","Spiral matrix II",
+        "Search a 2D matrix I","Search a 2D matrix II","Word search I","Word search II",
+        "Largest island area","Max island perimeter"
+      ]},
+      { tier:2, category:"Trie", items:[
+        "Implement trie","Search word pattern (with wildcards)","Word search II",
+        "Prefix and suffix search","Replace words in sentence"
+      ]},
+      { tier:2, category:"Backtracking", items:[
+        "Permutations I","Permutations II","Combinations I","Combinations II","Combinations III",
+        "N-Queens I","N-Queens II","Sudoku solver","Letter combinations of phone number",
+        "Generate parentheses","Word search"
+      ]},
+      { tier:2, category:"Greedy", items:[
+        "Jump game I","Jump game II","Gas station","Candy","Largest number",
+        "Non-overlapping intervals","Meeting rooms","Task scheduler","Reorganize string"
+      ]},
+      { tier:3, category:"Bit Manipulation", items:[
+        "Single number I","Single number II","Single number III","Number of 1 bits",
+        "Reverse bits","Majority element (XOR approach)","Missing number",
+        "Power of two","Power of three","Power of four","Sum of two integers (no operators)",
+        "Bitwise AND of numbers range"
+      ]},
+      { tier:3, category:"Math & Number Theory", items:[
+        "Prime numbers (sieve of Eratosthenes)","Happy number","Ugly numbers I","Ugly numbers II",
+        "Ugly numbers III","Fraction to recurring decimal","Factorial trailing zeroes","GCD and LCM"
+      ]},
+      { tier:3, category:"Segment Trees & Advanced Trees", items:[
+        "Range sum query","Range update","Merge k sorted lists (revisit with segment tree)"
+      ]},
+      { tier:3, category:"Geometry", items:[
+        "Rectangle overlap","Valid triangle","Implement calculator"
+      ]},
+    ];
+
+    // Flatten for seeding
+    const ALL_PROBLEMS = [];
+    GUIDE.forEach(sec => sec.items.forEach((item, i) => {
+      ALL_PROBLEMS.push({ title:item, tier:sec.tier, category:sec.category, sort_order:i });
+    }));
+
+    // ── SR config ──
+    const SR_INTERVALS = { 1:1, 2:3, 3:7 }; // days: stage→next stage
+    const SR_STAGE_LABELS = { 0:"Not started", 1:"Done — Rev 1 due", 2:"Rev 1 done — Rev 2 due", 3:"Rev 2 done — Rev 3 due", 4:"Complete" };
+    const SR_STAGE_SHORT = { 0:"—", 1:"R1", 2:"R2", 3:"R3", 4:"Done" };
+
+    function todayStr() { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+    function addDays(dateStr, days) {
+      const d = new Date(dateStr + 'T00:00:00');
+      d.setDate(d.getDate() + days);
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+    function daysUntil(dateStr) {
+      if (!dateStr) return null;
+      const d = new Date(dateStr + 'T00:00:00');
+      const t = new Date(); t.setHours(0,0,0,0);
+      return Math.round((d - t) / 86400000);
+    }
+    function isOverdue(task) {
+      return task.sr_stage >= 1 && task.sr_stage < 4 && task.sr_next_date && daysUntil(task.sr_next_date) <= 0;
+    }
+
+    // ── App ──
+    function App() {
+      const [user, setUser] = useState(null);
+      const [tasks, setTasks] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [activeTab, setActiveTab] = useState('checklist');
+      const [collapsed, setCollapsed] = useState(new Set());
+      const [seeding, setSeeding] = useState(false);
+
+      // Load session
+      useEffect(() => {
+        if (!supabase) { showAuth(); return; }
+        let mounted = true;
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (!mounted) return;
+          setUser(session?.user ?? null);
+          if (session?.user) loadTasks();
+          else { showAuth(); setLoading(false); }
+        });
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_ev, sess) => {
+          (async () => {
+            if (!mounted) return;
+            setUser(sess?.user ?? null);
+            if (sess?.user) { await loadTasks(); showApp(); }
+            else { setTasks([]); showAuth(); setLoading(false); }
+          })();
+        });
+        return () => { mounted = false; subscription?.unsubscribe(); };
+      }, []);
+
+      async function loadTasks() {
+        setLoading(true);
+        const { data, error } = await supabase.from('neo_tasks').select('*').order('tier').order('category').order('sort_order');
+        if (error) { toast(error.message, 'error'); }
+        else {
+          setTasks(data || []);
+          if ((data || []).length === 0) await seedDB();
+        }
+        setLoading(false);
+        showApp();
+      }
+
+      async function seedDB() {
+        if (seeding) return;
+        setSeeding(true);
+        toast('Seeding DSA guide…');
+        const rows = ALL_PROBLEMS.map((p, i) => ({
+          title: p.title, tier: p.tier, category: p.category,
+          sort_order: p.sort_order, completed: false, sr_stage: 0,
+          priority: 0
+        }));
+        const { data, error } = await supabase.from('neo_tasks').insert(rows).select();
+        if (error) toast(error.message, 'error');
+        else { setTasks(data); toast('DSA guide loaded!', 'success'); }
+        setSeeding(false);
+      }
+
+      function showAuth() { $('loading-view').classList.add('hidden'); $('app-view').classList.add('hidden'); $('auth-view').classList.remove('hidden'); }
+      function showApp() { $('loading-view').classList.add('hidden'); $('auth-view').classList.add('hidden'); $('app-view').classList.remove('hidden'); }
+
+      // Auth handlers
+      useEffect(() => {
+        $('btn-signin')?.addEventListener('click', async () => {
+          const email = $('auth-email').value.trim(), pw = $('auth-password').value;
+          if (!email || !pw) return toast('Enter email and password', 'error');
+          const { error } = await supabase.auth.signInWithPassword({ email, password: pw });
+          if (error) toast(error.message, 'error');
+        });
+        $('btn-signup')?.addEventListener('click', async () => {
+          const email = $('auth-email').value.trim(), pw = $('auth-password').value;
+          if (!email || !pw) return toast('Enter email and password', 'error');
+          const { error } = await supabase.auth.signUp({ email, password: pw });
+          if (error) toast(error.message, 'error');
+          else toast('Account created!', 'success');
+        });
+        $('btn-logout')?.addEventListener('click', async () => { await supabase.auth.signOut(); });
+      }, []);
+
+      // Tab switching
+      useEffect(() => {
+        $('tab-checklist')?.addEventListener('click', () => {
+          setActiveTab('checklist');
+          $('tab-checklist').classList.add('active');
+          $('tab-sr').classList.remove('active');
+          $('view-checklist').classList.remove('hidden');
+          $('view-sr').classList.add('hidden');
+        });
+        $('tab-sr')?.addEventListener('click', () => {
+          setActiveTab('sr');
+          $('tab-sr').classList.add('active');
+          $('tab-checklist').classList.remove('active');
+          $('view-sr').classList.remove('hidden');
+          $('view-checklist').classList.add('hidden');
+        });
+      }, []);
+
+      // ── Mark problem done (first time) → enters SR ──
+      async function markDone(task) {
+        if (task.sr_stage > 0) return; // already in SR
+        const today = todayStr();
+        const { error } = await supabase.from('neo_tasks').update({
+          completed: true, sr_stage: 1, sr_first_done: today, sr_next_date: addDays(today, SR_INTERVALS[1])
+        }).eq('id', task.id);
+        if (error) { toast(error.message, 'error'); }
+        else {
+          setTasks(prev => prev.map(t => t.id === task.id ? { ...t, completed:true, sr_stage:1, sr_first_done:today, sr_next_date:addDays(today, SR_INTERVALS[1]) } : t));
+          toast('Added to spaced repetition!', 'success');
+        }
+      }
+
+      // ── Complete a revision ──
+      async function doRevision(task) {
+        if (!isOverdue(task)) return;
+        const nextStage = task.sr_stage + 1;
+        const today = todayStr();
+        const updates = { sr_stage: nextStage };
+        if (nextStage < 4) {
+          updates.sr_next_date = addDays(today, SR_INTERVALS[nextStage]);
+        } else {
+          updates.sr_next_date = null; // all done
+        }
+        const { error } = await supabase.from('neo_tasks').update(updates).eq('id', task.id);
+        if (error) { toast(error.message, 'error'); }
+        else {
+          setTasks(prev => prev.map(t => t.id === task.id ? { ...t, ...updates } : t));
+          toast(nextStage === 4 ? 'Spaced repetition complete!' : `Revision ${nextStage} done!`, 'success');
+        }
+      }
+
+      // ── Unmark (reset SR) ──
+      async function unmarkDone(task) {
+        const { error } = await supabase.from('neo_tasks').update({
+          completed: false, sr_stage: 0, sr_next_date: null, sr_first_done: null
+        }).eq('id', task.id);
+        if (error) { toast(error.message, 'error'); }
+        else {
+          setTasks(prev => prev.map(t => t.id === task.id ? { ...t, completed:false, sr_stage:0, sr_next_date:null, sr_first_done:null } : t));
+        }
+      }
+
+      // ── Derived data ──
+      const overdueTasks = tasks.filter(isOverdue);
+      const hasOverdue = overdueTasks.length > 0;
+      const totalTasks = tasks.length;
+      const completedTasks = tasks.filter(t => t.completed).length;
+      const srComplete = tasks.filter(t => t.sr_stage === 4).length;
+      const srPending = tasks.filter(t => t.sr_stage >= 1 && t.sr_stage < 4).length;
+
+      // ── Render stats ──
+      useEffect(() => {
+        const sb = $('stats-bar');
+        if (!sb) return;
+        const pct = totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0;
+        sb.innerHTML = `
+          <div class="stat-card"><div class="label">Problems Done</div><div class="value accent">${completedTasks} / ${totalTasks}</div></div>
+          <div class="stat-card"><div class="label">In Progress (SR)</div><div class="value">${srPending}</div></div>
+          <div class="stat-card"><div class="label">SR Complete</div><div class="value success">${srComplete}</div></div>
+          <div class="stat-card"><div class="label">Overdue</div><div class="value ${hasOverdue ? 'danger' : ''}">${overdueTasks.length}</div></div>
+        `;
+        $('progress-fill').style.width = pct + '%';
+
+        // Badges
+        const cb = $('badge-checklist');
+        cb.textContent = totalTasks > 0 ? `${completedTasks}/${totalTasks}` : '';
+        const sb2 = $('badge-sr');
+        sb2.textContent = srPending > 0 ? srPending : '';
+        sb2.className = 'tab-badge' + (hasOverdue ? ' alert' : '');
+
+        // Lock banner
+        const lc = $('lock-banner-container');
+        if (hasOverdue) {
+          lc.innerHTML = `
+            <div class="lock-banner">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span><strong>${overdueTasks.length} revision${overdueTasks.length > 1 ? 's' : ''} overdue.</strong> Complete them in the Spaced Repetition tab before marking new problems as done.</span>
+            </div>`;
+        } else {
+          lc.innerHTML = '';
+        }
+      }, [tasks, completedTasks, totalTasks, srPending, srComplete, overdueTasks.length, hasOverdue]);
+
+      // ── Render checklist ──
+      useEffect(() => {
+        const container = $('view-checklist');
+        if (!container) return;
+        if (loading) { container.innerHTML = '<div class="empty-state">Loading…</div>'; return; }
+        if (tasks.length === 0) { container.innerHTML = '<div class="empty-state">No problems loaded.</div>'; return; }
+
+        // Group by tier → category
+        const byTier = { 1:[], 2:[], 3:[] };
+        GUIDE.forEach(sec => {
+          const secTasks = tasks.filter(t => t.category === sec.category && t.tier === sec.tier);
+          if (secTasks.length > 0) byTier[sec.tier].push({ ...sec, tasks: secTasks });
+        });
+
+        const tierLabels = { 1:"TIER 1 — Essential (MUST DO)", 2:"TIER 2 — Important (SHOULD DO)", 3:"TIER 3 — Bonus (NICE TO HAVE)" };
+
+        let html = '';
+        [1,2,3].forEach(tier => {
+          if (byTier[tier].length === 0) return;
+          html += `<div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--t${tier});margin:1.5rem 0 .75rem .25rem;">${tierLabels[tier]}</div>`;
+          byTier[tier].forEach(sec => {
+            const secDone = sec.tasks.filter(t => t.completed).length;
+            const secTotal = sec.tasks.length;
+            const secKey = `${sec.tier}-${sec.category}`;
+            const isCollapsed = collapsed.has(secKey);
+            html += `<div class="section ${isCollapsed ? 'collapsed' : ''}" data-sec="${secKey}">
+              <div class="section-header" data-toggle="${secKey}">
+                <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                <div class="tier-dot tier-${sec.tier}"></div>
+                <span class="section-title">${sec.category}</span>
+                <span class="section-count">${secDone}/${secTotal}</span>
+              </div>
+              <div class="section-items">`;
+            sec.tasks.forEach(task => {
+              const isDone = task.completed;
+              const isLocked = hasOverdue && !isDone && task.sr_stage === 0;
+              let srBadge = '';
+              if (task.sr_stage > 0) {
+                if (isOverdue(task)) {
+                  srBadge = `<span class="sr-badge sr-due">DUE NOW</span>`;
+                } else if (task.sr_stage === 4) {
+                  srBadge = `<span class="sr-badge sr-4">Done</span>`;
+                } else {
+                  const d = daysUntil(task.sr_next_date);
+                  srBadge = `<span class="sr-badge sr-${task.sr_stage}">${SR_STAGE_SHORT[task.sr_stage]} · ${d !== null ? (d > 0 ? d + 'd' : 'due') : ''}</span>`;
+                }
+              }
+              html += `<div class="task-item ${isDone ? 'done' : ''} ${isLocked ? 'locked' : ''}" data-task-id="${task.id}">
+                <div class="checkbox ${isDone ? 'checked' : ''} ${isLocked ? 'locked-cb' : ''}" data-cb="${task.id}">
+                  ${isDone ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>' : ''}
+                </div>
+                <div class="task-body">
+                  <span class="task-title">${task.title}</span>
+                  ${srBadge}
+                </div>
+              </div>`;
+            });
+            html += `</div></div>`;
+          });
+        });
+        container.innerHTML = html;
+
+        // Bind section toggles
+        container.querySelectorAll('[data-toggle]').forEach(el => {
+          el.addEventListener('click', () => {
+            const key = el.dataset.toggle;
+            setCollapsed(prev => {
+              const n = new Set(prev);
+              if (n.has(key)) n.delete(key); else n.add(key);
+              return n;
+            });
+          });
+        });
+
+        // Bind checkboxes
+        container.querySelectorAll('[data-cb]').forEach(el => {
+          el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const id = el.dataset.cb;
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+            if (task.completed) {
+              unmarkDone(task);
+            } else {
+              if (hasOverdue) {
+                toast('Complete overdue revisions first!', 'error');
+                return;
+              }
+              markDone(task);
+            }
+          });
+        });
+      }, [tasks, loading, collapsed, hasOverdue]);
+
+      // ── Render SR view ──
+      useEffect(() => {
+        const container = $('view-sr');
+        if (!container) return;
+        if (loading) { container.innerHTML = '<div class="empty-state">Loading…</div>'; return; }
+
+        const srTasks = tasks.filter(t => t.sr_stage >= 1 && t.sr_stage < 4);
+        if (srTasks.length === 0) {
+          container.innerHTML = '<div class="empty-state">No active spaced repetitions. Mark problems as done in the Checklist to start.</div>';
+          return;
+        }
+
+        const overdue = srTasks.filter(isOverdue).sort((a,b) => daysUntil(a.sr_next_date) - daysUntil(b.sr_next_date));
+        const upcoming = srTasks.filter(t => !isOverdue(t)).sort((a,b) => daysUntil(a.sr_next_date) - daysUntil(b.sr_next_date));
+        const complete = tasks.filter(t => t.sr_stage === 4);
+
+        let html = '';
+
+        if (overdue.length > 0) {
+          html += `<div class="sr-group"><div class="sr-group-title" style="color:var(--danger)">Overdue — Complete these first</div>`;
+          overdue.forEach(t => {
+            html += renderSRItem(t, true);
+          });
+          html += `</div>`;
+        }
+
+        if (upcoming.length > 0) {
+          html += `<div class="sr-group"><div class="sr-group-title">Upcoming Revisions</div>`;
+          upcoming.forEach(t => {
+            html += renderSRItem(t, false);
+          });
+          html += `</div>`;
+        }
+
+        if (complete.length > 0) {
+          html += `<div class="sr-group"><div class="sr-group-title" style="color:var(--success)">Completed All Revisions (${complete.length})</div>`;
+          complete.slice(0, 20).forEach(t => {
+            html += `<div class="sr-item" style="opacity:.6">
+              <div class="sr-item-info"><div class="sr-item-title">${t.title}</div>
+              <div class="sr-item-meta">${t.category}</div></div>
+              <div class="sr-stages">${[1,2,3,4].map(s => `<div class="sr-stage-dot ${s <= t.sr_stage ? 'done' : ''}"></div>`).join('')}</div>
+            </div>`;
+          });
+          html += `</div>`;
+        }
+
+        container.innerHTML = html;
+
+        // Bind revision buttons
+        container.querySelectorAll('[data-rev]').forEach(el => {
+          el.addEventListener('click', () => {
+            const id = el.dataset.rev;
+            const task = tasks.find(t => t.id === id);
+            if (task) doRevision(task);
+          });
+        });
+      }, [tasks, loading]);
+
+      function renderSRItem(t, overdue) {
+        const d = daysUntil(t.sr_next_date);
+        const dayLabel = d <= 0 ? 'Due now' : `Due in ${d} day${d !== 1 ? 's' : ''}`;
+        const stages = [1,2,3].map(s => `<div class="sr-stage-dot ${s <= t.sr_stage ? 'done' : ''}"></div>`).join('');
+        return `<div class="sr-item ${overdue ? 'overdue' : ''}">
+          <div class="sr-item-info">
+            <div class="sr-item-title">${t.title}</div>
+            <div class="sr-item-meta">${t.category} · ${dayLabel}</div>
+          </div>
+          <div class="sr-stages" title="Revision stages">${stages}</div>
+          ${overdue ? `<button class="btn primary sm" data-rev="${t.id}">Mark Revised</button>` : ''}
+        </div>`;
+      }
+
+      return null;
+    }
+
+    // Mount
+    const root = document.createElement('div');
+    document.body.appendChild(root);
+    root.id = 'neo-root';
+    ReactDOM.createRoot(root).render(React.createElement(App));
+  </script>
+</body>
+</html>
