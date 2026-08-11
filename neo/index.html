@@ -761,6 +761,25 @@
       border-color: rgba(248, 113, 113, 0.4);
     }
 
+    .task-menu {
+      border: none;
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      border-radius: 10px;
+      transition: background .15s;
+    }
+
+    .task-menu:hover {
+      background: rgba(255, 255, 255, .08);
+    }
+
     .task-body {
       flex: 1;
       display: flex;
@@ -768,6 +787,80 @@
       justify-content: space-between;
       gap: .75rem;
       min-width: 0;
+    }
+
+    .core-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .45);
+      display: grid;
+      place-items: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease;
+    }
+
+    .core-modal-backdrop:not(.hidden) {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .core-modal {
+      width: min(520px, calc(100vw - 2rem));
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 36px 80px rgba(0, 0, 0, .25);
+      padding: 1rem;
+      display: grid;
+      gap: 1rem;
+    }
+
+    .core-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .75rem;
+    }
+
+    .core-modal-header #core-modal-title {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .core-modal-body {
+      display: grid;
+      gap: .85rem;
+    }
+
+    .core-modal-body label {
+      display: grid;
+      gap: .35rem;
+      font-size: .88rem;
+      color: var(--dim);
+    }
+
+    .core-modal-body input,
+    .core-modal-body textarea,
+    .core-modal-body select {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      border-radius: 10px;
+      padding: .75rem .85rem;
+      font: inherit;
+    }
+
+    .core-modal-body textarea {
+      resize: vertical;
+    }
+
+    .core-modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: .75rem;
     }
 
     .task-title {
@@ -1324,11 +1417,43 @@
       <button class="tab active" id="tab-today">Today <span class="tab-badge" id="badge-today"></span></button>
       <button class="tab" id="tab-checklist">Checklist <span class="tab-badge" id="badge-checklist"></span></button>
       <button class="tab" id="tab-sr">Spaced Repetition <span class="tab-badge" id="badge-sr"></span></button>
+      <button class="tab" id="tab-core">Core <span class="tab-badge" id="badge-core"></span></button>
     </div>
 
     <div id="view-today" class="tab-view"></div>
     <div id="view-checklist" class="tab-view hidden"></div>
     <div id="view-sr" class="tab-view hidden"></div>
+    <div id="view-core" class="tab-view hidden"></div>
+    <div id="core-task-modal" class="core-modal-backdrop hidden">
+      <div class="core-modal">
+        <div class="core-modal-header">
+          <div id="core-modal-title">Edit Task</div>
+          <button type="button" id="core-modal-close" class="btn sm">✕</button>
+        </div>
+        <div class="core-modal-body">
+          <label id="core-entity-label">Name <input type="text" id="core-input-task-name" /></label>
+          <div id="core-task-fields">
+            <label>Type <select id="core-input-task-type">
+                <option value="project">project</option>
+                <option value="certification">certification</option>
+                <option value="custom">custom</option>
+              </select></label>
+            <label>Status <select id="core-input-task-status">
+                <option value="Not Started">Not Started</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Complete">Complete</option>
+              </select></label>
+            <label>Deadline <input type="date" id="core-input-task-deadline" /></label>
+            <label>Notes <textarea id="core-input-task-notes" rows="3"></textarea></label>
+          </div>
+        </div>
+        <div class="core-modal-footer">
+          <button type="button" id="core-modal-delete" class="btn danger sm hidden">Delete</button>
+          <button type="button" id="core-modal-cancel" class="btn sm">Cancel</button>
+          <button type="button" id="core-modal-save" class="btn primary sm">Save</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="toast" id="toast"></div>
@@ -1344,6 +1469,24 @@
     const SUPABASE_URL = 'https://kbmimkfdhblyrdskdcxc.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_fBTnwIh34wJb61_aXNzk6Q_sv5oZkoG';
     let supabaseClient = null;
+
+    const PREP_DEFAULT_TASKS = [
+      { name: 'GoDocklet', type: 'project', status: 'In Progress', target_date: '2026-08-12', notes: 'Blog post, polish GitHub, demo.' },
+      { name: 'AlphaRook', type: 'project', status: 'In Progress', target_date: '2026-08-16', notes: 'Polish, deploy, README.' },
+      { name: 'Accio', type: 'project', status: 'In Progress', target_date: '2026-08-18', notes: 'Polish, deploy, live.' },
+      { name: 'Go Lang Cert', type: 'certification', status: 'Not Started', target_date: '2026-08-28', notes: 'Complete Go certification.' },
+      { name: 'Docker Cert', type: 'certification', status: 'Not Started', target_date: '2026-08-26', notes: 'Complete Docker certification.' },
+      { name: 'AWS Cert', type: 'certification', status: 'Not Started', target_date: '2026-09-05', notes: 'Finish AWS certification.' },
+    ];
+
+    const PREP_DEFAULT_CATEGORIES = [
+      { name: 'Languages', topics: ['Go', 'Java', 'Python', 'JavaScript'] },
+      { name: 'Backend', topics: ['Node.js', 'Express', 'REST APIs', 'JWT Auth'] },
+      { name: 'Infrastructure', topics: ['Git', 'Docker', 'Linux', 'CI/CD'] },
+      { name: 'System Design', topics: ['Caching', 'Load balancing', 'Database internals', 'Microservices'] },
+    ];
+
+    const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 
     function getSupabase() {
       if (supabaseClient) return supabaseClient;
@@ -1646,6 +1789,17 @@
       const [selectedTier, setSelectedTier] = useState('all');
       const [collapsed, setCollapsed] = useState(new Set());
       const [seeding, setSeeding] = useState(false);
+      const [prepLoading, setPrepLoading] = useState(false);
+      const [prepError, setPrepError] = useState('');
+      const [prepTasks, setPrepTasks] = useState([]);
+      const [prepCategories, setPrepCategories] = useState([]);
+      const [prepTopics, setPrepTopics] = useState([]);
+      const [collapsedCategories, setCollapsedCategories] = useState(new Set());
+      const [coreBusy, setCoreBusy] = useState(false);
+      const coreEditTaskId = useRef(null);
+      const coreEditMode = useRef('create');
+      const coreEntityType = useRef('task');
+      const searchDebounceRef = useRef(null);
 
       // Load Session with robust Supabase initialization check
       useEffect(() => {
@@ -1757,7 +1911,7 @@
       // Tab Switchers
       const switchTab = (tabName) => {
         setActiveTab(tabName);
-        ['today', 'checklist', 'sr'].forEach(t => {
+        ['today', 'checklist', 'sr', 'core'].forEach(t => {
           const btn = $(`tab-${t}`), view = $(`view-${t}`);
           if (t === tabName) {
             btn?.classList.add('active');
@@ -1773,6 +1927,7 @@
         $('tab-today')?.addEventListener('click', () => switchTab('today'));
         $('tab-checklist')?.addEventListener('click', () => switchTab('checklist'));
         $('tab-sr')?.addEventListener('click', () => switchTab('sr'));
+        $('tab-core')?.addEventListener('click', () => switchTab('core'));
 
         const toggle = $('protocol-toggle');
         const card = $('protocol-card');
@@ -1789,6 +1944,474 @@
           return () => toggle.removeEventListener('click', handler);
         }
       }, []);
+
+      useEffect(() => {
+        if (activeTab === 'core' && user) {
+          loadPrepData();
+        }
+      }, [activeTab, user]);
+
+      useEffect(() => {
+        if (activeTab === 'core') {
+          renderCoreView();
+        }
+      }, [activeTab, prepLoading, prepError, prepTasks, prepCategories, prepTopics, collapsedCategories]);
+
+      async function loadPrepData({ showSpinner = true } = {}) {
+        const sb = getSupabase();
+        if (!sb) {
+          setPrepError('Supabase connection unavailable.');
+          if (showSpinner) setPrepLoading(false);
+          return;
+        }
+        if (showSpinner) setPrepLoading(true);
+        setPrepError('');
+
+        const [tasksRes, categoriesRes, topicsRes] = await Promise.all([
+          sb.from('prep_tasks').select('*').order('created_at', { ascending: false }),
+          sb.from('knowledge_categories').select('*').order('created_at', { ascending: false }),
+          sb.from('knowledge_topics').select('*').order('created_at', { ascending: false }),
+        ]);
+
+        const error = tasksRes.error || categoriesRes.error || topicsRes.error;
+        if (error) {
+          setPrepError(error.message || 'Unable to load core data.');
+          if (showSpinner) setPrepLoading(false);
+          return;
+        }
+
+        setPrepTasks(tasksRes.data || []);
+        setPrepCategories(categoriesRes.data || []);
+        setPrepTopics(topicsRes.data || []);
+        if (showSpinner) setPrepLoading(false);
+      }
+
+      async function seedPrepData() {
+        const sb = getSupabase();
+        if (!sb || !user) return;
+        setPrepLoading(true);
+        setPrepError('');
+
+        try {
+          const categoryRows = PREP_DEFAULT_CATEGORIES.map((category) => ({ user_id: user.id, name: category.name }));
+          const { data: savedCategories, error: categoryError } = await sb.from('knowledge_categories').insert(categoryRows).select();
+          if (categoryError) throw categoryError;
+
+          const categoryMap = Object.fromEntries((savedCategories || []).map((category) => [category.name, category.id]));
+          const topicRows = [];
+          PREP_DEFAULT_CATEGORIES.forEach((category) => {
+            category.topics.forEach((topic) => {
+              topicRows.push({ user_id: user.id, category_id: categoryMap[category.name], name: topic, status: 'Learning', notes: '' });
+            });
+          });
+          const { error: topicError } = await sb.from('knowledge_topics').insert(topicRows);
+          if (topicError) throw topicError;
+
+          const taskRows = PREP_DEFAULT_TASKS.map((task) => ({
+            user_id: user.id,
+            name: task.name,
+            type: task.type,
+            status: task.status,
+            target_date: task.target_date,
+            completion_date: task.status === 'Complete' ? task.target_date : null,
+            notes: task.notes,
+          }));
+          const { error: taskError } = await sb.from('prep_tasks').insert(taskRows);
+          if (taskError) throw taskError;
+
+          await loadPrepData();
+        } catch (err) {
+          setPrepError(err?.message || 'Failed to seed Core data.');
+          setPrepLoading(false);
+        }
+      }
+
+      function openCoreModal(task = null, mode = 'edit', type = 'task') {
+        coreEditTaskId.current = task?.id || null;
+        coreEditMode.current = mode;
+        coreEntityType.current = type;
+        const isTask = type === 'task';
+        $('core-modal-title').textContent = mode === 'create'
+          ? (isTask ? 'Add Task' : `Add ${type === 'language' ? 'Language' : type === 'category' ? 'Category' : 'Topic'}`)
+          : (isTask ? 'Edit Task' : `Edit ${type === 'language' ? 'Language' : type === 'category' ? 'Category' : 'Topic'}`);
+        $('core-entity-label').textContent = isTask ? 'Task name' : 'Name';
+        $('core-input-task-name').value = task?.name || '';
+        $('core-task-fields').style.display = isTask ? 'grid' : 'none';
+        $('core-modal-delete')?.classList.toggle('hidden', mode === 'create');
+        if (isTask) {
+          $('core-input-task-type').value = task?.type || 'project';
+          $('core-input-task-status').value = task?.status || 'Not Started';
+          $('core-input-task-deadline').value = task?.target_date || '';
+          $('core-input-task-notes').value = task?.notes || '';
+        }
+        $('core-task-modal')?.classList.remove('hidden');
+      }
+
+      function hideCoreModal() {
+        $('core-task-modal')?.classList.add('hidden');
+      }
+
+      async function saveCoreModalTask() {
+        const name = $('core-input-task-name')?.value.trim();
+        if (!name) return toast('Name is required.', 'error');
+
+        const sb = getSupabase();
+        if (!sb) return toast('Supabase connection unavailable.', 'error');
+
+        const mode = coreEditMode.current;
+        const type = coreEntityType.current;
+        const id = coreEditTaskId.current;
+
+        if (type === 'task') {
+          const payload = {
+            user_id: user.id,
+            name,
+            type: $('core-input-task-type')?.value,
+            status: $('core-input-task-status')?.value,
+            target_date: $('core-input-task-deadline')?.value || null,
+            completion_date: $('core-input-task-status')?.value === 'Complete'
+              ? ($('core-input-task-deadline')?.value || null)
+              : null,
+            notes: $('core-input-task-notes')?.value || '',
+          };
+
+          if (mode === 'create') {
+            const { data, error } = await sb.from('prep_tasks').insert([payload]).select();
+            if (error) return toast(error.message, 'error');
+            if (data?.[0]) setPrepTasks((prev) => [data[0], ...prev]);
+            toast('Task created.', 'success');
+          } else {
+            const updates = payload;
+            const { error } = await sb.from('prep_tasks').update(updates).eq('id', id);
+            if (error) return toast(error.message, 'error');
+            setPrepTasks((prev) => prev.map((task) => task.id === id ? { ...task, ...updates } : task));
+            toast('Task saved.', 'success');
+          }
+        } else if (type === 'language' || type === 'category') {
+          const entityTable = 'knowledge_categories';
+          const payload = { name };
+          if (mode === 'create') {
+            const { data, error } = await sb.from(entityTable).insert([{ user_id: user.id, name }]).select();
+            if (error) return toast(error.message, 'error');
+            if (data?.[0]) setPrepCategories((prev) => [...prev, data[0]]);
+            toast(`${type === 'language' ? 'Language category' : 'Category'} created.`, 'success');
+          } else {
+            const { error } = await sb.from(entityTable).update(payload).eq('id', id);
+            if (error) return toast(error.message, 'error');
+            setPrepCategories((prev) => prev.map((item) => item.id === id ? { ...item, ...payload } : item));
+            toast(`${type === 'language' ? 'Language category' : 'Category'} saved.`, 'success');
+          }
+        } else if (type === 'topic') {
+          const entityTable = 'knowledge_topics';
+          const payload = { name };
+          if (mode === 'create') {
+            const categoryId = coreEditTaskId.current;
+            const { data, error } = await sb.from(entityTable).insert([{ user_id: user.id, category_id: categoryId, name, status: 'Learning', notes: '' }]).select();
+            if (error) return toast(error.message, 'error');
+            if (data?.[0]) setPrepTopics((prev) => [...prev, data[0]]);
+            toast('Topic created.', 'success');
+          } else {
+            const { error } = await sb.from(entityTable).update(payload).eq('id', id);
+            if (error) return toast(error.message, 'error');
+            setPrepTopics((prev) => prev.map((item) => item.id === id ? { ...item, ...payload } : item));
+            toast('Topic saved.', 'success');
+          }
+        }
+
+        hideCoreModal();
+      }
+
+      useEffect(() => {
+        const backdrop = $('core-task-modal');
+        const closeBtn = $('core-modal-close');
+        const cancelBtn = $('core-modal-cancel');
+        const saveBtn = $('core-modal-save');
+        if (closeBtn) closeBtn.onclick = hideCoreModal;
+        if (cancelBtn) cancelBtn.onclick = hideCoreModal;
+        if (saveBtn) saveBtn.onclick = saveCoreModalTask;
+        if (backdrop) {
+          backdrop.onclick = (event) => {
+            if (event.target === backdrop) hideCoreModal();
+          };
+        }
+      }, [user, prepTasks, prepCategories, prepTopics, collapsedCategories]);
+
+      function renderCoreView() {
+        const container = $('view-core');
+        if (!container) return;
+        if (prepLoading) {
+          container.innerHTML = '<div class="empty-state">Loading Core…</div>';
+          return;
+        }
+        if (prepError) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <div style="margin-bottom:1rem;color:#f88;">${escapeHtml(prepError)}</div>
+              <button type="button" id="btn-refresh-core" class="btn sm">Retry</button>
+            </div>
+          `;
+          $('btn-refresh-core')?.addEventListener('click', loadPrepData);
+          return;
+        }
+
+        const totalTasks = prepTasks.length;
+        const completedTasks = prepTasks.filter((task) => task.status === 'Complete').length;
+        const progressPercent = totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0;
+        const languagesCategory = prepCategories.find((cat) => cat.name.toLowerCase() === 'languages');
+        const languageTopics = languagesCategory ? prepTopics.filter((topic) => topic.category_id === languagesCategory.id) : [];
+        const otherCategories = prepCategories.filter((cat) => cat.id !== (languagesCategory?.id || ''));
+
+        if (!totalTasks && !prepCategories.length) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <div>No Core data exists yet.</div>
+              <div style="margin-top:1rem;"><button type="button" id="btn-seed-core" class="btn primary sm">Seed Core Defaults</button></div>
+            </div>
+          `;
+          $('btn-seed-core')?.addEventListener('click', seedPrepData);
+          return;
+        }
+
+        const taskHtml = prepTasks.map((task) => `
+          <div class="task-item ${task.status === 'Complete' ? 'done' : ''}">
+            <div class="checkbox ${task.status === 'Complete' ? 'checked' : ''}" data-core-task-toggle="${task.id}" title="Toggle task status">
+              ${task.status === 'Complete' ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>' : ''}
+            </div>
+            <div class="task-body" data-core-task-edit="${task.id}" title="Edit task details">
+              <span class="task-title">${escapeHtml(task.name)}</span>
+              <div class="today-item-cat">${escapeHtml(task.type)} · ${escapeHtml(task.status)}${task.target_date ? ' · Due ' + escapeHtml(task.target_date) : ''}</div>
+            </div>
+            <button type="button" class="task-menu" data-core-task-edit="${task.id}" title="Edit task">
+              ⋯
+            </button>
+          </div>
+        `).join('');
+
+        const languageHtml = languageTopics.map((topic) => `
+          <div class="task-item ${topic.status === 'Completed' ? 'done' : ''}" data-core-topic-edit="${topic.id}" style="cursor:pointer;">
+            <div class="checkbox ${topic.status === 'Completed' ? 'checked' : ''}" data-core-topic-toggle="${topic.id}">
+              ${topic.status === 'Completed' ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>' : ''}
+            </div>
+            <div class="task-body">
+              <span class="task-title">${escapeHtml(topic.name)}</span>
+              <div class="today-item-cat">${escapeHtml(languagesCategory?.name || 'Language')}</div>
+            </div>
+            <button type="button" class="task-menu" data-core-topic-edit="${topic.id}" title="Edit language topic">⋯</button>
+          </div>
+        `).join('');
+
+        const categoryHtml = otherCategories.map((category) => {
+          const topics = prepTopics.filter((topic) => topic.category_id === category.id);
+          const collapsed = collapsedCategories.has(category.id);
+          return `
+            <div class="section">
+              <div class="section-header" data-core-category-toggle="${category.id}">
+                <div class="section-title">${escapeHtml(category.name)}</div>
+                <div style="display:flex;gap:.5rem;align-items:center;">
+                  <button type="button" class="task-menu" data-core-cat-edit="${category.id}" title="Edit category">⋯</button>
+                  <button type="button" class="btn sm" data-core-add-topic="${category.id}">+ Add</button>
+                  <span class="section-count">${topics.length} topics</span>
+                </div>
+              </div>
+              <div class="section-items" style="display:${collapsed ? 'none' : 'flex'};">
+                ${topics.map((topic) => `
+                  <div class="task-item ${topic.status === 'Completed' ? 'done' : ''}" style="cursor:pointer;">
+                    <div class="checkbox ${topic.status === 'Completed' ? 'checked' : ''}" data-core-topic-toggle="${topic.id}">
+                      ${topic.status === 'Completed' ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>' : ''}
+                    </div>
+                    <div class="task-body">
+                      <span class="task-title">${escapeHtml(topic.name)}</span>
+                    </div>
+                    <button type="button" class="task-menu" data-core-topic-edit="${topic.id}" title="Edit topic">⋯</button>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        container.innerHTML = `
+          <div style="display:grid;gap:1rem;">
+            <div style="padding:1rem;border:1px solid rgba(255,255,255,.08);border-radius:18px;display:grid;gap:1rem;">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;">
+                <div>
+                  <div style="font-size:.82rem;color:#999;">Core Tasks</div>
+                  <div style="font-size:1.7rem;font-weight:700;margin-top:.45rem;">${totalTasks}</div>
+                </div>
+                <button type="button" id="btn-add-core-task" class="btn sm">+ Add</button>
+              </div>
+              <div style="display:grid;gap:.5rem;">
+                <div style="font-size:.82rem;color:#999;">${completedTasks} complete</div>
+                <div style="background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden;height:10px;">
+                  <div style="width:${progressPercent}%;height:100%;background:var(--accent);"></div>
+                </div>
+                <div style="font-size:.78rem;color:#999;">${progressPercent}% complete</div>
+              </div>
+              ${taskHtml || '<div class="empty-state">No core tasks yet.</div>'}
+            </div>
+            <div style="padding:1rem;border:1px solid rgba(255,255,255,.08);border-radius:18px;display:grid;gap:1rem;">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;">
+                <div>
+                  <div style="font-size:.82rem;color:#999;">Languages</div>
+                  <div style="font-size:1.7rem;font-weight:700;margin-top:.45rem;">${languageTopics.length}</div>
+                </div>
+                <div style="display:flex;gap:.5rem;align-items:center;">
+                  <button type="button" id="btn-add-language" class="btn sm">+ Add</button>
+                  ${languagesCategory ? `<button type="button" class="task-menu" data-core-lang-edit="${languagesCategory.id}" title="Edit language category">⋯</button>` : ''}
+                </div>
+              </div>
+              ${languageHtml || '<div class="empty-state">No language topics yet.</div>'}
+            </div>
+            <div style="padding:1rem;border:1px solid rgba(255,255,255,.08);border-radius:18px;display:grid;gap:1rem;">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;">
+                <div>
+                  <div style="font-size:.82rem;color:#999;">Knowledge Categories</div>
+                  <div style="font-size:1.1rem;font-weight:700;margin-top:.45rem;">${otherCategories.length} categories</div>
+                </div>
+                <button type="button" id="btn-add-core-category" class="btn sm">+ Add</button>
+              </div>
+              ${categoryHtml || '<div class="empty-state">No knowledge categories yet.</div>'}
+            </div>
+          </div>
+        `;
+
+        $('btn-add-core-task')?.addEventListener('click', () => openCoreModal(null, 'create'));
+        $('btn-add-language')?.addEventListener('click', async () => {
+          const name = prompt('Language topic name');
+          if (!name) return;
+          const sb = getSupabase();
+          if (!sb) return toast('Supabase connection unavailable.', 'error');
+          let categoryId = languagesCategory?.id;
+          if (!categoryId) {
+            const { data, error } = await sb.from('knowledge_categories').insert([{ user_id: user.id, name: 'Languages' }]).select();
+            if (error) return toast(error.message, 'error');
+            categoryId = data?.[0]?.id;
+            if (categoryId && data?.[0]) setPrepCategories((prev) => [...prev, data[0]]);
+          }
+          const { data, error } = await sb.from('knowledge_topics').insert([{ user_id: user.id, category_id: categoryId, name, status: 'Learning', notes: '' }]).select();
+          if (error) return toast(error.message, 'error');
+          if (data?.[0]) setPrepTopics((prev) => [...prev, data[0]]);
+        });
+        $('btn-add-core-category')?.addEventListener('click', async () => {
+          const name = prompt('Category name');
+          if (!name) return;
+          const sb = getSupabase();
+          if (!sb) return toast('Supabase connection unavailable.', 'error');
+          const { data, error } = await sb.from('knowledge_categories').insert([{ user_id: user.id, name }]).select();
+          if (error) return toast(error.message, 'error');
+          if (data?.[0]) setPrepCategories((prev) => [...prev, data[0]]);
+        });
+
+        container.querySelectorAll('[data-core-task-edit]').forEach((btn) => {
+          btn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            const id = btn.dataset.coreTaskEdit;
+            const task = prepTasks.find((item) => item.id === id);
+            if (!task) return;
+            openCoreModal(task, 'edit');
+          });
+        });
+        container.querySelectorAll('[data-core-category-toggle]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const id = btn.dataset.coreCategoryToggle;
+            setCollapsedCategories((prev) => {
+              const next = new Set(prev);
+              if (next.has(id)) next.delete(id);
+              else next.add(id);
+              return next;
+            });
+          });
+        });
+        container.querySelectorAll('[data-core-cat-edit]').forEach((btn) => {
+          btn.addEventListener('click', async (event) => {
+            event.stopPropagation();
+            const id = btn.dataset.coreCatEdit;
+            const category = prepCategories.find((item) => item.id === id);
+            if (!category) return;
+            const name = prompt('Edit category name', category.name);
+            if (!name || name === category.name) return;
+            const sb = getSupabase();
+            if (!sb) return toast('Supabase connection unavailable.', 'error');
+            const { error } = await sb.from('knowledge_categories').update({ name }).eq('id', id);
+            if (error) return toast(error.message, 'error');
+            setPrepCategories((prev) => prev.map((item) => item.id === id ? { ...item, name } : item));
+          });
+        });
+        container.querySelectorAll('[data-core-lang-edit]').forEach((btn) => {
+          btn.addEventListener('click', async (event) => {
+            event.stopPropagation();
+            const id = btn.dataset.coreLangEdit;
+            const category = prepCategories.find((item) => item.id === id);
+            if (!category) return;
+            const name = prompt('Edit language category name', category.name);
+            if (!name || name === category.name) return;
+            const sb = getSupabase();
+            if (!sb) return toast('Supabase connection unavailable.', 'error');
+            const { error } = await sb.from('knowledge_categories').update({ name }).eq('id', id);
+            if (error) return toast(error.message, 'error');
+            setPrepCategories((prev) => prev.map((item) => item.id === id ? { ...item, name } : item));
+          });
+        });
+        container.querySelectorAll('[data-core-topic-edit]').forEach((btn) => {
+          btn.addEventListener('click', async (event) => {
+            event.stopPropagation();
+            const id = btn.dataset.coreTopicEdit;
+            const topic = prepTopics.find((item) => item.id === id);
+            if (!topic) return;
+            const name = prompt('Edit topic name', topic.name);
+            if (!name || name === topic.name) return;
+            const sb = getSupabase();
+            if (!sb) return toast('Supabase connection unavailable.', 'error');
+            const { error } = await sb.from('knowledge_topics').update({ name }).eq('id', id);
+            if (error) return toast(error.message, 'error');
+            setPrepTopics((prev) => prev.map((item) => item.id === id ? { ...item, name } : item));
+          });
+        });
+        container.querySelectorAll('[data-core-add-topic]').forEach((btn) => {
+          btn.addEventListener('click', async (event) => {
+            event.stopPropagation();
+            const id = btn.dataset.coreAddTopic;
+            const name = prompt('Add a new sub-category/topic');
+            if (!name) return;
+            const sb = getSupabase();
+            if (!sb) return toast('Supabase connection unavailable.', 'error');
+            const { data, error } = await sb.from('knowledge_topics').insert([{ user_id: user.id, category_id: id, name, status: 'Learning', notes: '' }]).select();
+            if (error) return toast(error.message, 'error');
+            if (data?.[0]) setPrepTopics((prev) => [...prev, data[0]]);
+          });
+        });
+        container.querySelectorAll('[data-core-task-toggle]').forEach((btn) => {
+          btn.addEventListener('click', async (event) => {
+            event.stopPropagation();
+            const id = btn.dataset.coreTaskToggle;
+            const task = prepTasks.find((item) => item.id === id);
+            if (!task) return;
+            const nextStatus = task.status === 'Complete' ? 'In Progress' : 'Complete';
+            const payload = { status: nextStatus, completion_date: nextStatus === 'Complete' ? new Date().toISOString().slice(0, 10) : null };
+            const sb = getSupabase();
+            if (!sb) return toast('Supabase connection unavailable.', 'error');
+            const { error } = await sb.from('prep_tasks').update(payload).eq('id', id);
+            if (error) return toast(error.message, 'error');
+            setPrepTasks((prev) => prev.map((item) => item.id === id ? { ...item, ...payload } : item));
+          });
+        });
+
+        container.querySelectorAll('[data-core-topic-toggle]').forEach((btn) => {
+          btn.addEventListener('click', async (event) => {
+            event.stopPropagation();
+            const id = btn.dataset.coreTopicToggle;
+            const topic = prepTopics.find((item) => item.id === id);
+            if (!topic) return;
+            const nextStatus = topic.status === 'Completed' ? 'Learning' : 'Completed';
+            const payload = { status: nextStatus };
+            const sb = getSupabase();
+            if (!sb) return toast('Supabase connection unavailable.', 'error');
+            const { error } = await sb.from('knowledge_topics').update(payload).eq('id', id);
+            if (error) return toast(error.message, 'error');
+            setPrepTopics((prev) => prev.map((item) => item.id === id ? { ...item, ...payload } : item));
+          });
+        });
+      }
 
       // ── Actions ──
       async function markDone(task) {
@@ -2019,30 +2642,12 @@
         </div>`;
       }
 
-      // Render Checklist View
-      useEffect(() => {
-        const container = $('view-checklist');
-        if (!container) return;
-        if (loading) { container.innerHTML = '<div class="empty-state">Loading checklist…</div>'; return; }
-        if (tasks.length === 0) { container.innerHTML = '<div class="empty-state">No problems loaded.</div>'; return; }
-
-        let html = `
-          <div class="checklist-controls">
-            <input type="text" id="checklist-search" class="checklist-search" placeholder="Search 180+ problems or categories..." value="${searchQuery}" />
-            <div class="tier-filters">
-              <button class="filter-pill ${selectedTier === 'all' ? 'active' : ''}" data-tier="all">All</button>
-              <button class="filter-pill ${selectedTier === '1' ? 'active' : ''}" data-tier="1">Tier 1 Essential</button>
-              <button class="filter-pill ${selectedTier === '2' ? 'active' : ''}" data-tier="2">Tier 2 Important</button>
-              <button class="filter-pill ${selectedTier === '3' ? 'active' : ''}" data-tier="3">Tier 3 Bonus</button>
-            </div>
-          </div>
-        `;
-
+      function buildChecklistHtml() {
         const query = searchQuery.toLowerCase().trim();
         const filterTiers = selectedTier === 'all' ? [1, 2, 3] : [Number(selectedTier)];
         const tierLabels = { 1: "TIER 1 — Essential (MUST DO)", 2: "TIER 2 — Important (SHOULD DO)", 3: "TIER 3 — Bonus (NICE TO HAVE)" };
-
         let matchCount = 0;
+        let html = '';
 
         filterTiers.forEach(tier => {
           const tierGuide = GUIDE.filter(g => g.tier === tier);
@@ -2096,18 +2701,58 @@
           html += '<div class="empty-state">No matching problems found. Try clearing your search filter.</div>';
         }
 
-        container.innerHTML = html;
+        return html;
+      }
 
-        const searchInput = $('checklist-search');
-        if (searchInput) {
-          searchInput.addEventListener('input', (e) => setSearchQuery(e.target.value));
+      useEffect(() => {
+        const container = $('view-checklist');
+        if (!container) return;
+        if (loading) { container.innerHTML = '<div class="empty-state">Loading checklist…</div>'; return; }
+        if (tasks.length === 0) { container.innerHTML = '<div class="empty-state">No problems loaded.</div>'; return; }
+
+        if (!container.querySelector('.checklist-controls')) {
+          container.innerHTML = `
+            <div class="checklist-controls">
+              <input type="text" id="checklist-search" class="checklist-search" placeholder="Search 180+ problems or categories..." value="${searchQuery}" />
+              <div class="tier-filters">
+                <button class="filter-pill ${selectedTier === 'all' ? 'active' : ''}" data-tier="all">All</button>
+                <button class="filter-pill ${selectedTier === '1' ? 'active' : ''}" data-tier="1">Tier 1 Essential</button>
+                <button class="filter-pill ${selectedTier === '2' ? 'active' : ''}" data-tier="2">Tier 2 Important</button>
+                <button class="filter-pill ${selectedTier === '3' ? 'active' : ''}" data-tier="3">Tier 3 Bonus</button>
+              </div>
+            </div>
+            <div id="checklist-items"></div>
+          `;
+        } else {
+          const searchInput = $('checklist-search');
+          if (searchInput) searchInput.value = searchQuery;
+          container.querySelectorAll('[data-tier]').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tier === selectedTier);
+          });
         }
 
+        const searchInput = $('checklist-search');
+        if (searchInput && !searchInput.dataset.listenerAttached) {
+          searchInput.addEventListener('input', (e) => {
+            window.clearTimeout(searchDebounceRef.current);
+            searchDebounceRef.current = window.setTimeout(() => {
+              setSearchQuery(e.target.value);
+            }, 120);
+          });
+          searchInput.dataset.listenerAttached = '1';
+        }
+
+        const itemsContainer = $('checklist-items');
+        if (!itemsContainer) return;
+        itemsContainer.innerHTML = buildChecklistHtml();
+
         container.querySelectorAll('[data-tier]').forEach(btn => {
+          if (btn.dataset.listenerAttached) return;
           btn.addEventListener('click', () => setSelectedTier(btn.dataset.tier));
+          btn.dataset.listenerAttached = '1';
         });
 
-        container.querySelectorAll('[data-toggle]').forEach(el => {
+        itemsContainer.querySelectorAll('[data-toggle]').forEach(el => {
           el.addEventListener('click', () => {
             const key = el.dataset.toggle;
             setCollapsed(prev => {
@@ -2118,7 +2763,7 @@
           });
         });
 
-        container.querySelectorAll('[data-cb]').forEach(el => {
+        itemsContainer.querySelectorAll('[data-cb]').forEach(el => {
           el.addEventListener('click', (e) => {
             e.stopPropagation();
             const id = el.dataset.cb;

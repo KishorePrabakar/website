@@ -1,15 +1,21 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 const resendApiKey = process.env.RESEND_API_KEY
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
-}
+let supabaseClient: SupabaseClient | null = null
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export function getSupabaseClient() {
+  if (!supabaseClient) {
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error('Missing Supabase environment variables')
+    }
+    supabaseClient = createClient(supabaseUrl, supabaseAnonKey)
+  }
+  return supabaseClient
+}
 
 // Initialize Resend if API key is available
 export const resend = resendApiKey ? new Resend(resendApiKey) : null

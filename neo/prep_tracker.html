@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prep Tracker</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f5f5;
+      padding: 2rem;
+      color: #333;
+    }
+    
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 2rem;
+      color: #000;
+    }
+    
+    .tracker {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    
+    .section {
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 1.5rem;
+    }
+    
+    .section:last-of-type {
+      border-bottom: none;
+    }
+    
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      padding: 8px 0;
+      user-select: none;
+      transition: background 0.2s;
+    }
+    
+    .section-header:hover {
+      background: #f9f9f9;
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin: 0 -12px;
+    }
+    
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #000;
+      flex: 1;
+    }
+    
+    .section-toggle {
+      font-size: 16px;
+      color: #666;
+      min-width: 20px;
+      text-align: center;
+    }
+    
+    .section-content {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .section-content.hidden {
+      display: none;
+    }
+    
+    .category-label {
+      font-size: 12px;
+      color: #999;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 12px;
+      margin-bottom: 8px;
+    }
+    
+    .category-label:first-child {
+      margin-top: 0;
+    }
+    
+    .item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #e0e0e0;
+      background: white;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    
+    .item:hover {
+      background: #fafafa;
+      border-color: #d0d0d0;
+    }
+    
+    .item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: #2563eb;
+      flex-shrink: 0;
+    }
+    
+    .item-label {
+      flex: 1;
+      font-size: 14px;
+      color: #333;
+      cursor: pointer;
+      user-select: none;
+    }
+    
+    .item.completed .item-label {
+      text-decoration: line-through;
+      color: #999;
+    }
+    
+    .habits-card {
+      background: #f9f9f9;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+      padding: 1.5rem;
+      margin-top: 2rem;
+    }
+    
+    .habits-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #000;
+      margin-bottom: 12px;
+    }
+    
+    .habits-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+    }
+    
+    .habit-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #e0e0e0;
+      background: white;
+      transition: background 0.2s;
+    }
+    
+    .habit-item:hover {
+      background: #fafafa;
+    }
+    
+    .habit-item input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      accent-color: #2563eb;
+      flex-shrink: 0;
+    }
+    
+    .habit-label {
+      font-size: 13px;
+      color: #333;
+      cursor: pointer;
+      user-select: none;
+      flex: 1;
+    }
+    
+    .habit-item.completed .habit-label {
+      text-decoration: line-through;
+      color: #999;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: #1a1a1a;
+        color: #e0e0e0;
+      }
+      
+      .container {
+        background: #2a2a2a;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      }
+      
+      h1 {
+        color: #fff;
+      }
+      
+      .section {
+        border-bottom-color: #444;
+      }
+      
+      .section-header:hover {
+        background: #333;
+      }
+      
+      .section-title {
+        color: #fff;
+      }
+      
+      .section-toggle {
+        color: #999;
+      }
+      
+      .category-label {
+        color: #666;
+      }
+      
+      .item {
+        background: #333;
+        border-color: #444;
+      }
+      
+      .item:hover {
+        background: #3a3a3a;
+        border-color: #555;
+      }
+      
+      .item-label {
+        color: #e0e0e0;
+      }
+      
+      .item.completed .item-label {
+        color: #666;
+      }
+      
+      .habits-card {
+        background: #333;
+        border-color: #444;
+      }
+      
+      .habits-title {
+        color: #fff;
+      }
+      
+      .habit-item {
+        background: #3a3a3a;
+        border-color: #444;
+      }
+      
+      .habit-item:hover {
+        background: #404040;
+      }
+      
+      .habit-label {
+        color: #e0e0e0;
+      }
+      
+      .habit-item.completed .habit-label {
+        color: #666;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Prep Tracker</h1>
+    
+    <div class="tracker">
+      <div class="section">
+        <div class="section-header" onclick="toggleSection(event)">
+          <span class="section-title">Tasks</span>
+          <span class="section-toggle">↓</span>
+        </div>
+        <div class="section-content">
+          <label class="item"><input type="checkbox"> <span class="item-label">GoDocklet</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">AlphaRook</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Accio</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">LLD Project 1</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">LLD Project 2</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">LLD Project 3</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Go Lang Cert</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Docker Cert</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">AWS Cert</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Backend Dev APIs freeCodeCamp</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Kubernetes Linux Foundation</span></label>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-header" onclick="toggleSection(event)">
+          <span class="section-title">Knowledge</span>
+          <span class="section-toggle">↓</span>
+        </div>
+        <div class="section-content">
+          <div class="category-label">Languages</div>
+          <label class="item"><input type="checkbox"> <span class="item-label">Go</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Java</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Python</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">JavaScript</span></label>
+          
+          <div class="category-label">Frontend</div>
+          <label class="item"><input type="checkbox"> <span class="item-label">HTML</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">CSS</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">React</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Vite</span></label>
+          
+          <div class="category-label">Backend</div>
+          <label class="item"><input type="checkbox"> <span class="item-label">Node.js</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Express</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">REST APIs</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">JWT Auth</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">WebSockets</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">net/http</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Gorilla WebSocket</span></label>
+          
+          <div class="category-label">Databases</div>
+          <label class="item"><input type="checkbox"> <span class="item-label">SQL</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">PostgreSQL</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">MongoDB</span></label>
+          
+          <div class="category-label">Infrastructure/Tools</div>
+          <label class="item"><input type="checkbox"> <span class="item-label">Git</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">GitHub</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Linux</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Docker</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Postman</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">VS Code</span></label>
+          
+          <div class="category-label">System Design & Concepts</div>
+          <label class="item"><input type="checkbox"> <span class="item-label">System Design basics</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">CI/CD</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Namespaces</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">OverlayFS</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Cgroups</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">LLM / AI Agents</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Databases internals</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Caching (Redis, LRU, TTL)</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Load balancing</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Microservices</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">URL Shortener design</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Chat System design</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Notification System design</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Distributed Cache design</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Payment System design</span></label>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-header" onclick="toggleSection(event)">
+          <span class="section-title">Mock Interviews</span>
+          <span class="section-toggle">↓</span>
+        </div>
+        <div class="section-content">
+          <label class="item"><input type="checkbox"> <span class="item-label">Mock OA #1</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Mock OA #2</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Mock OA #3</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Mock OA #4</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Mock OA #5</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Mock OA #6</span></label>
+          <label class="item"><input type="checkbox"> <span class="item-label">Technical Mock #1</span></label>
+        </div>
+      </div>
+
+      <div class="habits-card">
+        <div class="habits-title">Daily habits</div>
+        <div class="habits-grid">
+          <label class="habit-item"><input type="checkbox"> <span class="habit-label">Commit to GitHub</span></label>
+          <label class="habit-item"><input type="checkbox"> <span class="habit-label">Post on social</span></label>
+          <label class="habit-item"><input type="checkbox"> <span class="habit-label">Review weak areas</span></label>
+          <label class="habit-item"><input type="checkbox"> <span class="habit-label">Practice explaining</span></label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleSection(event) {
+      const header = event.currentTarget;
+      const content = header.nextElementSibling;
+      const toggle = header.querySelector('.section-toggle');
+      
+      content.classList.toggle('hidden');
+      toggle.textContent = content.classList.contains('hidden') ? '→' : '↓';
+      
+      // Save state to localStorage
+      const sectionTitle = header.querySelector('.section-title').textContent;
+      const isHidden = content.classList.contains('hidden');
+      localStorage.setItem(`section-${sectionTitle}`, isHidden);
+    }
+
+    // Restore section states from localStorage
+    document.querySelectorAll('.section-header').forEach(header => {
+      const sectionTitle = header.querySelector('.section-title').textContent;
+      const isHidden = localStorage.getItem(`section-${sectionTitle}`) === 'true';
+      
+      if (isHidden) {
+        const content = header.nextElementSibling;
+        content.classList.add('hidden');
+        header.querySelector('.section-toggle').textContent = '→';
+      }
+    });
+
+    // Add completed state tracking
+    document.querySelectorAll('.item input, .habit-item input').forEach(checkbox => {
+      checkbox.addEventListener('change', function() {
+        this.closest('.item, .habit-item').classList.toggle('completed', this.checked);
+        
+        // Save state to localStorage
+        const itemLabel = this.closest('.item, .habit-item').querySelector('.item-label, .habit-label').textContent;
+        localStorage.setItem(`item-${itemLabel}`, this.checked);
+      });
+      
+      // Restore completed state
+      const itemLabel = checkbox.closest('.item, .habit-item').querySelector('.item-label, .habit-label').textContent;
+      const wasChecked = localStorage.getItem(`item-${itemLabel}`) === 'true';
+      if (wasChecked) {
+        checkbox.checked = true;
+        checkbox.closest('.item, .habit-item').classList.add('completed');
+      }
+    });
+  </script>
+</body>
+</html>

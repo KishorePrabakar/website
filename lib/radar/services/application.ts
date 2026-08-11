@@ -1,4 +1,4 @@
-import { supabase, Application as DBApplication } from '../db/schema'
+import { getSupabaseClient, Application as DBApplication } from '../db/schema'
 
 export interface Application {
   id: string
@@ -28,6 +28,7 @@ export class ApplicationTracker {
   async saveApplication(jobId: string, jobData: { title: string; company: string }): Promise<Application> {
     const id = this.generateApplicationId(jobId)
 
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('applications')
       .insert({
@@ -67,6 +68,7 @@ export class ApplicationTracker {
       updateData.notes = notes
     }
 
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('applications')
       .update(updateData)
@@ -83,6 +85,7 @@ export class ApplicationTracker {
   }
 
   async getApplication(applicationId: string): Promise<Application | null> {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('applications')
       .select()
@@ -95,6 +98,7 @@ export class ApplicationTracker {
   }
 
   async getAllApplications(): Promise<Application[]> {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('applications')
       .select()
@@ -109,6 +113,7 @@ export class ApplicationTracker {
   }
 
   async getApplicationsByStatus(status: Application['status']): Promise<Application[]> {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('applications')
       .select()
@@ -144,6 +149,7 @@ export class ApplicationTracker {
   }
 
   async deleteApplication(applicationId: string): Promise<boolean> {
+    const supabase = getSupabaseClient()
     const { error } = await supabase
       .from('applications')
       .delete()
