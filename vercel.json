@@ -1,6 +1,6 @@
 {
-  "framework": "nextjs",
-  "buildCommand": "npm run build",
+  "framework": null,
+  "buildCommand": "",
   "installCommand": "",
   "functions": {
     "api/resume.js": {
