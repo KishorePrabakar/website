@@ -108,14 +108,16 @@ function renderItem(item, depth, catIndex) {
     }
     row.appendChild(toggle);
 
-    // Checkbox
-    const cb = document.createElement('div');
-    cb.className = `il-checkbox ${item.completed ? 'checked' : ''} ${!state.editing ? 'readonly' : ''}`;
-    cb.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>';
-    if (state.editing) {
-        cb.addEventListener('click', () => toggleCompleted(item));
+    // Checkbox (only for leaf items / goals)
+    if (!hasChildren) {
+        const cb = document.createElement('div');
+        cb.className = `il-checkbox ${item.completed ? 'checked' : ''} ${!state.editing ? 'readonly' : ''}`;
+        cb.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>';
+        if (state.editing) {
+            cb.addEventListener('click', () => toggleCompleted(item));
+        }
+        row.appendChild(cb);
     }
-    row.appendChild(cb);
 
     // Title
     const title = document.createElement('div');
