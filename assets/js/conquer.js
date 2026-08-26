@@ -2,8 +2,8 @@
 const SUPABASE_URL = 'https://kbmimkfdhblyrdskdcxc.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_fBTnwIh34wJb61_aXNzk6Q_sv5oZkoG';
 
-let supabase = null;
-try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
+let db = null;
+try { db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
 catch (e) { console.warn('Supabase init failed', e); }
 
 // ─── State ─────────────────────────────────────────────────────────────────
@@ -298,8 +298,8 @@ function setupDrop(el, item) {
 
 // ─── CRUD Operations ────────────────────────────────────────────────────────
 async function createItem(parentId, title, sortOrder) {
-    if (!supabase || !state.user) return;
-    const { data, error } = await supabase.from('impossible_items').insert({
+    if (!db || !state.user) return;
+    const { data, error } = await db.from('impossible_items').insert({
         user_id: state.user.id,
         parent_id: parentId || null,
         title,
@@ -312,8 +312,8 @@ async function createItem(parentId, title, sortOrder) {
 }
 
 async function updateItem(item, updates) {
-    if (!supabase || !state.user) return;
-    const { error } = await supabase.from('impossible_items')
+    if (!db || !state.user) return;
+    const { error } = await db.from('impossible_items')
         .update({ ...updates, updated_at: new Date().toISOString() })
         .eq('id', item.id);
     if (error) { toast(error.message, 'error'); return; }
@@ -321,7 +321,7 @@ async function updateItem(item, updates) {
 }
 
 async function deleteItem(item) {
-    if (!supabase || !state.user) return;
+    if (!db || !state.user) return;
     // Collect all descendant IDs
     const ids = [item.id];
     function collectIds(node) {
@@ -329,7 +329,7 @@ async function deleteItem(item) {
     }
     collectIds(item);
 
-    const { error } = await supabase.from('impossible_items').delete().in('id', ids);
+    const { error } = await db.from('impossible_items').delete().in('id', ids);
     if (error) { toast(error.message, 'error'); return; }
 
     // Remove from state
@@ -417,7 +417,7 @@ function bindAuth() {
         const email = $('il-auth-email').value.trim();
         const pass = $('il-auth-pass').value;
         if (!email || !pass) return toast('enter email and password', 'error');
-        const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
+        const { error } = await db.auth.signInWithPassword({ email, password: pass });
         if (error) { toast(error.message, 'error'); return; }
         hideAuthModal();
     });
@@ -425,14 +425,14 @@ function bindAuth() {
         const email = $('il-auth-email').value.trim();
         const pass = $('il-auth-pass').value;
         if (!email || !pass) return toast('enter email and password', 'error');
-        const { error } = await supabase.auth.signUp({ email, password: pass });
+        const { error } = await db.auth.signUp({ email, password: pass });
         if (error) toast(error.message, 'error');
         else toast('check your email to confirm', 'success');
     });
     $('il-auth-close').addEventListener('click', hideAuthModal);
     $('il-auth-overlay').addEventListener('click', e => { if (e.target === e.currentTarget) hideAuthModal(); });
     $('il-logout').addEventListener('click', async () => {
-        await supabase.auth.signOut();
+        await db.auth.signOut();
     });
     // Enter key
     $('il-auth-pass').addEventListener('keydown', e => { if (e.key === 'Enter') $('il-auth-login').click(); });
@@ -483,11 +483,11 @@ const SEED_CATEGORIES = [
 ];
 
 async function seedDB() {
-    if (!supabase || !state.user) return;
+    if (!db || !state.user) return;
     toast('seeding initial structure…');
     for (let i = 0; i < SEED_CATEGORIES.length; i++) {
         const cat = SEED_CATEGORIES[i];
-        const { data: catItem, error: catErr } = await supabase.from('impossible_items').insert({
+        const { data: catItem, error: catErr } = await db.from('impossible_items').insert({
             user_id: state.user.id,
             parent_id: null,
             title: cat.title,
@@ -497,7 +497,7 @@ async function seedDB() {
         state.items.push(catItem);
 
         for (let j = 0; j < cat.children.length; j++) {
-            const { data: child } = await supabase.from('impossible_items').insert({
+            const { data: child } = await db.from('impossible_items').insert({
                 user_id: state.user.id,
                 parent_id: catItem.id,
                 title: cat.children[j],
@@ -513,7 +513,7 @@ async function loadData() {
     $('il-loading').style.display = '';
     $('il-tree').style.display = 'none';
 
-    const { data, error } = await supabase.from('impossible_items')
+    const { data, error } = await db.from('impossible_items')
         .select('*')
         .order('sort_order');
 
@@ -541,12 +541,12 @@ async function init() {
     bindAuth();
     setupNeoKeySequence();
 
-    if (!supabase) {
+    if (!db) {
         $('il-loading').textContent = 'supabase not configured';
         return;
     }
 
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await db.auth.getSession();
     state.user = session?.user ?? null;
 
     if (state.user) {
@@ -560,7 +560,7 @@ async function init() {
 
         // Try to load anyway in case there's a public policy
         try {
-            const { data, error } = await supabase.from('impossible_items')
+            const { data, error } = await db.from('impossible_items')
                 .select('*')
                 .order('sort_order');
             if (!error && data && data.length > 0) {
@@ -574,7 +574,7 @@ async function init() {
         } catch {}
     }
 
-    supabase.auth.onAuthStateChange(async (_ev, sess) => {
+    db.auth.onAuthStateChange(async (_ev, sess) => {
         const wasUser = !!state.user;
         state.user = sess?.user ?? null;
 
