@@ -541,8 +541,29 @@
         body.authenticated .il-drag-handle { display: flex; }
         body:not(.authenticated) .il-drag-handle { display: none; }
         .il-drag-handle svg { width: 10px; height: 10px; }
-        .il-item.dragging { opacity: 0.4; }
-        .il-item.drag-over > .il-item-row { background: var(--il-accent-dim); }
+        .il-item.dragging { opacity: 0.3; }
+        .il-item.drag-over-before > .il-item-row::before {
+            content: '';
+            position: absolute;
+            left: 0; right: 0; top: -1px;
+            height: 2px;
+            background: var(--il-accent);
+            border-radius: 1px;
+            z-index: 1;
+        }
+        .il-item.drag-over-after > .il-item-row::after {
+            content: '';
+            position: absolute;
+            left: 0; right: 0; bottom: -1px;
+            height: 2px;
+            background: var(--il-accent);
+            border-radius: 1px;
+            z-index: 1;
+        }
+        .il-item.drag-over-inside > .il-item-row {
+            background: var(--il-accent-dim);
+            outline: 1px dashed rgba(167,139,250,0.4);
+        }
     </style>
 </head>
 <body>

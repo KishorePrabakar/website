@@ -246,56 +246,122 @@ function renderItem(item, depth, catIndex) {
 
 // ─── Drag & Drop ────────────────────────────────────────────────────────────
 let dragItem = null;
+let dragOverEl = null;
+let dragPosition = null; // 'before' | 'after' | 'inside'
 
 function setupDrag(handle, item) {
     handle.addEventListener('dragstart', e => {
         dragItem = item;
         e.dataTransfer.effectAllowed = 'move';
-        handle.closest('.il-item').classList.add('dragging');
+        e.dataTransfer.setData('text/plain', item.id);
+        requestAnimationFrame(() => handle.closest('.il-item')?.classList.add('dragging'));
     });
     handle.addEventListener('dragend', () => {
         dragItem = null;
-        document.querySelectorAll('.dragging, .drag-over').forEach(el => el.classList.remove('dragging', 'drag-over'));
+        clearDropIndicators();
     });
+}
+
+function clearDropIndicators() {
+    document.querySelectorAll('.dragging, .drag-over-before, .drag-over-after, .drag-over-inside')
+        .forEach(el => el.classList.remove('dragging', 'drag-over-before', 'drag-over-after', 'drag-over-inside'));
+    dragOverEl = null;
+    dragPosition = null;
 }
 
 function setupDrop(el, item) {
     el.addEventListener('dragover', e => {
         if (!dragItem || dragItem.id === item.id) return;
-        if (dragItem.parent_id === item.id) return;
+        // Prevent dropping a parent onto its own child
+        if (isDescendant(dragItem.id, item.id)) return;
+
         e.preventDefault();
-        el.classList.add('drag-over');
+        e.dataTransfer.dropEffect = 'move';
+
+        const rect = el.getBoundingClientRect();
+        const y = e.clientY - rect.top;
+        const h = rect.height;
+        const hasChildren = item.children && item.children.length > 0;
+
+        let pos;
+        if (hasChildren && y > h * 0.25 && y < h * 0.75) {
+            pos = 'inside';
+        } else if (y < h / 2) {
+            pos = 'before';
+        } else {
+            pos = 'after';
+        }
+
+        if (dragOverEl !== el || dragPosition !== pos) {
+            clearDropIndicators();
+            dragOverEl = el;
+            dragPosition = pos;
+            el.classList.add(pos === 'before' ? 'drag-over-before' : pos === 'after' ? 'drag-over-after' : 'drag-over-inside');
+        }
     });
-    el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+
+    el.addEventListener('dragleave', e => {
+        // Only clear if actually leaving the element (not entering a child)
+        if (!el.contains(e.relatedTarget)) {
+            el.classList.remove('drag-over-before', 'drag-over-after', 'drag-over-inside');
+            if (dragOverEl === el) { dragOverEl = null; dragPosition = null; }
+        }
+    });
+
     el.addEventListener('drop', async e => {
         e.preventDefault();
-        el.classList.remove('drag-over');
+        clearDropIndicators();
         if (!dragItem || dragItem.id === item.id) return;
+        if (isDescendant(dragItem.id, item.id)) return;
 
-        // Move dragged item to be a sibling before/after this item
-        const newParentId = item.parent_id || null;
-        const siblings = state.items.filter(i => i.parent_id === newParentId && i.id !== dragItem.id);
-        const targetIdx = siblings.findIndex(i => i.id === item.id);
-        const dragIdx = siblings.findIndex(i => i.id === dragItem.id);
+        let newParentId;
+        let newSortIndex;
 
-        let newOrder;
-        if (dragIdx !== -1 && dragIdx < targetIdx) {
-            // Moving down
-            newOrder = siblings.splice(targetIdx, 0, dragItem);
+        if (dragPosition === 'inside') {
+            // Drop into this item as first child
+            newParentId = item.id;
+            const children = state.items.filter(i => i.parent_id === newParentId && i.id !== dragItem.id);
+            newSortIndex = 0;
+            for (let i = 0; i < children.length; i++) {
+                children[i].sort_order = i + 1;
+            }
+            await updateItem(dragItem, { parent_id: newParentId, sort_order: 0 });
+            for (const child of children) {
+                await updateItem(child, { sort_order: child.sort_order });
+            }
         } else {
-            // Moving up or from different parent
-            siblings.splice(targetIdx + 1, 0, dragItem);
-        }
+            // Drop before/after this item (same parent)
+            newParentId = item.parent_id || null;
+            const siblings = state.items.filter(i => i.parent_id === newParentId && i.id !== dragItem.id);
+            const targetIdx = siblings.findIndex(i => i.id === item.id);
 
-        // Update parent and sort orders
-        await updateItem(dragItem, { parent_id: newParentId });
-        for (let i = 0; i < siblings.length; i++) {
-            if (siblings[i].sort_order !== i || siblings[i].parent_id !== newParentId) {
-                await updateItem(siblings[i], { sort_order: i, parent_id: newParentId });
+            if (dragPosition === 'before') {
+                siblings.splice(targetIdx, 0, dragItem);
+            } else {
+                siblings.splice(targetIdx + 1, 0, dragItem);
+            }
+
+            await updateItem(dragItem, { parent_id: newParentId });
+            for (let i = 0; i < siblings.length; i++) {
+                if (siblings[i].sort_order !== i) {
+                    await updateItem(siblings[i], { sort_order: i });
+                }
             }
         }
+
+        state.expanded.add(newParentId);
         render();
     });
+}
+
+function isDescendant(parentId, childId) {
+    let current = state.items.find(i => i.id === childId);
+    while (current) {
+        if (current.parent_id === parentId) return true;
+        if (!current.parent_id) return false;
+        current = state.items.find(i => i.id === current.parent_id);
+    }
+    return false;
 }
 
 // ─── CRUD Operations ────────────────────────────────────────────────────────
