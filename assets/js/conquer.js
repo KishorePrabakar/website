@@ -351,6 +351,7 @@ function setupDrop(el, item) {
 
         state.expanded.add(newParentId);
         render();
+        toast('reordered', 'success');
     });
 }
 
@@ -626,9 +627,11 @@ async function init() {
         state.user = sess?.user ?? null;
 
         if (state.user && !wasUser) {
+            toast('logged in', 'success');
             setEditing(true);
             await loadData();
         } else if (!state.user && wasUser) {
+            toast('logged out', 'success');
             setEditing(false);
             await loadData();
         }
