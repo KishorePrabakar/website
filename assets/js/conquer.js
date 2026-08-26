@@ -549,30 +549,9 @@ async function init() {
     const { data: { session } } = await db.auth.getSession();
     state.user = session?.user ?? null;
 
-    if (state.user) {
-        setEditing(true);
-        await loadData();
-    } else {
-        // Public read-only mode — still load data but via public anon
-        // Since RLS requires auth, we'll show a message
-        $('il-loading').innerHTML = '<div style="text-align:center"><p style="color:var(--il-dim);margin-bottom:0.5rem">this list is private.</p><p style="font-size:0.75rem;color:var(--il-dim)">type <span style="color:var(--il-accent);font-family:JetBrains Mono,monospace">neo</span> to authenticate.</p></div>';
-        $('il-tree').style.display = 'none';
+    if (state.user) setEditing(true);
 
-        // Try to load anyway in case there's a public policy
-        try {
-            const { data, error } = await db.from('impossible_items')
-                .select('*')
-                .order('sort_order');
-            if (!error && data && data.length > 0) {
-                state.items = data;
-                state.tree = buildTree(state.items);
-                state.items.forEach(it => { if (!it.parent_id) state.expanded.add(it.id); });
-                $('il-loading').style.display = 'none';
-                $('il-tree').style.display = '';
-                render();
-            }
-        } catch {}
-    }
+    await loadData();
 
     db.auth.onAuthStateChange(async (_ev, sess) => {
         const wasUser = !!state.user;
@@ -583,12 +562,7 @@ async function init() {
             await loadData();
         } else if (!state.user && wasUser) {
             setEditing(false);
-            state.items = [];
-            state.tree = [];
-            $('il-tree').innerHTML = '';
-            $('il-loading').style.display = '';
-            $('il-loading').innerHTML = '<div style="text-align:center"><p style="color:var(--il-dim);margin-bottom:0.5rem">this list is private.</p><p style="font-size:0.75rem;color:var(--il-dim)">type <span style="color:var(--il-accent);font-family:JetBrains Mono,monospace">neo</span> to authenticate.</p></div>';
-            $('il-tree').style.display = 'none';
+            await loadData();
         }
     });
 }
