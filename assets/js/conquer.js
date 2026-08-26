@@ -1,1035 +1,596 @@
-import { SEED_DATA } from './conquer-data.js';
-
 // ─── Config ────────────────────────────────────────────────────────────────
 const SUPABASE_URL = 'https://kbmimkfdhblyrdskdcxc.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_fBTnwIh34wJb61_aXNzk6Q_sv5oZkoG';
 
 let supabase = null;
-if (window.supabase) {
-    try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
-    catch (e) { console.warn('Supabase init failed', e); }
-}
+try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
+catch (e) { console.warn('Supabase init failed', e); }
 
-// ─── Section colour palette ─────────────────────────────────────────────────
-const SECTION_COLORS = [
-    '#f5c542','#4f9ef5','#6ee7b7','#f87171',
-    '#c084fc','#fb923c','#34d399','#e879f9','#38bdf8'
-];
-
-// ─── App State ──────────────────────────────────────────────────────────────
+// ─── State ─────────────────────────────────────────────────────────────────
 const state = {
     user: null,
-    sections: [],
-    goals: [],
-    subtasks: [],
-    workLogs: [],
-    loading: true,
-    searchQuery: '',
-    expandedSections: new Set(),
-    // Layout: { sectionId: { width, columnPos } }
-    layout: JSON.parse(localStorage.getItem('cq-layout') || '{}'),
-    // Calendar
-    cal: { view: 'streak', selected: new Set(), visible: true },
-    // Timer
-    timer: { active: false, mode: 'pomodoro', secsRemaining: 25*60, secsElapsed: 0, intervalId: null, goalId: null },
-    // Modal
-    modal: { type: null, contextId: null, resolve: null }
+    items: [],           // flat array from DB
+    tree: [],            // nested tree built from items
+    expanded: new Set(), // expanded item IDs
+    editing: false,      // edit mode
 };
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
-const esc = s => String(s ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-const today = () => new Date().toISOString().split('T')[0];
-const sectionColor = idx => SECTION_COLORS[idx % SECTION_COLORS.length];
-
-function fmt(s) {
-    if (!s) return '0s';
-    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
-    if (h >= 24) return `${Math.floor(h/24)}d ${h%24}h`;
-    if (h > 0) return `${h}h ${m}m`;
-    if (m > 0) return `${m}m`;
-    return `${s}s`;
-}
-
-function shortDate(raw) {
-    if (!raw) return '';
-    const d = new Date(raw);
-    if (Number.isNaN(d.getTime())) return raw;
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-function shortTime(raw) {
-    if (!raw) return '';
-    if (/^\d{2}:\d{2}$/.test(raw)) return raw;
-    const d = new Date(raw);
-    if (Number.isNaN(d.getTime())) return raw;
-    return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-}
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 
 let toastTimer;
-function toast(msg, type = 'info') {
-    const el = $('toast');
+function toast(msg, type = '') {
+    const el = $('il-toast');
     el.textContent = msg;
-    el.className = `cq-toast show ${type}`;
+    el.className = 'il-toast show ' + type;
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
 }
 
-function saveLayout() {
-    localStorage.setItem('cq-layout', JSON.stringify(state.layout));
-}
-
-// ─── Auth ────────────────────────────────────────────────────────────────────
-async function init() {
-    if (!supabase) {
-        $('config-notice').classList.remove('hidden');
-        showAuth();
-        return;
-    }
-    const { data: { session } } = await supabase.auth.getSession();
-    state.user = session?.user ?? null;
-    renderAuth();
-    if (state.user) await loadData();
-
-    supabase.auth.onAuthStateChange(async (_ev, sess) => {
-        state.user = sess?.user ?? null;
-        renderAuth();
-        if (state.user) await loadData();
+// ─── Tree Building ──────────────────────────────────────────────────────────
+function buildTree(items) {
+    const map = new Map();
+    items.forEach(it => { it.children = []; map.set(it.id, it); });
+    const roots = [];
+    items.forEach(it => {
+        if (it.parent_id && map.has(it.parent_id)) {
+            map.get(it.parent_id).children.push(it);
+        } else if (!it.parent_id) {
+            roots.push(it);
+        }
     });
-
-    bindAuth();
-    bindGlobal();
-    bindTimer();
-}
-
-function showAuth() {
-    $('loading-view').classList.add('hidden');
-    $('auth-view').classList.remove('hidden');
-    $('app-view').classList.add('hidden');
-}
-
-function renderAuth() {
-    $('loading-view').classList.add('hidden');
-    if (state.user) {
-        $('auth-view').classList.add('hidden');
-        $('app-view').classList.remove('hidden');
-    } else {
-        $('auth-view').classList.remove('hidden');
-        $('app-view').classList.add('hidden');
+    // Sort children by sort_order
+    function sortTree(nodes) {
+        nodes.sort((a, b) => a.sort_order - b.sort_order);
+        nodes.forEach(n => sortTree(n.children));
     }
+    sortTree(roots);
+    return roots;
+}
+
+function countStats(items) {
+    let total = 0, done = 0;
+    items.forEach(it => {
+        if (it.children.length === 0) { total++; if (it.completed) done++; }
+        else { const s = countStats(it.children); total += s.total; done += s.done; }
+    });
+    return { total, done };
+}
+
+function updateProgress() {
+    const { total, done } = countStats(state.tree);
+    $('il-prog-text').textContent = `${done} / ${total}`;
+    $('il-prog-fill').style.width = total ? `${Math.round((done / total) * 100)}%` : '0%';
+}
+
+// ─── Rendering ──────────────────────────────────────────────────────────────
+function render() {
+    const container = $('il-tree');
+    container.innerHTML = '';
+    state.tree.forEach((item, idx) => {
+        container.appendChild(renderItem(item, 0, idx));
+    });
+    updateProgress();
+}
+
+function renderItem(item, depth, catIndex) {
+    const el = document.createElement('div');
+    el.className = `il-item level-${depth}${item.completed ? ' completed' : ''}`;
+    el.dataset.id = item.id;
+    if (depth === 0) el.dataset.cat = catIndex % 8;
+
+    const hasChildren = item.children.length > 0;
+    const isExpanded = state.expanded.has(item.id);
+
+    // Row
+    const row = document.createElement('div');
+    row.className = 'il-item-row';
+
+    // Drag handle
+    const drag = document.createElement('div');
+    drag.className = 'il-drag-handle';
+    drag.draggable = true;
+    drag.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>';
+    setupDrag(drag, item);
+    row.appendChild(drag);
+
+    // Toggle
+    const toggle = document.createElement('div');
+    toggle.className = `il-toggle ${!hasChildren ? 'leaf' : ''} ${!isExpanded && hasChildren ? 'collapsed' : ''}`;
+    toggle.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>';
+    if (hasChildren) {
+        toggle.addEventListener('click', () => {
+            if (state.expanded.has(item.id)) state.expanded.delete(item.id);
+            else state.expanded.add(item.id);
+            render();
+        });
+    }
+    row.appendChild(toggle);
+
+    // Checkbox
+    const cb = document.createElement('div');
+    cb.className = `il-checkbox ${item.completed ? 'checked' : ''} ${!state.editing ? 'readonly' : ''}`;
+    cb.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>';
+    if (state.editing) {
+        cb.addEventListener('click', () => toggleCompleted(item));
+    }
+    row.appendChild(cb);
+
+    // Title
+    const title = document.createElement('div');
+    title.className = 'il-title';
+    title.textContent = item.title;
+    if (state.editing) {
+        title.contentEditable = 'true';
+        title.spellcheck = false;
+        title.addEventListener('blur', () => {
+            const newTitle = title.textContent.trim();
+            if (newTitle && newTitle !== item.title) updateItem(item, { title: newTitle });
+            else title.textContent = item.title;
+        });
+        title.addEventListener('keydown', e => {
+            if (e.key === 'Enter') { e.preventDefault(); title.blur(); }
+            if (e.key === 'Escape') { title.textContent = item.title; title.blur(); }
+        });
+    }
+    row.appendChild(title);
+
+    // Status badge
+    if (item.status === 'someday') {
+        const badge = document.createElement('span');
+        badge.className = 'il-status-badge someday';
+        badge.textContent = 'someday';
+        row.appendChild(badge);
+    } else if (item.status === 'abandoned') {
+        const badge = document.createElement('span');
+        badge.className = 'il-status-badge abandoned';
+        badge.textContent = 'abandoned';
+        row.appendChild(badge);
+    }
+
+    // Controls
+    const controls = document.createElement('div');
+    controls.className = 'il-controls';
+
+    // Add child button
+    const addBtn = document.createElement('button');
+    addBtn.className = 'il-ctrl-btn';
+    addBtn.title = 'Add child';
+    addBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>';
+    addBtn.addEventListener('click', () => addChildInline(item, el));
+    controls.appendChild(addBtn);
+
+    // Status cycle button
+    const statusBtn = document.createElement('button');
+    statusBtn.className = 'il-ctrl-btn';
+    statusBtn.title = 'Cycle status';
+    const dot = document.createElement('div');
+    dot.className = `il-status-dot ${item.status}`;
+    statusBtn.appendChild(dot);
+    statusBtn.addEventListener('click', () => cycleStatus(item));
+    controls.appendChild(statusBtn);
+
+    // Delete button
+    const delBtn = document.createElement('button');
+    delBtn.className = 'il-ctrl-btn danger';
+    delBtn.title = 'Delete';
+    delBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>';
+    delBtn.addEventListener('click', e => { e.stopPropagation(); confirmDelete(item); });
+    controls.appendChild(delBtn);
+
+    row.appendChild(controls);
+    el.appendChild(row);
+
+    // Description
+    if (item.description) {
+        const desc = document.createElement('div');
+        desc.className = 'il-desc visible';
+        desc.textContent = item.description;
+        if (state.editing) {
+            desc.contentEditable = 'true';
+            desc.spellcheck = false;
+            desc.addEventListener('blur', () => {
+                const newDesc = desc.textContent.trim();
+                if (newDesc !== item.description) updateItem(item, { description: newDesc });
+            });
+            desc.addEventListener('keydown', e => {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); desc.blur(); }
+                if (e.key === 'Escape') { desc.textContent = item.description; desc.blur(); }
+            });
+        }
+        el.appendChild(desc);
+    }
+
+    // Children
+    if (hasChildren) {
+        const children = document.createElement('div');
+        children.className = `il-children ${!isExpanded ? 'collapsed' : ''}`;
+        item.children.forEach((child, i) => {
+            children.appendChild(renderItem(child, depth + 1, depth === 0 ? i : catIndex));
+        });
+        el.appendChild(children);
+    }
+
+    // Inline add row (auth only)
+    const addRow = document.createElement('div');
+    addRow.className = 'il-add-row';
+    const addInput = document.createElement('input');
+    addInput.className = 'il-add-input';
+    addInput.placeholder = depth === 0 ? 'new category…' : 'new item…';
+    addInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+            const val = addInput.value.trim();
+            if (val) createItem(item.id, val, item.children.length).then(() => { addInput.value = ''; render(); });
+        }
+        if (e.key === 'Escape') addInput.blur();
+    });
+    addRow.appendChild(addInput);
+    const addSubmit = document.createElement('button');
+    addSubmit.className = 'il-add-btn';
+    addSubmit.textContent = '+';
+    addSubmit.addEventListener('click', () => {
+        const val = addInput.value.trim();
+        if (val) createItem(item.id, val, item.children.length).then(() => { addInput.value = ''; render(); });
+    });
+    addRow.appendChild(addSubmit);
+    el.appendChild(addRow);
+
+    // Drop zone for drag reorder
+    setupDrop(el, item);
+
+    return el;
+}
+
+// ─── Drag & Drop ────────────────────────────────────────────────────────────
+let dragItem = null;
+
+function setupDrag(handle, item) {
+    handle.addEventListener('dragstart', e => {
+        dragItem = item;
+        e.dataTransfer.effectAllowed = 'move';
+        handle.closest('.il-item').classList.add('dragging');
+    });
+    handle.addEventListener('dragend', () => {
+        dragItem = null;
+        document.querySelectorAll('.dragging, .drag-over').forEach(el => el.classList.remove('dragging', 'drag-over'));
+    });
+}
+
+function setupDrop(el, item) {
+    el.addEventListener('dragover', e => {
+        if (!dragItem || dragItem.id === item.id) return;
+        if (dragItem.parent_id === item.id) return;
+        e.preventDefault();
+        el.classList.add('drag-over');
+    });
+    el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+    el.addEventListener('drop', async e => {
+        e.preventDefault();
+        el.classList.remove('drag-over');
+        if (!dragItem || dragItem.id === item.id) return;
+
+        // Move dragged item to be a sibling before/after this item
+        const newParentId = item.parent_id || null;
+        const siblings = state.items.filter(i => i.parent_id === newParentId && i.id !== dragItem.id);
+        const targetIdx = siblings.findIndex(i => i.id === item.id);
+        const dragIdx = siblings.findIndex(i => i.id === dragItem.id);
+
+        let newOrder;
+        if (dragIdx !== -1 && dragIdx < targetIdx) {
+            // Moving down
+            newOrder = siblings.splice(targetIdx, 0, dragItem);
+        } else {
+            // Moving up or from different parent
+            siblings.splice(targetIdx + 1, 0, dragItem);
+        }
+
+        // Update parent and sort orders
+        await updateItem(dragItem, { parent_id: newParentId });
+        for (let i = 0; i < siblings.length; i++) {
+            if (siblings[i].sort_order !== i || siblings[i].parent_id !== newParentId) {
+                await updateItem(siblings[i], { sort_order: i, parent_id: newParentId });
+            }
+        }
+        render();
+    });
+}
+
+// ─── CRUD Operations ────────────────────────────────────────────────────────
+async function createItem(parentId, title, sortOrder) {
+    if (!supabase || !state.user) return;
+    const { data, error } = await supabase.from('impossible_items').insert({
+        user_id: state.user.id,
+        parent_id: parentId || null,
+        title,
+        sort_order: sortOrder,
+    }).select().single();
+    if (error) { toast(error.message, 'error'); return null; }
+    state.items.push(data);
+    state.expanded.add(parentId);
+    return data;
+}
+
+async function updateItem(item, updates) {
+    if (!supabase || !state.user) return;
+    const { error } = await supabase.from('impossible_items')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', item.id);
+    if (error) { toast(error.message, 'error'); return; }
+    Object.assign(item, updates);
+}
+
+async function deleteItem(item) {
+    if (!supabase || !state.user) return;
+    // Collect all descendant IDs
+    const ids = [item.id];
+    function collectIds(node) {
+        node.children.forEach(c => { ids.push(c.id); collectIds(c); });
+    }
+    collectIds(item);
+
+    const { error } = await supabase.from('impossible_items').delete().in('id', ids);
+    if (error) { toast(error.message, 'error'); return; }
+
+    // Remove from state
+    function removeFromState(nodes, id) {
+        for (let i = 0; i < nodes.length; i++) {
+            if (nodes[i].id === id) { nodes.splice(i, 1); return true; }
+            if (removeFromState(nodes[i].children, id)) return true;
+        }
+        return false;
+    }
+    removeFromState(state.tree, item.id);
+    state.items = state.items.filter(i => !ids.includes(i.id));
+    render();
+}
+
+async function toggleCompleted(item) {
+    const newVal = !item.completed;
+    const newStatus = newVal ? 'completed' : 'active';
+    await updateItem(item, { completed: newVal, status: newStatus });
+    render();
+}
+
+async function cycleStatus(item) {
+    const statuses = ['active', 'someday', 'abandoned'];
+    const current = statuses.indexOf(item.status === 'completed' ? 'active' : item.status);
+    const next = statuses[(current + 1) % statuses.length];
+    const completed = next === 'completed';
+    await updateItem(item, { status: next, completed });
+    render();
+}
+
+function addChildInline(item, el) {
+    // Expand this item and focus the add input
+    state.expanded.add(item.id);
+    render();
+    // Find the add input for this item after re-render
+    setTimeout(() => {
+        const newItemEl = document.querySelector(`.il-item[data-id="${item.id}"]`);
+        if (newItemEl) {
+            const input = newItemEl.querySelector(':scope > .il-add-row .il-add-input');
+            if (input) input.focus();
+        }
+    }, 50);
+}
+
+// ─── Delete Confirm ─────────────────────────────────────────────────────────
+function confirmDelete(item) {
+    const count = (function countDesc(n) { let c = 0; n.children.forEach(ch => { c++; c += countDesc(ch); }); return c; })(item);
+    $('il-confirm-text').textContent = count > 0
+        ? `delete "${item.title}" and ${count} child${count > 1 ? 'ren' : ''}?`
+        : `delete "${item.title}"?`;
+    $('il-confirm').classList.add('open');
+    $('il-confirm').style.position = 'fixed';
+    $('il-confirm').style.top = '50%';
+    $('il-confirm').style.left = '50%';
+    $('il-confirm').style.transform = 'translate(-50%, -50%)';
+
+    const ok = () => { $('il-confirm').classList.remove('open'); deleteItem(item); cleanup(); };
+    const cancel = () => { $('il-confirm').classList.remove('open'); cleanup(); };
+    const cleanup = () => {
+        $('il-confirm-ok').removeEventListener('click', ok);
+        $('il-confirm-cancel').removeEventListener('click', cancel);
+    };
+    $('il-confirm-ok').addEventListener('click', ok);
+    $('il-confirm-cancel').addEventListener('click', cancel);
+}
+
+// ─── Auth ───────────────────────────────────────────────────────────────────
+function setEditing(on) {
+    state.editing = on;
+    document.body.classList.toggle('authenticated', on);
+}
+
+function showAuthModal() {
+    $('il-auth-overlay').classList.add('open');
+    setTimeout(() => $('il-auth-email').focus(), 100);
+}
+
+function hideAuthModal() {
+    $('il-auth-overlay').classList.remove('open');
 }
 
 function bindAuth() {
-    $('btn-login-pw').addEventListener('click', async () => {
-        const email = $('input-email').value.trim();
-        const pw = $('input-password').value;
-        if (!email || !pw) return toast('Enter email and password', 'error');
-        const { error } = await supabase.auth.signInWithPassword({ email, password: pw });
-        if (error) toast(error.message, 'error');
+    $('il-auth-login').addEventListener('click', async () => {
+        const email = $('il-auth-email').value.trim();
+        const pass = $('il-auth-pass').value;
+        if (!email || !pass) return toast('enter email and password', 'error');
+        const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
+        if (error) { toast(error.message, 'error'); return; }
+        hideAuthModal();
     });
-    $('btn-signup-pw').addEventListener('click', async () => {
-        const email = $('input-email').value.trim();
-        const pw = $('input-password').value;
-        if (!email || !pw) return toast('Enter email and password', 'error');
-        const { error } = await supabase.auth.signUp({ email, password: pw });
+    $('il-auth-signup').addEventListener('click', async () => {
+        const email = $('il-auth-email').value.trim();
+        const pass = $('il-auth-pass').value;
+        if (!email || !pass) return toast('enter email and password', 'error');
+        const { error } = await supabase.auth.signUp({ email, password: pass });
         if (error) toast(error.message, 'error');
-        else toast('Check your email to confirm!', 'success');
+        else toast('check your email to confirm', 'success');
     });
-    $('btn-magic-link').addEventListener('click', async () => {
-        const email = $('input-email').value.trim();
-        if (!email) return toast('Enter your email', 'error');
-        const { error } = await supabase.auth.signInWithOtp({ email });
-        if (error) toast(error.message, 'error');
-        else toast('Magic link sent!', 'success');
-    });
-    $('btn-logout').addEventListener('click', async () => {
+    $('il-auth-close').addEventListener('click', hideAuthModal);
+    $('il-auth-overlay').addEventListener('click', e => { if (e.target === e.currentTarget) hideAuthModal(); });
+    $('il-logout').addEventListener('click', async () => {
         await supabase.auth.signOut();
     });
+    // Enter key
+    $('il-auth-pass').addEventListener('keydown', e => { if (e.key === 'Enter') $('il-auth-login').click(); });
+    $('il-auth-email').addEventListener('keydown', e => { if (e.key === 'Enter') $('il-auth-pass').focus(); });
 }
 
-// ─── Data Loading ────────────────────────────────────────────────────────────
-async function loadData() {
-    state.loading = true;
-    renderLoading();
-    try {
-        const [s, g, st, wl] = await Promise.all([
-            supabase.from('sections').select('*').order('sort_order'),
-            supabase.from('tasks').select('*').order('sort_order'),
-            supabase.from('subtasks').select('*').order('sort_order'),
-            supabase.from('work_logs').select('*').order('created_at')
-        ]);
-        if (s.error) throw s.error;
-        if (g.error) throw g.error;
-        state.sections = s.data ?? [];
-        state.goals = g.data ?? [];
-        state.subtasks = st.data ?? [];
-        state.workLogs = wl.data ?? [];
+// ─── "neo" Easter Egg ───────────────────────────────────────────────────────
+function setupNeoKeySequence() {
+    let buffer = '';
+    const SEQUENCE = 'neo';
+    const TIMEOUT = 2000;
+    let lastKey = 0;
 
-        if (state.sections.length === 0) await seedDB();
-        state.sections.forEach(sec => state.expandedSections.add(sec.id));
-    } catch (e) {
-        toast(e.message, 'error');
-    }
-    state.loading = false;
-    renderAll();
+    document.addEventListener('keydown', e => {
+        // Don't capture when typing in inputs
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+
+        const now = Date.now();
+        if (now - lastKey > TIMEOUT) buffer = '';
+        lastKey = now;
+
+        buffer += e.key.toLowerCase();
+        if (buffer.length > SEQUENCE.length) buffer = buffer.slice(-SEQUENCE.length);
+
+        if (buffer === SEQUENCE) {
+            buffer = '';
+            if (state.user) {
+                // Already logged in — toggle edit mode
+                setEditing(!state.editing);
+                toast(state.editing ? 'edit mode on' : 'edit mode off', 'success');
+            } else {
+                showAuthModal();
+            }
+        }
+    });
 }
 
-function renderLoading() {
-    const ws = $('sections-workspace');
-    if (ws) ws.innerHTML = '<div style="color:var(--cq-dim);padding:2rem;text-align:center">Loading…</div>';
-}
+// ─── Seed Data ──────────────────────────────────────────────────────────────
+const SEED_CATEGORIES = [
+    { title: 'mind', children: ['goal placeholder'] },
+    { title: 'engineering & building', children: ['goal placeholder'] },
+    { title: 'physical capability', children: ['goal placeholder'] },
+    { title: 'exploration', children: ['goal placeholder'] },
+    { title: 'knowledge', children: ['goal placeholder'] },
+    { title: 'relationships & social', children: ['goal placeholder'] },
+    { title: 'money & freedom', children: ['goal placeholder'] },
+    { title: 'power & influence', children: ['goal placeholder'] },
+];
 
 async function seedDB() {
-    toast('Seeding initial data…');
-    for (let i = 0; i < SEED_DATA.length; i++) {
-        const sd = SEED_DATA[i];
-        const { data: sec, error: se } = await supabase.from('sections')
-            .insert({ user_id: state.user.id, title: sd.title, sort_order: i }).select().single();
-        if (se) continue;
-        state.sections.push(sec);
-        if (sd.tasks?.length) {
-            const goals = sd.tasks.map((t, ti) => ({ user_id: state.user.id, section_id: sec.id, title: t, sort_order: ti, completed: false }));
-            const { data: gs } = await supabase.from('tasks').insert(goals).select();
-            if (gs) state.goals.push(...gs);
+    if (!supabase || !state.user) return;
+    toast('seeding initial structure…');
+    for (let i = 0; i < SEED_CATEGORIES.length; i++) {
+        const cat = SEED_CATEGORIES[i];
+        const { data: catItem, error: catErr } = await supabase.from('impossible_items').insert({
+            user_id: state.user.id,
+            parent_id: null,
+            title: cat.title,
+            sort_order: i,
+        }).select().single();
+        if (catErr) continue;
+        state.items.push(catItem);
+
+        for (let j = 0; j < cat.children.length; j++) {
+            const { data: child } = await supabase.from('impossible_items').insert({
+                user_id: state.user.id,
+                parent_id: catItem.id,
+                title: cat.children[j],
+                sort_order: j,
+            }).select().single();
+            if (child) state.items.push(child);
         }
     }
 }
 
-// ─── Master Render ───────────────────────────────────────────────────────────
-function renderAll() {
-    renderStats();
-    renderHighlights();
-    renderCalendar();
-    renderWorkspace();
-    updateTimerSelect();
-    updateAnalyticsVisibility();
-}
+// ─── Data Loading ───────────────────────────────────────────────────────────
+async function loadData() {
+    $('il-loading').style.display = '';
+    $('il-tree').style.display = 'none';
 
-function toggleAnalyticsVisibility() {
-    state.cal.visible = !state.cal.visible;
-    updateAnalyticsVisibility();
-}
+    const { data, error } = await supabase.from('impossible_items')
+        .select('*')
+        .order('sort_order');
 
-function updateAnalyticsVisibility() {
-    const widget = $('analytics-widget');
-    if (!widget) return;
-    widget.classList.toggle('hidden', !state.cal.visible);
-    const btn = $('btn-analytics-toggle');
-    if (btn) btn.textContent = state.cal.visible ? 'Hide analytics' : 'Show analytics';
-}
+    if (error) { toast(error.message, 'error'); return; }
 
-// ─── Stats ───────────────────────────────────────────────────────────────────
-function renderStats() {
-    const total = state.goals.length;
-    const done = state.goals.filter(g => g.completed).length;
-    const pct = total ? Math.round((done / total) * 100) : 0;
-    $('stat-pct').textContent = pct + '%';
-    $('stat-done').textContent = done;
-    $('stat-rem').textContent = total - done;
-    $('stat-total').textContent = total;
-    $('progress-bar').style.width = pct + '%';
+    state.items = data || [];
 
-    // Streak calculation
-    const logDates = new Set(state.workLogs.map(wl => wl.created_at?.split('T')[0]));
-    let streak = 0;
-    const d = new Date();
-    while (logDates.has(d.toISOString().split('T')[0])) {
-        streak++;
-        d.setDate(d.getDate() - 1);
-    }
-    $('stat-streak').textContent = streak + '🔥';
-}
-
-// ─── Highlights ───────────────────────────────────────────────────────────────
-function renderHighlights() {
-    const todayStr = today();
-
-    // Today's focus
-    const items = state.subtasks.filter(st => {
-        if (st.is_repeatable) return st.last_completed_date !== todayStr;
-        const pg = state.goals.find(g => g.id === st.task_id);
-        if (st.due_date && st.due_date <= todayStr && !st.completed) return true;
-        return !st.completed && pg?.is_pinned;
-    });
-
-    const tl = $('today-list');
-    tl.innerHTML = '';
-    if (!items.length) {
-        tl.innerHTML = '<div class="hl-empty">All caught up! 🎉</div>';
-    } else {
-        items.slice(0, 8).forEach(st => {
-            const pg = state.goals.find(g => g.id === st.task_id);
-            const ps = state.sections.find(s => s.id === pg?.section_id);
-            const isDone = st.completed || (st.is_repeatable && st.last_completed_date === todayStr);
-            const div = document.createElement('div');
-            div.className = 'today-item';
-            div.innerHTML = `
-                <div class="cq-checkbox ${isDone ? 'checked' : ''}" data-st="${st.id}" style="cursor:pointer">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3" class="${isDone ? '' : 'hidden'}"><path d="M20 6L9 17l-5-5"/></svg>
-                </div>
-                <span style="flex:1;font-size:0.83rem">${esc(st.title)}${st.is_repeatable ? ' 🔄' : ''}</span>
-                <span class="today-item-meta">${ps?.title ?? ''}</span>
-            `;
-            div.querySelector('.cq-checkbox').addEventListener('click', () => toggleSubtask(st.id));
-            tl.appendChild(div);
-        });
+    if (state.items.length === 0) {
+        await seedDB();
     }
 
-    // Pinned goals
-    const pl = $('pinned-list');
-    pl.innerHTML = '';
-    const pinned = state.goals.filter(g => g.is_pinned);
-    if (!pinned.length) {
-        pl.innerHTML = '<div class="hl-empty">No pinned goals yet.</div>';
-    } else {
-        pinned.forEach(g => {
-            const ps = state.sections.find(s => s.id === g.section_id);
-            const daysLeft = g.deadline ? Math.ceil((new Date(g.deadline) - new Date()) / 86400000) : null;
-            const div = document.createElement('div');
-            div.className = 'pinned-item';
-            div.innerHTML = `
-                <span style="flex:1;font-size:0.83rem">📌 ${esc(g.title)}</span>
-                <span class="pinned-tag">${esc(ps?.title ?? '')}</span>
-                ${daysLeft !== null ? `<span class="pinned-deadline">${daysLeft >= 0 ? daysLeft + 'd' : 'overdue'}</span>` : ''}
-            `;
-            pl.appendChild(div);
-        });
-    }
-}
-
-// ─── Calendar / Analytics ─────────────────────────────────────────────────────
-function renderCalendar() {
-    const filterOptions = $('filter-options');
-    if (filterOptions) {
-        filterOptions.innerHTML = '';
-        const query = $('filter-search')?.value.trim().toLowerCase() || '';
-
-        const allLabel = document.createElement('label');
-        allLabel.className = 'cq-filter-option' + (state.cal.selected.size === 0 ? ' checked' : '');
-        allLabel.innerHTML = `<input type="checkbox" ${state.cal.selected.size === 0 ? 'checked' : ''} data-value="all"><span>All sections</span>`;
-        const allInput = allLabel.querySelector('input');
-        allInput?.addEventListener('change', () => {
-            state.cal.selected.clear();
-            renderCalendar();
-        });
-        filterOptions.appendChild(allLabel);
-
-        state.sections.forEach((sec) => {
-            if (query && !sec.title.toLowerCase().includes(query)) return;
-            const checked = state.cal.selected.size === 0 || state.cal.selected.has(sec.id);
-            const label = document.createElement('label');
-            label.className = 'cq-filter-option' + (checked ? ' checked' : '');
-            label.innerHTML = `<input type="checkbox" ${checked ? 'checked' : ''} data-value="${sec.id}"><span>${esc(sec.title)}</span>`;
-            const input = label.querySelector('input');
-            input?.addEventListener('change', (e) => {
-                const isChecked = e.target.checked;
-                if (state.cal.selected.size === 0) {
-                    if (!isChecked) {
-                        state.cal.selected = new Set(state.sections.map(s => s.id));
-                        state.cal.selected.delete(sec.id);
-                    }
-                } else {
-                    if (isChecked) state.cal.selected.add(sec.id);
-                    else state.cal.selected.delete(sec.id);
-                    if (state.cal.selected.size === state.sections.length) state.cal.selected.clear();
-                }
-                renderCalendar();
-            });
-            filterOptions.appendChild(label);
-        });
-    }
-
-    // Compute logs by date per selected sections
-    const activeSections = state.cal.selected.size === 0
-        ? state.sections.map(s => s.id)
-        : [...state.cal.selected];
-
-    // date -> { sectionId -> seconds }
-    const dateMap = {};
-    state.workLogs.forEach(wl => {
-        if (!activeSections.includes(wl.section_id)) return;
-        const d = wl.created_at?.split('T')[0];
-        if (!d) return;
-        dateMap[d] = dateMap[d] ?? {};
-        dateMap[d][wl.section_id] = (dateMap[d][wl.section_id] ?? 0) + wl.duration_seconds;
+    // Expand all top-level categories by default
+    state.items.forEach(it => {
+        if (!it.parent_id) state.expanded.add(it.id);
     });
 
-    if (state.cal.view === 'streak') {
-        renderHeatmap(dateMap, activeSections);
-    } else {
-        renderGraph(dateMap, activeSections);
-    }
-
-    // Legend
-    const leg = $('cal-legend');
-    leg.innerHTML = '';
-    if (state.cal.selected.size > 0) {
-        [...state.cal.selected].forEach(sid => {
-            const si = state.sections.findIndex(s => s.id === sid);
-            const color = sectionColor(si);
-            const sec = state.sections[si];
-            leg.innerHTML += `<div class="cq-legend-item"><div class="cq-legend-dot" style="background:${color}"></div>${esc(sec?.title)}</div>`;
-        });
-    }
+    state.tree = buildTree(state.items);
+    $('il-loading').style.display = 'none';
+    $('il-tree').style.display = '';
+    render();
 }
 
-function renderHeatmap(dateMap, activeSections) {
-    const content = $('cal-content');
-    const wrap = document.createElement('div');
-    wrap.className = 'cq-heatmap-wrap';
+// ─── Init ───────────────────────────────────────────────────────────────────
+async function init() {
+    bindAuth();
+    setupNeoKeySequence();
 
-    // 7 rows (days), n cols (weeks) for last 16 weeks = 112 days
-    const DAYS = 112;
-    const today_ = new Date();
-    // Pad to start on Sunday
-    const startOffset = today_.getDay();// 0=Sun
-    const totalCells = DAYS + startOffset;
-
-    // Build columns of 7
-    const grid = document.createElement('div');
-    grid.className = 'cq-heatmap-grid';
-
-    // Day labels column
-    const labelsCol = document.createElement('div');
-    labelsCol.className = 'cq-hm-labels';
-    ['S','M','T','W','T','F','S'].forEach(l => {
-        const lbl = document.createElement('div');
-        lbl.className = 'cq-hm-label';
-        lbl.textContent = l;
-        labelsCol.appendChild(lbl);
-    });
-    grid.appendChild(labelsCol);
-
-    const numCols = Math.ceil(totalCells / 7);
-    for (let c = 0; c < numCols; c++) {
-        const col = document.createElement('div');
-        col.className = 'cq-hm-col';
-        for (let r = 0; r < 7; r++) {
-            const cellIdx = c * 7 + r;
-            const daysBack = totalCells - 1 - cellIdx;
-            const cell = document.createElement('div');
-            cell.className = 'cq-hm-cell';
-
-            if (daysBack < 0 || daysBack >= DAYS + startOffset) {
-                cell.style.background = 'transparent';
-            } else {
-                const d = new Date(today_);
-                d.setDate(today_.getDate() - (daysBack - startOffset));
-                const dStr = d.toISOString().split('T')[0];
-                const dayData = dateMap[dStr];
-                const total = dayData ? Object.values(dayData).reduce((a, b) => a + b, 0) : 0;
-
-                // Pick dominant section color if multi-select
-                let bgColor = 'rgba(255,255,255,0.05)';
-                if (total > 0) {
-                    if (activeSections.length === 1 || state.cal.selected.size <= 1) {
-                        const si = state.sections.findIndex(s => s.id === activeSections[0]);
-                        bgColor = sectionColor(si < 0 ? 0 : si);
-                    } else if (dayData) {
-                        // Blend or use dominant
-                        const topSec = Object.entries(dayData).sort((a,b) => b[1]-a[1])[0]?.[0];
-                        const si = state.sections.findIndex(s => s.id === topSec);
-                        bgColor = sectionColor(si < 0 ? 0 : si);
-                    }
-                    const lvl = total > 7200 ? 'lvl-4' : total > 3600 ? 'lvl-3' : total > 1800 ? 'lvl-2' : 'lvl-1';
-                    cell.classList.add(lvl);
-                    cell.style.background = bgColor;
-                }
-
-                // Tooltip
-                const tipText = total > 0
-                    ? `${dStr} — ${fmt(total)}`
-                    : dStr;
-                cell.addEventListener('mouseenter', e => showTip(e, tipText));
-                cell.addEventListener('mousemove', e => moveTip(e));
-                cell.addEventListener('mouseleave', hideTip);
-            }
-            col.appendChild(cell);
-        }
-        grid.appendChild(col);
-    }
-    wrap.appendChild(grid);
-    content.innerHTML = '';
-    content.appendChild(wrap);
-}
-
-function renderGraph(dateMap, activeSections) {
-    const content = $('cal-content');
-    const DAYS = 60;
-    const today_ = new Date();
-
-    const wrap = document.createElement('div');
-    wrap.className = 'cq-graph-wrap';
-
-    // Find max value for scaling
-    let maxVal = 1;
-    for (let i = 0; i < DAYS; i++) {
-        const d = new Date(today_);
-        d.setDate(today_.getDate() - (DAYS - 1 - i));
-        const dStr = d.toISOString().split('T')[0];
-        const dayData = dateMap[dStr];
-        if (dayData) {
-            const total = Object.values(dayData).reduce((a,b)=>a+b,0);
-            if (total > maxVal) maxVal = total;
-        }
-    }
-
-    for (let i = 0; i < DAYS; i++) {
-        const d = new Date(today_);
-        d.setDate(today_.getDate() - (DAYS - 1 - i));
-        const dStr = d.toISOString().split('T')[0];
-        const dayData = dateMap[dStr] ?? {};
-
-        const group = document.createElement('div');
-        group.className = 'cq-bar-group';
-
-        if (state.cal.selected.size > 1) {
-            // Stacked bars per section
-            activeSections.forEach(sid => {
-                const si = state.sections.findIndex(s => s.id === sid);
-                const color = sectionColor(si < 0 ? 0 : si);
-                const secs = dayData[sid] ?? 0;
-                const hPct = (secs / maxVal) * 110;
-                const bar = document.createElement('div');
-                bar.className = 'cq-bar';
-                bar.style.cssText = `background:${color};height:${Math.max(hPct,2)}px`;
-                bar.title = `${dStr}: ${fmt(secs)}`;
-                bar.addEventListener('mouseenter', e => showTip(e, `${dStr} · ${state.sections[si]?.title} · ${fmt(secs)}`));
-                bar.addEventListener('mousemove', moveTip);
-                bar.addEventListener('mouseleave', hideTip);
-                group.appendChild(bar);
-            });
-        } else {
-            const sid = activeSections[0];
-            const si = state.sections.findIndex(s => s.id === sid);
-            const color = activeSections.length ? sectionColor(si < 0 ? 0 : si) : '#f5c542';
-            const total = Object.values(dayData).reduce((a,b)=>a+b,0);
-            const hPct = (total / maxVal) * 110;
-            const bar = document.createElement('div');
-            bar.className = 'cq-bar';
-            bar.style.cssText = `background:${color};height:${Math.max(hPct,2)}px;width:12px`;
-            bar.addEventListener('mouseenter', e => showTip(e, `${dStr} · ${fmt(total)}`));
-            bar.addEventListener('mousemove', moveTip);
-            bar.addEventListener('mouseleave', hideTip);
-            group.appendChild(bar);
-        }
-        wrap.appendChild(group);
-    }
-    content.innerHTML = '';
-    content.appendChild(wrap);
-}
-
-const tip = () => $('hm-tooltip');
-function showTip(e, text) { tip().textContent = text; tip().style.display = 'block'; moveTip(e); }
-function moveTip(e) { tip().style.left = (e.clientX + 12) + 'px'; tip().style.top = (e.clientY - 28) + 'px'; }
-function hideTip() { tip().style.display = 'none'; }
-
-function bindGlobal() {
-    const searchInput = $('search-input');
-    if (searchInput) {
-        searchInput.addEventListener('input', e => {
-            state.searchQuery = e.target.value.toLowerCase();
-            renderWorkspace();
-        });
-    }
-
-    $('btn-quickadd')?.addEventListener('click', async () => {
-        const title = $('quickadd-input').value.trim();
-        if (!title) return toast('Type a quick to-do first', 'error');
-        const section = state.sections[0];
-        if (!section) return toast('Create a section first', 'error');
-        await addGoal(section.id, title);
-        $('quickadd-input').value = '';
-        renderAll();
-    });
-
-    $('btn-add-section')?.addEventListener('click', () => openModal('section'));
-    $('btn-layout')?.addEventListener('click', () => $('layout-dropdown')?.classList.toggle('open'));
-    document.addEventListener('click', e => {
-        if (!e.target.closest('.cq-layout-menu')) {
-            $('layout-dropdown')?.classList.remove('open');
-        }
-    });
-    document.querySelectorAll('.cq-layout-opt').forEach(opt => {
-        opt.addEventListener('click', () => {
-            setLayoutMode(opt.dataset.layout);
-            $('layout-dropdown')?.classList.remove('open');
-        });
-    });
-
-    $('btn-collapse-all')?.addEventListener('click', () => {
-        state.sections.forEach(sec => state.expandedSections.delete(sec.id));
-        renderWorkspace();
-    });
-    $('btn-expand-all')?.addEventListener('click', () => {
-        state.sections.forEach(sec => state.expandedSections.add(sec.id));
-        renderWorkspace();
-    });
-
-    $('btn-timer-toggle')?.addEventListener('click', () => {
-        $('timer-widget')?.classList.toggle('show');
-    });
-    $('cal-view-streak')?.addEventListener('click', () => setCalView('streak'));
-    $('cal-view-graph')?.addEventListener('click', () => setCalView('graph'));
-    $('btn-analytics-toggle')?.addEventListener('click', () => toggleAnalyticsVisibility());
-    $('filter-toggle')?.addEventListener('click', e => {
-        e.stopPropagation();
-        $('filter-dropdown-panel')?.classList.toggle('hidden');
-    });
-    $('filter-search')?.addEventListener('input', renderCalendar);
-    document.addEventListener('click', e => {
-        if (!e.target.closest('#filter-dropdown')) {
-            $('filter-dropdown-panel')?.classList.add('hidden');
-        }
-    });
-    $('modal-cancel')?.addEventListener('click', closeModal);
-    $('modal-confirm')?.addEventListener('click', handleModalConfirm);
-    $('task-modal')?.addEventListener('click', e => {
-        if (e.target === e.currentTarget) closeModal();
-    });
-    $('btn-timer-start')?.addEventListener('click', startTimer);
-    $('btn-timer-pause')?.addEventListener('click', pauseTimer);
-    $('btn-timer-reset')?.addEventListener('click', resetTimer);
-    $('btn-timer-log')?.addEventListener('click', logTimerSession);
-    $('btn-pomodoro')?.addEventListener('click', () => setTimerMode('pomodoro'));
-    $('btn-stopwatch')?.addEventListener('click', () => setTimerMode('stopwatch'));
-    $('btn-timer-close')?.addEventListener('click', () => $('timer-widget')?.classList.remove('show'));
-
-    $('timer-select')?.addEventListener('change', e => {
-        state.timer.goalId = e.target.value || null;
-        updateTimerStatus();
-    });
-}
-
-function bindTimer() {
-    setLayoutMode(state.layout.mode || 'single');
-    setCalView(state.cal.view);
-    setTimerMode(state.timer.mode);
-    updateTimerStatus();
-}
-
-function setLayoutMode(mode) {
-    if (mode === 'reset') mode = 'single';
-    if (!['single', 'two', 'three'].includes(mode)) return;
-    state.layout.mode = mode;
-    saveLayout();
-    const ws = $('sections-workspace');
-    if (!ws) return;
-    ws.classList.remove('layout-single', 'layout-two', 'layout-three');
-    ws.classList.add(`layout-${mode}`);
-}
-
-function setCalView(view) {
-    if (!['streak', 'graph'].includes(view)) return;
-    state.cal.view = view;
-    $('cal-view-streak')?.classList.toggle('active', view === 'streak');
-    $('cal-view-graph')?.classList.toggle('active', view === 'graph');
-    renderCalendar();
-}
-
-function setTimerMode(mode) {
-    if (!['pomodoro', 'stopwatch'].includes(mode)) return;
-    state.timer.mode = mode;
-    document.getElementById('btn-pomodoro')?.classList.toggle('active', mode === 'pomodoro');
-    document.getElementById('btn-stopwatch')?.classList.toggle('active', mode === 'stopwatch');
-    state.timer.secsRemaining = mode === 'pomodoro' ? 25 * 60 : state.timer.secsRemaining;
-    updateTimerDisplay();
-}
-
-function updateTimerStatus() {
-    const goalId = state.timer.goalId;
-    const goal = state.goals.find(g => String(g.id) === String(goalId));
-    const status = $('timer-status');
-    if (!status) return;
-    if (!goal) {
-        status.textContent = 'Ready';
-        return;
-    }
-    status.textContent = `Goal: ${goal.title}`;
-}
-
-function updateTimerSelect() {
-    const select = $('timer-select');
-    if (!select) return;
-    const current = state.timer.goalId;
-    select.innerHTML = '<option value="">— Select Goal —</option>';
-    state.goals.forEach(goal => {
-        const option = document.createElement('option');
-        option.value = goal.id;
-        option.textContent = `${goal.title}${goal.completed ? ' ✓' : ''}`;
-        if (String(goal.id) === String(current)) option.selected = true;
-        select.appendChild(option);
-    });
-    updateTimerStatus();
-}
-
-function updateTimerDisplay() {
-    const display = $('timer-display');
-    if (!display) return;
-    const mins = Math.floor(state.timer.secsRemaining / 60).toString().padStart(2, '0');
-    const secs = (state.timer.secsRemaining % 60).toString().padStart(2, '0');
-    display.textContent = `${mins}:${secs}`;
-}
-
-function startTimer() {
-    if (!state.timer.goalId) return toast('Select a goal first', 'error');
-    if (state.timer.active) return;
-    state.timer.active = true;
-    state.timer.intervalId = setInterval(() => {
-        if (state.timer.mode === 'pomodoro') {
-            if (state.timer.secsRemaining > 0) {
-                state.timer.secsRemaining -= 1;
-            } else {
-                clearInterval(state.timer.intervalId);
-                state.timer.active = false;
-                toast('Pomodoro complete!', 'success');
-            }
-        } else {
-            state.timer.secsRemaining += 1;
-        }
-        updateTimerDisplay();
-    }, 1000);
-    $('btn-timer-start')?.classList.add('hidden');
-    $('btn-timer-pause')?.classList.remove('hidden');
-    $('btn-timer-log')?.classList.remove('hidden');
-}
-
-function pauseTimer() {
-    if (!state.timer.active) return;
-    clearInterval(state.timer.intervalId);
-    state.timer.active = false;
-    $('btn-timer-start')?.classList.remove('hidden');
-    $('btn-timer-pause')?.classList.add('hidden');
-}
-
-function resetTimer() {
-    pauseTimer();
-    state.timer.secsRemaining = state.timer.mode === 'pomodoro' ? 25 * 60 : 0;
-    updateTimerDisplay();
-}
-
-async function logTimerSession() {
-    if (!state.timer.goalId) return toast('Select a goal first', 'error');
-    const goal = state.goals.find(g => String(g.id) === String(state.timer.goalId));
-    if (!goal) return toast('Invalid goal selected', 'error');
-    const secs = state.timer.mode === 'pomodoro' ? (25 * 60 - state.timer.secsRemaining) : state.timer.secsRemaining;
-    if (secs <= 0) return toast('No time recorded yet', 'error');
-    const sectionId = goal.section_id;
-    const { error } = await supabase.from('work_logs').insert({ user_id: state.user.id, section_id: sectionId, goal_id: goal.id, duration_seconds: secs, created_at: new Date().toISOString() });
-    if (error) return toast(error.message, 'error');
-    state.workLogs.push({ user_id: state.user.id, section_id: sectionId, goal_id: goal.id, duration_seconds: secs, created_at: new Date().toISOString() });
-    toast('Logged time to analytics', 'success');
-    renderAll();
-}
-
-function renderWorkspace() {
-    const ws = $('sections-workspace');
-    if (!ws) return;
-    ws.innerHTML = '';
-    const query = state.searchQuery.trim().toLowerCase();
-
-    const visibleSections = state.sections.filter(sec => {
-        if (!query) return true;
-        if (sec.title.toLowerCase().includes(query)) return true;
-        return state.goals.some(g => g.section_id === sec.id && g.title.toLowerCase().includes(query));
-    });
-
-    if (!visibleSections.length) {
-        ws.innerHTML = '<div class="cq-empty-section">No sections match your search. Try a different term or add a new section.</div>';
+    if (!supabase) {
+        $('il-loading').textContent = 'supabase not configured';
         return;
     }
 
-    visibleSections.forEach((sec, idx) => {
-        const goals = state.goals.filter(g => g.section_id === sec.id && (!query || g.title.toLowerCase().includes(query)));
-        const sectionEl = document.createElement('div');
-        sectionEl.className = 'cq-section';
-        sectionEl.innerHTML = `
-            <div class="cq-sec-header">
-                <span class="cq-sec-drag-handle">☰</span>
-                <div class="cq-sec-color-dot" style="background:${sectionColor(idx)}"></div>
-                <div class="cq-sec-title">${esc(sec.title)}</div>
-                <div class="cq-sec-meta">
-                    <span class="cq-sec-progress-txt">${goals.filter(g => g.completed).length}/${goals.length}</span>
-                    <div class="cq-mini-prog"><div class="cq-mini-prog-fill" style="width:${goals.length ? Math.round((goals.filter(g => g.completed).length / goals.length) * 100) : 4}%"></div></div>
-                </div>
-                <div class="cq-sec-actions">
-                    <button class="cq-btn sm" data-action="toggle" data-section-id="${sec.id}"><svg class="cq-chevron ${state.expandedSections.has(sec.id) ? 'open' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
-                    <button class="cq-btn xs" data-action="edit-section" data-section-id="${sec.id}">Edit</button>
-                    <button class="cq-btn xs danger" data-action="delete-section" data-section-id="${sec.id}">Delete</button>
-                </div>
-            </div>
-            <div class="cq-tasks-wrap" ${state.expandedSections.has(sec.id) ? '' : 'style="display:none"'}>
-                ${goals.length === 0 ? '<div class="cq-empty-section">No goals yet. Add one below.</div>' : ''}
-                <div class="cq-tasks-inner"></div>
-                <div class="cq-add-goal-row">
-                    <input type="text" placeholder="Add a goal to this section…" aria-label="Add goal">
-                    <button class="cq-btn sm primary">Add</button>
-                </div>
-            </div>
-        `;
+    const { data: { session } } = await supabase.auth.getSession();
+    state.user = session?.user ?? null;
 
-        const tasksInner = sectionEl.querySelector('.cq-tasks-inner');
-        goals.forEach(goal => {
-            const done = goal.completed;
-            const goalWrap = document.createElement('div');
-            goalWrap.className = 'cq-goal-wrap';
-            goalWrap.innerHTML = `
-                <div class="cq-goal ${done ? 'done' : ''}">
-                    <div class="cq-checkbox ${done ? 'checked' : ''}" data-action="goal-toggle" data-goal-id="${goal.id}"></div>
-                    <div class="cq-goal-title">${esc(goal.title)}</div>
-                    ${goal.deadline ? `<div class="cq-time-badge">${esc(shortDate(goal.deadline))}</div>` : ''}
-                    <div class="cq-goal-actions">
-                        <button class="cq-btn sm cq-btn-pin ${goal.is_pinned ? 'pinned' : ''}" data-action="pin" data-goal-id="${goal.id}">${goal.is_pinned ? '★' : '☆'}</button>
-                        <button class="cq-btn sm" data-action="add-subtask" data-goal-id="${goal.id}">+ subtask</button>
-                    </div>
-                </div>
-            `;
+    if (state.user) {
+        setEditing(true);
+        await loadData();
+    } else {
+        // Public read-only mode — still load data but via public anon
+        // Since RLS requires auth, we'll show a message
+        $('il-loading').innerHTML = '<div style="text-align:center"><p style="color:var(--il-dim);margin-bottom:0.5rem">this list is private.</p><p style="font-size:0.75rem;color:var(--il-dim)">type <span style="color:var(--il-accent);font-family:JetBrains Mono,monospace">neo</span> to authenticate.</p></div>';
+        $('il-tree').style.display = 'none';
 
-            const subtasks = state.subtasks.filter(st => st.task_id === goal.id);
-            if (subtasks.length) {
-                const subList = document.createElement('div');
-                subList.className = 'cq-subtasks';
-                subtasks.forEach(st => {
-                    const isDone = st.completed || (st.is_repeatable && st.last_completed_date === today());
-                    const dueLabel = st.due_date
-                        ? `${shortDate(st.due_date)}${st.due_time ? ' ' + shortTime(st.due_time) : ''}`
-                        : st.due_time ? shortTime(st.due_time) : '';
-                    const subEl = document.createElement('div');
-                    subEl.className = 'cq-subtask';
-                    subEl.innerHTML = `
-                        <div class="cq-checkbox ${isDone ? 'checked' : ''}" data-action="subtask-toggle" data-subtask-id="${st.id}"></div>
-                        <div>${esc(st.title)}${st.is_repeatable ? ' 🔄' : ''}${dueLabel ? ` <span class="cq-time-badge">${esc(dueLabel)}</span>` : ''}</div>
-                    `;
-                    subEl.querySelector('[data-action="subtask-toggle"]')?.addEventListener('click', () => toggleSubtask(st.id));
-                    subList.appendChild(subEl);
-                });
-                goalWrap.appendChild(subList);
+        // Try to load anyway in case there's a public policy
+        try {
+            const { data, error } = await supabase.from('impossible_items')
+                .select('*')
+                .order('sort_order');
+            if (!error && data && data.length > 0) {
+                state.items = data;
+                state.tree = buildTree(state.items);
+                state.items.forEach(it => { if (!it.parent_id) state.expanded.add(it.id); });
+                $('il-loading').style.display = 'none';
+                $('il-tree').style.display = '';
+                render();
             }
+        } catch {}
+    }
 
-            tasksInner.appendChild(goalWrap);
-        });
+    supabase.auth.onAuthStateChange(async (_ev, sess) => {
+        const wasUser = !!state.user;
+        state.user = sess?.user ?? null;
 
-        sectionEl.querySelector('[data-action="toggle"]')?.addEventListener('click', () => {
-            if (state.expandedSections.has(sec.id)) state.expandedSections.delete(sec.id);
-            else state.expandedSections.add(sec.id);
-            renderWorkspace();
-        });
-        sectionEl.querySelector('.cq-add-goal-row button')?.addEventListener('click', async () => {
-            const input = sectionEl.querySelector('.cq-add-goal-row input');
-            const value = input.value.trim();
-            if (!value) return;
-            await addGoal(sec.id, value);
-            input.value = '';
-            renderAll();
-        });
-        sectionEl.querySelectorAll('[data-action="goal-toggle"]').forEach(el => {
-            el.addEventListener('click', () => toggleGoal(el.dataset.goalId));
-        });
-        sectionEl.querySelectorAll('[data-action="pin"]').forEach(el => {
-            el.addEventListener('click', () => toggleGoalPin(el.dataset.goalId));
-        });
-        sectionEl.querySelectorAll('[data-action="add-subtask"]').forEach(el => {
-            el.addEventListener('click', () => openModal('subtask', el.dataset.goalId));
-        });
-        sectionEl.querySelector('[data-action="edit-section"]')?.addEventListener('click', () => openModal('section', sec.id));
-        sectionEl.querySelector('[data-action="delete-section"]')?.addEventListener('click', async () => {
-            if (!confirm('Delete section "' + sec.title + '" and all its goals?')) return;
-            await deleteSection(sec.id);
-            renderAll();
-        });
-
-        ws.appendChild(sectionEl);
+        if (state.user && !wasUser) {
+            setEditing(true);
+            await loadData();
+        } else if (!state.user && wasUser) {
+            setEditing(false);
+            state.items = [];
+            state.tree = [];
+            $('il-tree').innerHTML = '';
+            $('il-loading').style.display = '';
+            $('il-loading').innerHTML = '<div style="text-align:center"><p style="color:var(--il-dim);margin-bottom:0.5rem">this list is private.</p><p style="font-size:0.75rem;color:var(--il-dim)">type <span style="color:var(--il-accent);font-family:JetBrains Mono,monospace">neo</span> to authenticate.</p></div>';
+            $('il-tree').style.display = 'none';
+        }
     });
 }
-
-async function addGoal(sectionId, title) {
-    const { data, error } = await supabase.from('tasks').insert({
-        user_id: state.user.id,
-        section_id: sectionId,
-        title,
-        sort_order: state.goals.filter(g => g.section_id === sectionId).length,
-        completed: false,
-        is_pinned: false
-    }).select().single();
-    if (error) {
-        toast(error.message, 'error');
-        return null;
-    }
-    state.goals.push(data);
-    return data;
-}
-
-async function createSection(title) {
-    const { data, error } = await supabase.from('sections').insert({
-        user_id: state.user.id,
-        title,
-        sort_order: state.sections.length
-    }).select().single();
-    if (error) {
-        toast(error.message, 'error');
-        return null;
-    }
-    state.sections.push(data);
-    state.expandedSections.add(data.id);
-    return data;
-}
-
-async function updateSection(sectionId, title) {
-    const section = state.sections.find(sec => String(sec.id) === String(sectionId));
-    if (!section) return null;
-    const { data, error } = await supabase.from('sections').update({ title }).eq('id', section.id).select().single();
-    if (error) {
-        toast(error.message, 'error');
-        return null;
-    }
-    section.title = data.title;
-    return section;
-}
-
-async function deleteSection(sectionId) {
-    const sid = Number(sectionId);
-    const goals = state.goals.filter(g => g.section_id === sid);
-    const goalIds = goals.map(g => g.id);
-
-    if (goalIds.length) {
-        const { error: subtaskError } = await supabase.from('subtasks').delete().in('task_id', goalIds);
-        if (subtaskError) return toast(subtaskError.message, 'error');
-        state.subtasks = state.subtasks.filter(st => !goalIds.includes(st.task_id));
-
-        const { error: taskError } = await supabase.from('tasks').delete().in('id', goalIds);
-        if (taskError) return toast(taskError.message, 'error');
-        state.goals = state.goals.filter(g => g.section_id !== sid);
-    }
-
-    const { error: sectionError } = await supabase.from('sections').delete().eq('id', sid);
-    if (sectionError) return toast(sectionError.message, 'error');
-    state.sections = state.sections.filter(sec => sec.id !== sid);
-    state.expandedSections.delete(sid);
-    return true;
-}
-
-async function createSubtask(goalId, title, dueDate = null, dueTime = null, isRepeatable = false) {
-    const { data, error } = await supabase.from('subtasks').insert({
-        user_id: state.user.id,
-        task_id: goalId,
-        title,
-        due_date: dueDate,
-        due_time: dueTime,
-        is_repeatable: isRepeatable,
-        completed: false,
-        last_completed_date: null,
-        sort_order: state.subtasks.filter(st => st.task_id === goalId).length
-    }).select().single();
-    if (error) {
-        toast(error.message, 'error');
-        return null;
-    }
-    state.subtasks.push(data);
-    return data;
-}
-
-async function toggleGoal(goalId) {
-    const goal = state.goals.find(g => String(g.id) === String(goalId));
-    if (!goal) return;
-    const newCompleted = !goal.completed;
-    const { error } = await supabase.from('tasks').update({ completed: newCompleted }).eq('id', goal.id);
-    if (error) return toast(error.message, 'error');
-    goal.completed = newCompleted;
-    renderAll();
-}
-
-async function toggleGoalPin(goalId) {
-    const goal = state.goals.find(g => String(g.id) === String(goalId));
-    if (!goal) return;
-    const newPinned = !goal.is_pinned;
-    const { error } = await supabase.from('tasks').update({ is_pinned: newPinned }).eq('id', goal.id);
-    if (error) return toast(error.message, 'error');
-    goal.is_pinned = newPinned;
-    renderAll();
-}
-
-async function toggleSubtask(subtaskId) {
-    const st = state.subtasks.find(s => String(s.id) === String(subtaskId));
-    if (!st) return;
-    const todayStr = today();
-    const isRepeat = !!st.is_repeatable;
-    let update = {};
-    if (isRepeat) {
-        update.last_completed_date = st.last_completed_date === todayStr ? null : todayStr;
-    } else {
-        update.completed = !st.completed;
-    }
-    const { error } = await supabase.from('subtasks').update(update).eq('id', st.id);
-    if (error) return toast(error.message, 'error');
-    Object.assign(st, update);
-    renderAll();
-}
-
-function openModal(type, contextId = null) {
-    state.modal.type = type;
-    state.modal.contextId = contextId;
-    $('modal-type').value = type;
-    $('modal-context-id').value = contextId || '';
-    $('modal-task-title').value = '';
-    $('modal-task-title').placeholder = type === 'section' ? 'Section name…' : type === 'goal' ? 'Goal title…' : 'Subtask title…';
-    const isEdit = type === 'section' && contextId;
-    $('modal-title').textContent = type === 'section'
-        ? (isEdit ? 'Edit Section' : 'New Section')
-        : type === 'goal'
-            ? 'New Goal'
-            : 'New Subtask';
-    $('modal-confirm').textContent = type === 'section'
-        ? (isEdit ? 'Save ✓' : 'Add ✓')
-        : type === 'goal'
-            ? 'Add ✓'
-            : 'Add ✓';
-
-    if (type === 'section' && contextId) {
-        const section = state.sections.find(sec => String(sec.id) === String(contextId));
-        if (section) $('modal-task-title').value = section.title;
-    }
-
-    const extra = $('modal-subtask-extra');
-    if (!extra) return;
-    extra.classList.toggle('hidden', type !== 'subtask');
-    $('task-modal')?.classList.add('open');
-    $('modal-task-title')?.focus();
-}
-
-function closeModal() {
-    $('task-modal')?.classList.remove('open');
-    state.modal.type = null;
-    state.modal.contextId = null;
-}
-
-async function handleModalConfirm() {
-    const type = $('modal-type').value;
-    const title = $('modal-task-title').value.trim();
-    if (!title) return toast('Please enter a title', 'error');
-
-    if (type === 'section') {
-        const sectionId = $('modal-context-id').value;
-        if (sectionId) {
-            await updateSection(sectionId, title);
-        } else {
-            await createSection(title);
-        }
-    } else if (type === 'goal') {
-        const sectionId = Number($('modal-context-id').value) || state.sections[0]?.id;
-        if (!sectionId) return toast('Select a section first', 'error');
-        await addGoal(sectionId, title);
-    } else if (type === 'subtask') {
-        const goalId = Number($('modal-context-id').value);
-        if (!goalId) return toast('Invalid goal context', 'error');
-        const dueDate = $('modal-due-date')?.value || null;
-        const dueTime = $('modal-due-time')?.value || null;
-        const isRepeatable = $('modal-is-repeatable')?.checked || false;
-        await createSubtask(goalId, title, dueDate, dueTime, isRepeatable);
-    }
-
-    closeModal();
-    renderAll();
-}
-
 
 init();

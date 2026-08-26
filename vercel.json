@@ -64,10 +64,7 @@
       "source": "/conquer.js",
       "destination": "/assets/js/conquer.js"
     },
-    {
-      "source": "/conquer-data.js",
-      "destination": "/assets/js/conquer-data.js"
-    },
+
     {
       "source": "/favicon.ico",
       "destination": "/assets/icons/favicon.ico"
