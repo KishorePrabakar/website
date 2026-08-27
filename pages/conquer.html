@@ -2,7 +2,10 @@
 <html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#09090b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>The Impossible List — Kishore Prabakar</title>
     <meta name="description" content="A personal lifelong impossible list — ambitious goals, challenges, experiences, and milestones.">
     <link rel="stylesheet" href="/assets/css/style.css">
@@ -511,6 +514,16 @@
             .il-item-row { gap: 0.35rem; padding: 0.3rem 0.35rem; }
             .il-edit-badge { top: 0.5rem; right: 0.5rem; font-size: 0.6rem; }
             .il-logout-btn { top: 0.5rem; right: 5.5rem; font-size: 0.6rem; }
+
+            .il-auth-overlay { padding: 0.75rem; align-items: flex-end; padding-bottom: env(safe-area-inset-bottom, 0.75rem); }
+            .il-auth-card { padding: 1.5rem 1.25rem; border-radius: 14px 14px 0 0; max-width: 100%; }
+            .il-auth-card input { font-size: 16px; padding: 0.85rem 0.85rem; min-height: 48px; }
+            .il-auth-card button.auth-primary, .il-auth-card button.auth-secondary { min-height: 48px; font-size: 0.95rem; padding: 0.85rem; }
+        }
+
+        /* iOS zoom prevention */
+        @supports (-webkit-touch-callout: none) {
+            .il-auth-card input { font-size: 16px !important; }
         }
 
         /* ── Category accent colors ── */
@@ -572,6 +585,7 @@
         <div id="il-tree" class="il-tree" style="display:none;"></div>
 
         <a href="/index.html" class="il-back-link">← home</a>
+        <span id="il-login-link" class="il-back-link" style="margin-left:1.5rem;cursor:pointer;" onclick="showAuthModal()">sign in</span>
     </div>
 
     <!-- Edit mode badge -->
@@ -584,8 +598,8 @@
             <button class="auth-close" id="il-auth-close">&times;</button>
             <h2>…</h2>
             <p>authenticate to edit your list.</p>
-            <input type="email" id="il-auth-email" placeholder="email">
-            <input type="password" id="il-auth-pass" placeholder="password">
+            <input type="email" id="il-auth-email" placeholder="email" name="email" autocomplete="email" autocapitalize="none" inputmode="email">
+            <input type="password" id="il-auth-pass" placeholder="password" name="password" autocomplete="current-password" autocapitalize="none">
             <button class="auth-primary" id="il-auth-login">sign in</button>
             <button class="auth-secondary" id="il-auth-signup">create account</button>
         </div>

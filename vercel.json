@@ -41,6 +41,10 @@
       "destination": "/pages/conquer.html"
     },
     {
+      "source": "/conquer/login",
+      "destination": "/pages/conquer.html"
+    },
+    {
       "source": "/conquer/(.*)",
       "destination": "/pages/conquer.html"
     },

@@ -622,6 +622,11 @@ async function init() {
 
     await loadData();
 
+    // Auto-open auth modal if navigated to /conquer/login
+    if (!state.user && /\/conquer\/login\/?$/.test(location.pathname)) {
+        showAuthModal();
+    }
+
     db.auth.onAuthStateChange(async (_ev, sess) => {
         const wasUser = !!state.user;
         state.user = sess?.user ?? null;
@@ -629,6 +634,11 @@ async function init() {
         if (state.user && !wasUser) {
             toast('logged in', 'success');
             setEditing(true);
+            hideAuthModal();
+            // Clean up URL so refresh doesn't re-open modal
+            if (/\/conquer\/login\/?$/.test(location.pathname)) {
+                history.replaceState(null, '', '/conquer');
+            }
             await loadData();
         } else if (!state.user && wasUser) {
             toast('logged out', 'success');
